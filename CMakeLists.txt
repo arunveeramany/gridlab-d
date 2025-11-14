@@ -32,10 +32,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
 # Find Eigen
-find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+# find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
 # Include Eigen 
-include_directories(${EIGEN3_INCLUDE_DIR})
+#include_directories(${EIGEN3_INCLUDE_DIR})
+
+
+find_path(EIGEN_INCLUDE_DIR Eigen/Dense
+  PATH_SUFFIXES eigen3 eigen5 eigen
+  PATHS
+    /opt/homebrew/include
+    /usr/local/include
+    /usr/include
+    ${CMAKE_INCLUDE_PATH}
+)
 
 
 include(cmake/Warnings.cmake)
