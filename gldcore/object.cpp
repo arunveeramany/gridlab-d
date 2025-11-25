@@ -1706,6 +1706,7 @@ void object_profile(OBJECT *obj, OBJECTPROFILEITEM pass, clock_t t)
 	}
 }
 
+
 TIMESTAMP _object_sync(OBJECT *obj,		/**< the object to synchronize */
 					   TIMESTAMP ts,	/**< the desire clock to sync to */
 					   PASSCONFIG pass) /**< the pass configuration */

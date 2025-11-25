@@ -101,13 +101,30 @@
 #define CDECL
 #endif
 
+// #ifdef _WIN32
+// #ifndef EXPORT
+// /** Defines a function as exported to core **/
+// #define EXPORT CDECL __declspec(dllexport)
+// #endif
+// #else
+// #define EXPORT CDECL
+// #endif
+
 #ifdef _WIN32
 #ifndef EXPORT
 /** Defines a function as exported to core **/
 #define EXPORT CDECL __declspec(dllexport)
 #endif
+#else // For GCC/Clang on Linux/macOS
+#ifndef EXPORT
+#if __GNUC__ >= 4
+/** Defines a function as exported to core **/
+#define EXPORT CDECL __attribute__ ((visibility ("default")))
+#warning ">>> Using macOS/Clang EXPORT definition <<<"
 #else
 #define EXPORT CDECL
+#endif
+#endif
 #endif
 
 #include <cstdarg>
@@ -1796,8 +1813,17 @@ public: // constructors
 	/// Clock constructor for an arbitrary TIMESTAMP
 	gld_clock(TIMESTAMP ts)
 	{
-		if (!callback->time.local_datetime(ts, &dt))
+		// if (!callback->time.local_datetime(ts, &dt))
+		// 	memset(&dt, 0, sizeof(dt));
+
+		if (callback && callback->time.local_datetime) {
+			if (!callback->time.local_datetime(ts, &dt))
+				memset(&dt, 0, sizeof(dt));
+		} else {
+			// Fallback - just zero out the structure for now
 			memset(&dt, 0, sizeof(dt));
+			// You might want to log this for debugging
+		}
 	};
 	/// Clock constructor for a time string
 	gld_clock(char *str) { from_string(str); };
@@ -2600,7 +2626,7 @@ public: // external accessors
 		//	value=*(T*)(get_addr(my(),&prop));
 		//	wunlock();
 		//};
-		// template <class T> inline void setp(PROPERTY &prop, T &value) { wlock(); *(T*)(get_addr(my(),&prop)   /*GETADDR(my(), &prop)*/) = value; wunlock(); };
+		// template <c	lass T> inline void setp(PROPERTY &prop, T &value) { wlock(); *(T*)(get_addr(my(),&prop)   /*GETADDR(my(), &prop)*/) = value; wunlock(); };
 		/*template <class T> inline void getp(PROPERTY& prop, T& value, gld_rlock&) { value = *(T*)(get_addr(my(), &prop)); };*/
 		// template <class T> inline void getp(PROPERTY &prop, T &value, gld_wlock&) { value=*(T*)(get_addr(my(),&prop)); };
 		// template <class T> inline void setp(PROPERTY &prop, T &value, gld_wlock&) { *(T*)(get_addr(my(),&prop))=value; };

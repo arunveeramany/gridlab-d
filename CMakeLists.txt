@@ -1,5 +1,18 @@
 cmake_minimum_required(VERSION 3.13)
+
+
+
 project(GridLAB-D)
+
+
+set(CMAKE_BUILD_TYPE Debug)
+
+
+# Force non-PIE executable on macOS
+set(CMAKE_OSX_ARCHITECTURES "arm64")
+set(CMAKE_OSX_SYSROOT "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk")
+set(CMAKE_EXE_LINKER_FLAGS "-Wl,-no_pie")
+
 
 
 if(WIN32)
@@ -38,14 +51,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #include_directories(${EIGEN3_INCLUDE_DIR})
 
 
-find_path(EIGEN_INCLUDE_DIR Eigen/Dense
-  PATH_SUFFIXES eigen3 eigen5 eigen
-  PATHS
-    /opt/homebrew/include
-    /usr/local/include
-    /usr/include
-    ${CMAKE_INCLUDE_PATH}
+find_path(EIGEN3_INCLUDE_DIR Eigen/Dense
+  PATH_SUFFIXES eigen3
+  PATHS /opt/homebrew/include
 )
+
+if(EIGEN3_INCLUDE_DIR)
+  include_directories(${EIGEN3_INCLUDE_DIR})
+else()
+  message(FATAL_ERROR "Could not find Eigen3")
+endif()
+
 
 
 include(cmake/Warnings.cmake)
@@ -148,6 +164,11 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/${GLD_PACKAGE}")
 # which point to directories outside the build tree to the install RPATH
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 option(BUILD_SHARED_LIBS "Sets Gridlab-d libraries to be built as shared. *DANGER - will currently break build if changed.*" ON)
+
+set(CMAKE_MACOSX_RPATH FALSE)
+if (APPLE)
+    set(CMAKE_INSTALL_NAME_DIR "${CMAKE_BINARY_DIR}/lib")
+endif()
 
 # Forces certain warnings to trigger errors.
 if (NOT MSVC)

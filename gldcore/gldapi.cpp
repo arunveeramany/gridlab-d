@@ -24,6 +24,14 @@
 namespace fs = std::filesystem;
 
 
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#include <limits.h>
+#endif
+
+
 std::vector<std::string> split_path_x(const std::string& path, char sep){
     std::vector<std::string> tokens;
     std::size_t start = 0, end;

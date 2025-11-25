@@ -4,10 +4,14 @@ module assert;
 module climate;
 
 object climate {
+	name pClimate;
 	interpolate NONE;
+};
+
+
 	object enum_assert {
+		parent pClimate;
 		target "interpolate";
 		value 0;
 	};
-};
 	

@@ -13,13 +13,45 @@
 #include <gld_complex.h>
 
 #include "enum_assert.h"
+#include "object.h"
 
-EXPORT_CREATE(enum_assert);
-EXPORT_INIT(enum_assert);
-EXPORT_COMMIT(enum_assert);
+// Required module version info to match the core
+// Corrected, non-conflicting version variables
+EXPORT int gld_major = 5;
+EXPORT int gld_minor = 3;
+
+
+// EXPORT_CREATE(enum_assert);
+// EXPORT_INIT(enum_assert);
+// EXPORT_COMMIT(enum_assert);
 
 CLASS *enum_assert::oclass = nullptr;
 enum_assert *enum_assert::defaults = nullptr;
+
+extern "C" CALLBACKS *callback;
+
+// EXPORT CLASS* init(CALLBACKS *fntable, MODULE *mod, int argc, char *argv[])
+// {
+//     callback = fntable;
+// 	std::cerr << "Received callback table in init_enum_assert at address: " << (void*)callback << std::endl;
+
+// 	if (!callback) {
+//         std::cerr << "FATAL: init_enum_assert received null callback table" << std::endl;
+//         return 0;
+//     }
+//     std::cerr << "Callback initialized at address: " << (void*)callback << std::endl;
+// 	std::cerr << "properties.get_property callback value: " << (void*)callback->properties.get_property << std::endl;
+
+// 	if (!callback->properties.get_property) {
+//         std::cerr << "FATAL: properties.get_property callback is null" << std::endl;
+//         return 0;
+//     }
+// 	std::cerr << "properties.get_property callback initialized at address: " << (void*)callback->properties.get_property << std::endl;
+
+//     new enum_assert(mod); // Instantiate the class to trigger registration
+//     // return 1;
+// 	return enum_assert::oclass;
+// }
 
 enum_assert::enum_assert(MODULE *module)
 {
@@ -56,7 +88,14 @@ enum_assert::enum_assert(MODULE *module)
 /* Object creation is called once for each object that is created by the core */
 int enum_assert::create(void)
 {
-	memcpy(this, defaults, sizeof(*this));
+	// memcpy(this, defaults, sizeof(*this));
+
+    if (defaults != nullptr)
+    {
+        this->status = defaults->status;
+        this->value = defaults->value;
+        strncpy(this->target, defaults->target, sizeof(this->target) - 1);
+    }
 
 	return 1; /* return 1 on success, 0 on failure */
 }
@@ -68,6 +107,20 @@ int enum_assert::init(OBJECT *parent)
 
 TIMESTAMP enum_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 {
+
+	std::cerr << "Commit for enum_assert, parent: " << (void*)get_parent() << ", target: " << get_target().c_str() << std::endl;
+    if (!get_parent()) {
+        gl_error("Parent object is null for enum_assert");
+        return TS_INVALID;
+    }
+    
+	
+
+	std::cerr << "Commit for enum_assert, parent: " << (void*)get_parent() << ", target: " << get_target().c_str() << std::endl;
+	if (!callback) {
+        gl_error("FATAL: callback structure is null in enum_assert::commit");
+        return TS_INVALID;
+    }
 	// Check if this is an error test based on parent name
 	bool is_error_test = false;
 	if (get_parent() && get_parent()->get_name())
@@ -76,10 +129,23 @@ TIMESTAMP enum_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 		is_error_test = strstr(parent_name, "_err") != nullptr;
 	}
 
+	std::cerr << "Commit for enum_assert, parent: " << (void*)get_parent() << ", target: " << get_target().c_str() << std::endl;
+
 	gld_property target_prop(get_parent(), get_target().c_str());
+	if (!target_prop.is_valid())
+    {
+        gl_error("Specified target %s for %s is not valid.", get_target().c_str(), get_parent()->get_name());
+        return TS_INVALID;
+    }
+	if (target_prop.get_type() != PT_enumeration)
+    {
+        gl_error("Specified target %s for %s is not an enumeration type.", get_target().c_str(), get_parent()->get_name());
+        return TS_INVALID;
+    }
+	
 	if (!target_prop.is_valid() || target_prop.get_type() != PT_enumeration)
 	{
-		gl_error("Specified target %s for %s is not valid.", get_target(), get_parent()->get_name());
+		gl_error("Specified target %s for %s is not valid.", get_target().c_str(), get_parent()->get_name());
 		/*  TROUBLESHOOT
 		Check to make sure the target you are specifying is a published variable for the object
 		that you are pointing to.  Refer to the documentation of the command flag --modhelp, or
@@ -89,6 +155,7 @@ TIMESTAMP enum_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 		return 0;
 	}
 
+
 	int32 x;
 	target_prop.getp(x);
 	if (status == ASSERT_TRUE)
@@ -96,7 +163,7 @@ TIMESTAMP enum_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 		if (value != x)
 		{
 			gl_error("Assert failed on %s: %s=%d did not match %d",
-					 get_parent()->get_name(), get_target(), x, value);
+					 get_parent()->get_name(), get_target().c_str(), x, value);
 			// Log expected failures for error tests
 			if (is_error_test)
 			{
@@ -116,7 +183,7 @@ TIMESTAMP enum_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 		if (value == x)
 		{
 			gl_error("Assert failed on %s: %s=%d did match %d",
-					 get_parent()->get_name(), get_target(), x, value);
+					 get_parent()->get_name(), get_target().c_str(), x, value);
 			// Log expected failures for error tests
 			if (is_error_test)
 			{
@@ -136,6 +203,46 @@ TIMESTAMP enum_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 		gl_verbose("Assert test is not being run on %s", get_parent()->get_name());
 		return TS_NEVER;
 	}
+}
+
+EXPORT int create_enum_assert(OBJECT **obj, OBJECT *parent)
+{
+    try
+    {
+        *obj = gl_create_object(enum_assert::oclass);
+        if (*obj != NULL)
+        {
+            enum_assert *my = object_data<enum_assert>(*obj);
+            gl_set_parent(*obj, parent);
+            return my->create();
+        }	
+        else
+            return 0;
+    }
+    CREATE_CATCHALL(enum_assert);
+}
+
+EXPORT TIMESTAMP commit_enum_assert(OBJECT *obj, TIMESTAMP t1, TIMESTAMP t2)
+{
+    try
+    {
+        return object_data<enum_assert>(obj)->commit(t1, t2);
+    }
+    catch (char *msg)
+    {
+        gl_error("commit_enum_assert(obj=%d;%s): %s", obj->id, obj->name ? obj->name : "unnamed", msg);
+        return TS_INVALID;
+    }
+    catch (const char *msg)
+    {
+        gl_error("commit_enum_assert(obj=%d;%s): %s", obj->id, obj->name ? obj->name : "unnamed", msg);
+        return TS_INVALID;
+    }
+    catch (const std::exception &ex)
+    {
+        gl_error("commit_enum_assert(obj=%d;%s): unhandled exception - %s", obj->id, obj->name ? obj->name : "unnamed", ex.what());
+        return TS_INVALID;
+    }
 }
 
 // Deltamode compatible enumeration assert
@@ -163,7 +270,7 @@ EXPORT SIMULATIONMODE update_enum_assert(OBJECT *obj, TIMESTAMP t0, unsigned int
 
 			if (x == nullptr)
 			{
-				gl_error("Specified target %s for %s is not valid.", da->get_target(), gl_name(obj->parent, buff, 64));
+				gl_error("Specified target %s for %s is not valid.", da->get_target().c_str(), gl_name(obj->parent, buff, 64));
 				/*  TROUBLESHOOT
 				Check to make sure the target you are specifying is a published variable for the object
 				that you are pointing to.  Refer to the documentation of the command flag --modhelp, or
@@ -202,7 +309,7 @@ EXPORT SIMULATIONMODE update_enum_assert(OBJECT *obj, TIMESTAMP t0, unsigned int
 						sprintf(datebuff, "ERROR    %.09f : ", del_clock);
 
 					// Actual error part
-					sprintf(error_output_buff, "Assert failed on %s - %s (%d) did not match %d", gl_name(obj->parent, buff, 64), da->get_target(), *x, da->get_value());
+					sprintf(error_output_buff, "Assert failed on %s - %s (%d) did not match %d", gl_name(obj->parent, buff, 64), da->get_target().c_str(), *x, da->get_value());
 
 					// Send it out
 					gl_output("%s%s", datebuff, error_output_buff);
@@ -245,7 +352,7 @@ EXPORT SIMULATIONMODE update_enum_assert(OBJECT *obj, TIMESTAMP t0, unsigned int
 						sprintf(datebuff, "ERROR    %.09f : ", del_clock);
 
 					// Actual error part
-					sprintf(error_output_buff, "Assert failed on %s - %s (%d) did not match %d", gl_name(obj->parent, buff, 64), da->get_target(), *x, da->get_value());
+					sprintf(error_output_buff, "Assert failed on %s - %s (%d) did not match %d", gl_name(obj->parent, buff, 64), da->get_target().c_str(), *x, da->get_value());
 
 					// Send it out
 					gl_output("%s%s", datebuff, error_output_buff);

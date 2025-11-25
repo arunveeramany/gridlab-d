@@ -1480,7 +1480,7 @@ public:
 	enumeration reader_type;
 	static CLASS *oclass;
 	static climate *defaults;
-
+	
 public:
 	void update_forecasts(TIMESTAMP t0);
 	void init_cloud_pattern(void);
@@ -1512,7 +1512,9 @@ private:
 
 public:
 	climate(MODULE *module);
-	int create(void);
+	// int create(void);
+	int create_instance(void);
+
 	int init(OBJECT *parent);
 	int isa(char *classname);
 	TIMESTAMP presync(TIMESTAMP t0);

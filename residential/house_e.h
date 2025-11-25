@@ -219,7 +219,7 @@ public:
 	double last_heating_load; ///< stores the previous heater load for use in the controller
 	double last_cooling_load; ///< stores the previous A/C load for use in the controller
 	bool	compressor_on;
-	int64	compressor_count;
+	int32	compressor_count;
 	
 	/* cycle tracking values */
 	TIMESTAMP hvac_last_on;

@@ -39,6 +39,8 @@ EXPORT int64 meter_reset(OBJECT *obj)
 // class management data
 CLASS* meter::oclass = nullptr;
 CLASS* meter::pclass = nullptr;
+extern "C" CALLBACKS *callback;
+
 
 // the constructor registers the class and properties and sets the defaults
 meter::meter(MODULE *mod) : node(mod)
@@ -1457,8 +1459,36 @@ EXPORT int init_meter(OBJECT *obj)
 	INIT_CATCHALL(meter);
 }
 
-EXPORT TIMESTAMP sync_meter(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+//EXPORT TIMESTAMP sync_meter(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+//{
+
+extern "C" TIMESTAMP sync_meter(void *object, ...)
 {
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
+    
+	if (!callback) {
+        gl_error("callback is null in init_climate");
+        return 0;  // Fail module load
+    }
+
+	    // Add structure validation
+    std::cerr << "Callback structure size check:" << std::endl;
+    std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
+    std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
+    std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
+    
+
+	if (!callback->time.local_datetime) {
+        gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
+        return FAILED;
+    }
+
 	try {
 		meter *pObj = object_data<meter>(obj);
 		TIMESTAMP t1;

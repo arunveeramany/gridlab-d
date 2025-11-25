@@ -16,10 +16,11 @@
 EXPORT_CREATE(int_assert);
 EXPORT_INIT(int_assert);
 EXPORT_COMMIT(int_assert);
-EXPORT_NOTIFY(int_assert);
+// EXPORT_NOTIFY(int_assert);
 
 CLASS *int_assert::oclass = nullptr;
 int_assert *int_assert::defaults = nullptr;
+extern "C" CALLBACKS *callback;
 
 int_assert::int_assert(MODULE *module)
 {
@@ -74,6 +75,8 @@ int int_assert::create(void)
 
 int int_assert::init(OBJECT *parent)
 {
+	pTarget=nullptr;
+
 	const char *msg = "A negative value has been specified for within.";
 	if (within < 0)
 		throw msg;
@@ -86,6 +89,32 @@ int int_assert::init(OBJECT *parent)
 
 TIMESTAMP int_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 {
+	// --- ONE-TIME SETUP on first commit call ---
+    if (pTarget == nullptr)
+    {
+        OBJECT *pParent = get_parent()->my();
+        if (pParent == nullptr)
+        {
+            gl_error("int_assert object has no parent, cannot find target.");
+            return TS_INVALID;
+        }
+
+        pTarget = gl_get_property(pParent, get_target().c_str());
+
+        if (pTarget == nullptr)
+        {
+            gl_error("int_assert: target property '%s' not found on parent object '%s'", get_target().c_str(), pParent->name);
+            return TS_INVALID; // Fail simulation
+        }
+
+        if (!(pTarget->ptype == PT_int16 || pTarget->ptype == PT_int32 || pTarget->ptype == PT_int64))
+        {
+            gl_error("int_assert: target property '%s' on parent '%s' is not an integer type.", get_target().c_str(), pParent->name);
+            return TS_INVALID; // Fail simulation
+        }
+    }
+    // --- END ONE-TIME SETUP ---
+
 	// handle once mode
 	if ( once==ONCE_TRUE )
 	{
@@ -106,19 +135,57 @@ TIMESTAMP int_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 	}
     
 	// get the target property
-	gld_property target_prop(get_parent(),get_target().c_str());
-	if ( !target_prop.is_valid() || !(target_prop.get_type()==PT_int16 || target_prop.get_type()==PT_int32 || target_prop.get_type()==PT_int64))
-	{
-		gl_error("Specified target %s for %s is not valid.",get_target(),get_parent()->get_name());
+	//gld_property target_prop(get_parent(),get_target().c_str());
+	//if ( !target_prop.is_valid() || !(target_prop.get_type()==PT_int16 || target_prop.get_type()==PT_int32 || target_prop.get_type()==PT_int64))
+	//{
+	//	gl_error("Specified target %s for %s is not valid.",get_target().c_str(),get_parent()->get_name());
 		/*  TROUBLESHOOT
          Check to make sure the target you are specifying is a published variable for the object
          that you are pointing to.  Refer to the documentation of the command flag --modhelp, or
          check the wiki page to determine which variables can be published within the object you
          are pointing to with the assert function.
          */
-		return 0;
-	}
-    
+	//	return 0;
+	//}
+
+	
+	// Get the parent object once
+OBJECT *pParent = get_parent()->my();
+
+// Ensure the parent and target property pointers are valid (cached from init)
+if (pParent == nullptr || pTarget == nullptr)
+{
+    gl_error("int_assert has an invalid parent or target property pointer");
+    return TS_INVALID;
+}
+
+// Calculate the memory address of the target property's data within the parent object.
+// The property address (pTarget->addr) is an offset from the start of the object's data payload,
+// which begins immediately after the OBJECT header (hence the `pParent + 1`).
+void *pPropAddr = (char*)(pParent + 1) + (int64)(pTarget->addr);
+
+// Read the value from the calculated address, casting based on the property type
+// stored in pTarget.
+int64 x = 0;
+switch (pTarget->ptype)
+{
+    case PT_int16:
+        x = *(int16*)pPropAddr;
+        break;
+    case PT_int32:
+        x = *(int32*)pPropAddr;
+        break;
+    case PT_int64:
+        x = *(int64*)pPropAddr;
+        break;
+    default:
+        // This case should be prevented by the check in your init() function,
+        // but it's a good safeguard.
+        gl_error("int_assert: target property '%s' has an unsupported type in commit()", pTarget->name);
+        return TS_INVALID;
+}
+
+	
 	// get the within range
 	int range = 0;
 	if ( within_mode == IN_RATIO )
@@ -135,7 +202,7 @@ TIMESTAMP int_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 	}
     
 	// test the target value
-	int64 x; target_prop.getp(x);
+	// int64 x; target_prop.getp(x);
 	if ( status == ASSERT_TRUE )
 	{
         int64 theDiff = x-value;
@@ -146,7 +213,7 @@ TIMESTAMP int_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 		if ( m>range )
 		{
 			gl_error("Assert failed on %s: %s %i not within %i of given value %i",
-                     get_parent()->get_name(), get_target(), x, range, value);
+                     get_parent()->get_name(), get_target().c_str(), x, range, value);
 			return 0;
 		}
 		gl_verbose("Assert passed on %s", get_parent()->get_name());
@@ -162,7 +229,7 @@ TIMESTAMP int_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
         if ( m<range )
 		{				
 			gl_error("Assert failed on %s: %s %i is within %i of given value %i",
-                     get_parent()->get_name(), get_target(), x, range, value);
+                     get_parent()->get_name(), get_target().c_str(), x, range, value);
 			return 0;
 		}
 		gl_verbose("Assert passed on %s", get_parent()->get_name());

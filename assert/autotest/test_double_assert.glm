@@ -4,11 +4,15 @@ module assert;
 module climate;
 
 object climate {
+        name pClimate;
 	temperature 50;
+};
+
 	object double_assert {
+		parent pClimate;
 		target "temperature";
 		value 50;
 		within 1;
 	};
-};
+
 	

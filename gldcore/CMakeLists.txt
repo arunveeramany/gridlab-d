@@ -2,6 +2,11 @@ SET(GLD_MODULE_NAME gridlabd)
 
 #set(CMAKE_BUILD_TYPE Debug) # Add this near the top if not using multi-config generator
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+
+
+
 
 # Load and link C/C++ files for the executable
 set(SOURCE_LIST
@@ -137,6 +142,17 @@ set(SOURCE_LIST
 #if(NOT APPLE)
 add_executable(${GLD_MODULE_NAME} ${SOURCE_LIST})
 
+set_target_properties(gridlabd PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+target_compile_options(gridlabd PRIVATE -fPIC)
+set_target_properties(gridlabd PROPERTIES LINK_FLAGS "-no-pie")
+
+target_compile_options(gridlabd PRIVATE -fPIC -no-pie)
+target_link_options(gridlabd PRIVATE -no-pie)
+
+target_compile_options(gridlabd PRIVATE -fPIC -fno-PIE)
+target_link_options(gridlabd PRIVATE -no-pie -fno-PIE)
+
 
 # Place this after your add_executable(gridlabd ...) command
 if(MSVC)
@@ -172,6 +188,7 @@ target_link_libraries(${GLD_MODULE_NAME} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 if (CURSES_FOUND)
     #target_link_libraries(gldapi PRIVATE ${CURSES_LIBRARIES})
     target_link_libraries(${GLD_MODULE_NAME} PRIVATE ${CURSES_LIBRARIES})
+    target_link_libraries(gldapi PRIVATE ${CURSES_LIBRARIES})
 endif ()
 if (XercesC_FOUND)
     #target_link_libraries(gldapi PRIVATE ${XercesC_LIBRARIES})

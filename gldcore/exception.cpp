@@ -125,6 +125,7 @@ void throw_exception(const char *format, /**< the format string */
 			of a module or external library isn't properly
 			compiled or linked.
 		*/
+		exec_setexitcode(XC_EXCEPTION); 
 		exit(XC_EXCEPTION);
 	}
 }

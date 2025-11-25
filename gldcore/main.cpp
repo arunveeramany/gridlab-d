@@ -140,6 +140,20 @@ int main(int argc,     /**< the number entries on command-line argument list \p 
          char *argv[]) /**< a list of pointers to the command-line arguments */
 {
 
+    // --- Add this block for debugging ---
+    bool wait_for_debugger = false; // Set to true to enable waiting
+    if ( wait_for_debugger )
+    {
+        volatile bool debugger_attached = false;
+        output_message("PID: %d. Waiting for debugger to attach...", getpid());
+        while (!debugger_attached)
+        {
+            sleep(1);
+        }
+    }
+    // --- End of debug block ---
+
+
     char *pd1, *pd2;
     int i, pos = 0;
 

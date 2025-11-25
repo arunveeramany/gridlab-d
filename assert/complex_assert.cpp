@@ -14,14 +14,70 @@
 
 #include "complex_assert.h"
 
+// EXPORT int gld_major = 5;
+// EXPORT int gld_minor = 3;
+
+
 EXPORT_CREATE(complex_assert);
-EXPORT_INIT(complex_assert);
+// EXPORT_INIT(complex_assert);
+
+
+// EXPORT CLASS* init(CALLBACKS *fntable, MODULE *mod, int argc, char *argv[])
+// {
+//     callback = fntable;
+// 	std::cerr << "Received callback table in init_enum_assert at address: " << (void*)callback << std::endl;
+
+// 	if (!callback) {
+//         std::cerr << "FATAL: complex_enum_assert received null callback table" << std::endl;
+//         return 0;
+//     }
+//     std::cerr << "Callback initialized at address: " << (void*)callback << std::endl;
+// 	std::cerr << "properties.get_property callback value: " << (void*)callback->properties.get_property << std::endl;
+
+// 	if (!callback->properties.get_property) {
+//         std::cerr << "FATAL: properties.get_property callback is null" << std::endl;
+//         return 0;
+//     }
+// 	std::cerr << "properties.get_property callback initialized at address: " << (void*)callback->properties.get_property << std::endl;
+
+//     new complex_assert(mod); // Instantiate the class to trigger registration
+//     // return 1;
+// 	return complex_assert::oclass;
+// }
+
+
 EXPORT_COMMIT(complex_assert);
-EXPORT_NOTIFY(complex_assert);
+// EXPORT_NOTIFY(complex_assert);
 
 CLASS *complex_assert::oclass = nullptr;
 static complex_assert defaults_storage; // POD storage for defaults
 complex_assert *complex_assert::defaults = &defaults_storage;
+
+extern "C" CALLBACKS *callback;
+
+// EXPORT CLASS* init(CALLBACKS *fntable, MODULE *mod, int argc, char *argv[])
+// {
+//     callback = fntable;
+// 	std::cerr << "Received callback table in complex_enum_assert at address: " << (void*)callback << std::endl;
+
+// 	if (!callback) {
+//         std::cerr << "FATAL: init_complex_assert received null callback table" << std::endl;
+//         return 0;
+//     }
+//     std::cerr << "Callback initialized at address: " << (void*)callback << std::endl;
+// 	std::cerr << "properties.get_property callback value: " << (void*)callback->properties.get_property << std::endl;
+
+// 	if (!callback->properties.get_property) {
+//         std::cerr << "FATAL: properties.get_property callback is null" << std::endl;
+//         return 0;
+//     }
+// 	std::cerr << "properties.get_property callback initialized at address: " << (void*)callback->properties.get_property << std::endl;
+
+//     new complex_assert(mod); // Instantiate the class to trigger registration
+//     // return 1;
+// 	return complex_assert::oclass;
+// }
+
 
 complex_assert::complex_assert(MODULE *module)
 {
@@ -77,19 +133,25 @@ int complex_assert::create(void)
 
 	// memcpy(this, defaults, sizeof(complex_assert));
 
-	status = defaults->status;
-	within = defaults->within;
-	value = defaults->value;
-	once = defaults->once;
-	once_value = defaults->once_value;
-	operation = defaults->operation;
-	strcpy(target, defaults->target);
+	// Do NOT use memcpy. Initialize members individually to preserve
+    // internal data like the parent pointer.
+    status = ASSERT_TRUE;
+    within = 0.0;
+    operation = FULL;
+    value = gld::complex(0.0, 0.0);
+    once = ONCE_FALSE;
+    once_value = gld::complex(0.0, 0.0);
+
+	// Use strncpy for safety and ensure null termination.
+    strncpy(target, "", sizeof(target) - 1);
+    target[sizeof(target) - 1] = '\0';
 
 	return 1; /* return 1 on success, 0 on failure */
 }
 
 int complex_assert::init(OBJECT *parent)
 {
+	pTarget = nullptr; 
 	if (within <= 0.0)
 	{
 		throw "A non-positive value has been specified for within.";
@@ -104,6 +166,34 @@ int complex_assert::init(OBJECT *parent)
 
 TIMESTAMP complex_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 {
+
+// --- ONE-TIME SETUP on first commit call (copied from int_assert pattern) ---
+    if (pTarget == nullptr)
+    {
+        OBJECT *pParent = get_parent()->my();
+        if (pParent == nullptr)
+        {
+            gl_error("complex_assert object has no parent, cannot find target.");
+            return TS_INVALID; // Fail simulation
+        }
+
+        pTarget = gl_get_property(pParent, get_target().c_str());
+
+        if (pTarget == nullptr)
+        {
+            gl_error("complex_assert: target property '%s' not found on parent object '%s'", get_target().c_str(), pParent->name);
+            return TS_INVALID; // Fail simulation
+        }
+        
+        // Add type validation for robustness
+        if (pTarget->ptype != PT_complex)
+        {
+            gl_error("complex_assert: target property '%s' on parent '%s' is not a complex type.", get_target().c_str(), pParent->name);
+            return TS_INVALID; // Fail simulation
+        }
+    }
+	
+
 	gl_verbose("complex_assert::commit called for %s (operation=%d) on %s",
 			   get_target().c_str(), operation, get_parent() ? get_parent()->get_name() : "unknown");
 
@@ -156,6 +246,17 @@ TIMESTAMP complex_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 	target_prop.getp(x);
 	if (status == ASSERT_TRUE)
 	{
+		// Get the parent object
+		OBJECT *pParent = get_parent()->my();
+
+		// Manually calculate the memory address of the target property's data.
+		// The property address (pTarget->addr) is a byte offset from the start of the object's data.
+		void *pPropAddr = (char*)(pParent + 1) + (int64)(pTarget->addr);
+
+		// Cast the generic address to a pointer of the correct type (complex*)
+		complex *y = (complex*)pPropAddr;
+		complex x = complex(y->Re(), y->Im());
+		
 		if (operation == FULL || operation == REAL || operation == IMAGINARY)
 		{
 			complex error = x - value;
@@ -263,14 +364,14 @@ TIMESTAMP complex_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 	}
 }
 
-int complex_assert::postnotify(PROPERTY *prop, char *value)
-{
-	if (once == ONCE_DONE && strcmp(prop->name, "value") == 0)
-	{
-		once = ONCE_TRUE;
-	}
-	return 1;
-}
+// int complex_assert::postnotify(PROPERTY *prop, char *value)
+// {
+// 	if (once == ONCE_DONE && strcmp(prop->name, "value") == 0)
+// 	{
+// 		once = ONCE_TRUE;
+// 	}
+// 	return 1;
+// }
 
 EXPORT SIMULATIONMODE update_complex_assert(OBJECT *obj, TIMESTAMP t0, unsigned int64 delta_time, unsigned long dt, unsigned int iteration_count_val)
 {

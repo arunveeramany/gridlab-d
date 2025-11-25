@@ -84,6 +84,8 @@ protected:
     complex once_value;    // Member variable of type `complex`.
     char1024 target;       // Protected member variable
 
+    PROPERTY *pTarget;
+
 public:
     // Static inline method to get the byte offset of the member `status`.
     static inline size_t get_status_offset(void)
@@ -418,8 +420,8 @@ public:
     int create(void);
     int init(OBJECT *parent);
     TIMESTAMP commit(TIMESTAMP t1, TIMESTAMP t2);
-    int postnotify(PROPERTY *prop, char *value);
-    inline int prenotify(PROPERTY *, char *) { return 1; };
+    //int postnotify(PROPERTY *prop, char *value);
+    //inline int prenotify(PROPERTY *, char *) { return 1; };
 
 public:
     static CLASS *oclass;

@@ -45,6 +45,8 @@ protected:
 	enumeration within_mode;  // Member variable of type `enumeration`.
 	int64 within;  // Member variable of type `int64`.
 
+    PROPERTY *pTarget;
+
 public:
 
     // Static inline method to get the byte offset of the member `status`.

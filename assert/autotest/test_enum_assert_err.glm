@@ -4,10 +4,12 @@ module assert;
 module climate;
 
 object climate {
-	interpolate NONE;
-	object enum_assert {
-		target "interpolate";
-		value 1;
-	};
+    name my_climate; // Give the climate object a name to be referenced
+    interpolate NONE;
 };
-	
+
+object enum_assert {
+    parent my_climate; // Use the parent property to link to the climate object
+    target "interpolate";
+    value 1;
+};

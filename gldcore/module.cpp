@@ -234,6 +234,8 @@ s_callbacks::s_callbacks() throw()
 	object.set_parent = object_set_parent;
 	object.set_rank = object_set_rank;
 	properties.get_property = object_get_property;
+	std::cerr << "Set properties.get_property to: " << (void*)properties.get_property << std::endl;
+
 	properties.set_value_by_addr = object_set_value_by_addr;
 	properties.get_value_by_addr = object_get_value_by_addr;
 	properties.set_value_by_name = object_set_value_by_name;
@@ -285,7 +287,15 @@ s_callbacks::s_callbacks() throw()
 	time.timestamp_to_hours = timestamp_to_hours;
 	time.timestamp_to_minutes = timestamp_to_minutes;
 	time.timestamp_to_seconds = timestamp_to_seconds;
+	// time.local_datetime = local_datetime;
+
+
+        std::cerr << "s_callbacks constructor - this address: " << (void*)this << std::endl;
+    std::cerr << "local_datetime function pointer: " << (void*)local_datetime << std::endl;
 	time.local_datetime = local_datetime;
+    
+	
+	
 	time.local_datetime_delta = local_datetime_delta;
 	time.convert_to_timestamp = convert_to_timestamp;
 	time.convert_to_timestamp_delta = convert_to_timestamp_delta;
@@ -381,11 +391,18 @@ s_callbacks::s_callbacks() throw()
 	version.build = version_build;
 	version.branch = version_branch;
 	magic = MAGIC;
+
+
+	
 }
 
-extern CALLBACKS *callbacks = new s_callbacks;
+// extern CALLBACKS *callbacks = new s_callbacks;
 
-CALLBACKS *module_callbacks(void) { return callbacks; }
+CALLBACKS *module_callbacks(void) { 
+	static CALLBACKS *callbacks = new s_callbacks;
+    std::cerr << "Accessing module_callbacks, properties.get_property at: " << (void*)callbacks->properties.get_property << std::endl;
+	return callbacks; 
+}
 
 static MODULE *first_module = nullptr;
 static MODULE *last_module = nullptr;
@@ -414,6 +431,11 @@ MODULE *module_load(const char *file, /**< module filename, searches \p PATH */
 					int argc,		  /**< count of arguments in \p argv */
 					char *argv[])	  /**< arguments passed from the command line */
 {
+	std::cerr << "Entering module_load for module: " << file << std::endl;
+	CALLBACKS *callbacks = module_callbacks();
+	std::cerr << "Calling init for module " << file << " with callbacks at: " << (void*)callbacks << std::endl;
+    std::cerr << "properties.get_property in callbacks: " << (void*)callbacks->properties.get_property << std::endl;
+	
 	/* check for already loaded */
 	MODULE *mod = module_find((char *)file);
 
@@ -539,6 +561,7 @@ MODULE *module_load(const char *file, /**< module filename, searches \p PATH */
 				last_module->next = mod;
 				last_module = mod;
 				mod->oclass = previous ? previous->next : class_get_first_class();
+				std::cerr << "Passed callback table to module " << file << " with properties.get_property at: " << (void*)callbacks->properties.get_property << std::endl;
 			}
 			return release_and_return(last_module); // Release and return
 		}
@@ -656,6 +679,8 @@ MODULE *module_load(const char *file, /**< module filename, searches \p PATH */
 		output_verbose("%s(%d): module '%s' loaded ok", __FILE__, __LINE__, file);
 	}
 
+	std::cerr << "Entering module_load for module: " << file << std::endl;
+
 	/* get the initialization function */
 	init = (LIBINIT)DLSYM(hLib, "init");
 	if (init == nullptr)
@@ -670,6 +695,7 @@ MODULE *module_load(const char *file, /**< module filename, searches \p PATH */
 	else
 	{
 		output_verbose("%s(%d): module '%s' exports init()", __FILE__, __LINE__, file);
+		std::cerr << "Init function found for module: " << file << std::endl;
 	}
 
 	/* connect the module's exported data & functions */
@@ -710,13 +736,27 @@ MODULE *module_load(const char *file, /**< module filename, searches \p PATH */
 
 	/* call the initialization function */
 	errno = 0;
+	CALLBACKS *global_callbacks = module_callbacks();
+	std::cerr << "Calling init for module " << file << " with callbacks at: " << (void*)callbacks << std::endl;
+    std::cerr << "properties.get_property in callbacks: " << (void*)callbacks->properties.get_property << std::endl;
+
 	mod->oclass = (*init)(callbacks, (void *)mod, argc, argv);
+	std::cout << "Module " << mod->name << " initialized, oclass address: " <<  mod->oclass << std::endl;
+	std::cerr << "After init for module " << file << ", properties.get_property still at: " << (void*)callbacks->properties.get_property << std::endl;
+	std::cerr << "Passed callback table to module " << file << " with properties.get_property at: " << (void*)callbacks->properties.get_property << std::endl;
+
 	if (mod->oclass == nullptr && errno != 0)
 		return release_and_return(nullptr); // Release and retur
 
 	/* connect intrinsic functions */
 	for (c = mod->oclass; c != nullptr; c = c->next)
 	{
+		if (c->name == nullptr) {
+    	    output_error("CLASS name is null for module '%s' at address %p", mod->name, c);
+        	continue;
+   		}
+
+		
 		char fname[1024];
 		struct
 		{
@@ -740,6 +780,15 @@ MODULE *module_load(const char *file, /**< module filename, searches \p PATH */
 		int i;
 		for (i = 0; i < sizeof(map) / sizeof(map[0]); i++)
 		{
+			if (map[i].name == nullptr) {
+				output_error("map[%d].name is null", i);
+			}
+			if (isforeign && fmod == nullptr) {
+				output_error("fmod is null");
+			}
+			if (!isforeign && (c == nullptr || c->name == nullptr)) {
+				output_error("c or c->name is null");
+			}
 			snprintf(fname, sizeof(fname), "%s_%s", map[i].name, isforeign ? fmod : c->name);
 			if ((*(map[i].func) = (FUNCTIONADDR)DLSYM(hLib, fname)) == nullptr && !map[i].optional)
 			{

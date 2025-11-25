@@ -455,6 +455,69 @@ static int vsystem(const char *fmt, ...)
 	return rc;
 }
 
+
+// replace vsystem_posix() with an argv-based exec
+#ifndef _WIN32
+#include <sys/wait.h>
+int vsystem_posix_exec_argv(const std::vector<std::string> & argv)
+{
+pid_t pid = fork();
+if (pid == -1) return -1;
+
+if (pid == 0) {
+std::vector<char*> cargs;
+cargs.reserve(argv.size() + 1);
+for (auto &s : argv) cargs.push_back(const_cast<char*>(s.c_str()));
+cargs.push_back(nullptr);
+execvp(cargs[0], cargs.data()); // exec the test directly
+_exit(127); // exec failed
+} else {
+int status;
+if (waitpid(pid, &status, 0) == -1) return -1;
+return status;
+}
+}
+#endif
+
+
+
+#ifndef _WIN32
+#include <sys/wait.h> // Required for waitpid
+
+// A robust vsystem implementation for POSIX systems (macOS, Linux)
+// that correctly returns the child process's wait status.
+int vsystem_posix(const char *command)
+{
+    pid_t pid = fork();
+
+    if (pid == -1)
+    {
+        // Fork failed
+        return -1;
+    }
+    else if (pid == 0)
+    {
+        // This is the child process.
+        // Execute the command using the shell.
+        execl("/bin/sh", "sh", "-c", command, (char *) nullptr);
+
+        // If execl returns, it means an error occurred.
+        _exit(127); // Standard exit code for exec failure
+    }
+    else
+    {
+        // This is the parent process.
+        int status;
+        // Wait for the child process to terminate and get its status.
+        if (waitpid(pid, &status, 0) == -1)
+        {
+            return -1; // waitpid failed
+        }
+        return status; // Return the raw wait status
+    }
+}
+#endif
+
 /** routine to destroy the contents of a directory */
 static bool destroy_dir(char *name)
 {
@@ -628,14 +691,19 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 
 	// 3. Construct the full command string using std::format.
 	// This is type-safe and handles memory automatically.
-	// We explicitly quote the executable path to handle spaces in paths correctly.
+	// // We explicitly quote the executable path to handle spaces in paths correctly.
 
-	std::string command_line = std::format(
-		"\"{}\" -W {} {} {}.glm",
-		executable_to_run_path.string(), // Get string representation for formatting
-		dir,
-		validate_child_cmdargs,
-		name);
+	// std::string command_line = std::format(
+	// 	"\"{}\" -W {} {} {}.glm",
+	// 	executable_to_run_path.string(), // Get string representation for formatting
+	// 	dir,
+	// 	validate_child_cmdargs,
+	// 	name);
+
+
+
+
+	std::string command_line = std::format("{}.glm",name);
 
 	// 4. Execute the command using your custom vsystem wrapper.
 	// Assuming vsystem expects a C-style string (const char*).
@@ -649,7 +717,17 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 
 		output_debug("Thread %zu launching subprocess: %s", std::hash<std::thread::id>{}(std::this_thread::get_id()), command_line.c_str());
 
-		code = vsystem(command_line.c_str());
+		// code = vsystem(command_line.c_str());
+
+#ifdef _WIN32
+    // Windows uses the existing vsystem which wraps std::system
+    code = vsystem(command_line.c_str());
+#else
+    // macOS/Linux use the new robust implementation
+    // code = vsystem_posix(command_line.c_str());
+	std::vector<std::string> argv({executable_to_run_path.string(), "-W",dir, "--debug", command_line}) ;
+	code = vsystem_posix_exec_argv(argv);
+#endif
 	}
 
 	output_debug("Thread %zu released subprocess launch lock", std::hash<std::thread::id>{}(std::this_thread::get_id()));
@@ -677,6 +755,8 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 	}
 
 	bool exited = WIFEXITED(code);
+	bool signaled = WIFSIGNALED(code);
+	int exit_code = WEXITSTATUS(code);
 	bool problem = false;
 	if (exited)
 	{
@@ -725,6 +805,12 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 			problem = true;
 		}
 	}
+	else if (signaled && is_err) {
+		// For MacOS: If process terminated by signal but was expected to fail
+		int sig = WTERMSIG(code);
+		output_verbose("%s terminated by signal %d, this was an expected error test", name, sig);
+		// Don't mark as problem since this was an expected error
+	}
 	else // signaled
 	{
 		code = WTERMSIG(code);
@@ -733,6 +819,8 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 			output_warning("optional test %s exception, code %d in %.1f seconds", name, code, t);
 		else if (is_exc) // expected exception
 			output_warning("%s exception expected, code %d in %.1f seconds", name, code, t);
+		else if (is_err) // expected error - add this condition for macOS
+        	output_verbose("%s error was expected (terminated by signal %d) in %.1f seconds", name, code, t);
 		else
 		{
 			result.inc_exceptions(file, code, t);

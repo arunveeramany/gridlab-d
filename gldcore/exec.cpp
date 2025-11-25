@@ -982,6 +982,8 @@ static STATUS init_by_creation()
 			by a more detailed message that explains why it failed.  Follow
 			the guidance for that message and try again.
 		 */
+		exec_setexitcode(XC_EXCEPTION); // XC_RUNERR is appropriate for a simulation failure.
+
 		rv = FAILED;
 	}
 	ENDCATCH;
@@ -1012,6 +1014,7 @@ static int init_by_deferral_retry(std::vector<OBJECT *> &def_array, int def_ct)
 		if (global_init_max_defer <= tries)
 		{
 			output_error("init_by_deferral_retry(): exhausted initialization attempts");
+			exec_setexitcode(XC_EXCEPTION);
 			rv = FAILED;
 			break;
 		}
@@ -1370,6 +1373,8 @@ static STATUS precommit_all(TIMESTAMP t0)
 			by a more detailed message that explains why it failed.  Follow
 			the guidance for that message and try again.
 		 */
+		exec_setexitcode(XC_EXCEPTION); // XC_RUNERR is appropriate for a simulation failure.
+
 		rv = FAILED;
 	}
 	ENDCATCH;
@@ -1668,6 +1673,8 @@ static TIMESTAMP commit_all(TIMESTAMP t0, TIMESTAMP t2)
 			by a more detailed message that explains why it failed.  Follow
 			the guidance for that message and try again.
 		 */
+		exec_setexitcode(XC_EXCEPTION); // XC_RUNERR is appropriate for a simulation failure.
+
 		result = TS_INVALID;
 	}
 	ENDCATCH;
@@ -1796,6 +1803,8 @@ static STATUS finalize_all()
 			by a more detailed message that explains why it failed.  Follow
 			the guidance for that message and try again.
 		 */
+		exec_setexitcode(XC_EXCEPTION); // XC_RUNERR is appropriate for a simulation failure.
+
 		rv = FAILED;
 	}
 	ENDCATCH;
@@ -3188,6 +3197,9 @@ STATUS exec_step(int64 *passes, int64 *tsteps)
 	CATCH(const char *msg)
 	{
 		output_error("exec_step halted: %s", msg);
+		exec_setexitcode(XC_EXCEPTION); // XC_RUNERR is appropriate for a simulation failure.
+
+		
 		result = FAILED;
 	}
 	ENDCATCH
@@ -3252,6 +3264,7 @@ STATUS exec_start(int64 *passes, int64 *tsteps)
 	CATCH(const char *msg)
 	{
 		output_error("exec halted: %s", msg);
+		exec_setexitcode(XC_EXCEPTION);
 		exec_sync_set(sync_data_nullptr, TS_INVALID, false);
 		/* TROUBLESHOOT
 			This indicates that the core's solver shut down.  This message

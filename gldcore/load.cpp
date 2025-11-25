@@ -150,6 +150,8 @@ object <class>[:<spec>] { // spec may be <id>, or <startid>..<endid>, or ..<coun
 #include "link.h"
 #include "exec.h"
 
+#include "output.h"
+
 /* define this to use # for comment and % for macros (the way Version 1.x works) */
 /* #define OLDSTYLE	*/
 
@@ -4960,10 +4962,10 @@ static int object_name_id_count(PARSER, char *classname, int64 *count)
 
 static int object_block(PARSER, OBJECT *parent, OBJECT **subobj)
 {
-#define NAMEOBJ /* DPC: not sure what this does, but it doesn't seem to be harmful */
-#ifdef NAMEOBJ
-	static OBJECT nameobj;
-#endif
+// #define NAMEOBJ /* DPC: not sure what this does, but it doesn't seem to be harmful */
+// #ifdef NAMEOBJ
+// 	static OBJECT nameobj;
+// #endif
 	FULLNAME space;
 	CLASSNAME classname;
 	CLASS *oclass;
@@ -5077,10 +5079,11 @@ static int object_block(PARSER, OBJECT *parent, OBJECT **subobj)
 		REPEAT;
 		if (oclass->create != nullptr)
 		{
+			    std::cerr << "PARSER_DEBUG: Reached modified create call in object_block" << std::endl;
 #ifdef NAMEOBJ
 			obj = &nameobj;
 #endif
-			if ((*oclass->create)(&obj, parent) == 0)
+			if ((*oclass->create)(&obj, nullptr) == 0)
 			{
 				output_error_raw("%s(%d): create failed for object %s:%d", filename, linenum, classname, id);
 				REJECT;
@@ -5103,7 +5106,7 @@ static int object_block(PARSER, OBJECT *parent, OBJECT **subobj)
 				output_error_raw("%s(%d): create failed for object %s:%d", filename, linenum, classname, id);
 				REJECT;
 			}
-			object_set_parent(obj, parent);
+			object_set_parent(obj, nullptr);
 		}
 		if (id != -1 && load_set_index(obj, (OBJECTNUM)id) == FAILED)
 		{

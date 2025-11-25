@@ -16,6 +16,15 @@
 #include "enum_assert.h"
 #include "int_assert.h"
 
+// Forward declare the classes your module will register
+class complex_assert;
+class enum_assert;
+class int_assert;
+class double_assert;
+
+// 1. DEFINE the global callback pointer here and only here.
+CALLBACKS *callback = nullptr;
+
 
 //std::vector<std::pair<std::unique_ptr<gld_object>, std::string>> allocated_objects;
 
@@ -39,31 +48,61 @@ static_assert(true, "gld_assert.h successfully included.");
 
 
 
-EXPORT CLASS *init(CALLBACKS *fntable, MODULE *module, int argc, char *argv[])
+EXPORT CLASS* init(CALLBACKS *fntable, MODULE *mod, int argc, char *argv[])
 {
-	if (set_callback(fntable)==nullptr)
-	{
-		errno = EINVAL;
-		return nullptr;
-	}
+    callback = fntable;
+	std::cerr << "Received callback table in init_enum_assert at address: " << (void*)callback << std::endl;
 
-	new g_assert(module);
-	new double_assert(module);
-	new complex_assert(module);
-	new enum_assert(module);
-    new int_assert(module);
-	
+	if (!callback) {
+        std::cerr << "FATAL: init_enum_assert received null callback table" << std::endl;
+        return 0;
+    }
+    std::cerr << "Callback initialized at address: " << (void*)callback << std::endl;
+	std::cerr << "properties.get_property callback value: " << (void*)callback->properties.get_property << std::endl;
 
-	/*register_object <g_assert>(module);
-	register_object < double_assert>(module);
-	register_object < complex_assert>(module);
-	register_object < enum_assert>(module);
-	register_object < int_assert>(module);*/
+	if (!callback->properties.get_property) {
+        std::cerr << "FATAL: properties.get_property callback is null" << std::endl;
+        return 0;
+    }
+	std::cerr << "properties.get_property callback initialized at address: " << (void*)callback->properties.get_property << std::endl;
 
+	new g_assert(mod);
+    new enum_assert(mod); // Instantiate the class to trigger registration
+	new complex_assert(mod);
+	new int_assert(mod);
+	new double_assert(mod);
 
-	/* always return the first class registered */
+    // return 1;
 	return g_assert::oclass;
 }
+
+
+// 
+// EXPORT CLASS *init(CALLBACKS *fntable, MODULE *module, int argc, char *argv[])
+// {
+// 	if (set_callback(fntable)==nullptr)
+// 	{
+// 		errno = EINVAL;
+// 		return nullptr;
+// 	}
+
+// 	new g_assert(module);
+// 	new double_assert(module);
+// 	new complex_assert(module);
+// 	new enum_assert(module);
+//     new int_assert(module);
+	
+
+// 	/*register_object <g_assert>(module);
+// 	register_object < double_assert>(module);
+// 	register_object < complex_assert>(module);
+// 	register_object < enum_assert>(module);
+// 	register_object < int_assert>(module);*/
+
+
+// 	/* always return the first class registered */
+// 	return g_assert::oclass;
+// }
 
 
 EXPORT int do_kill(void*)
