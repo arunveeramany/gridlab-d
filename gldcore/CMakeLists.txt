@@ -142,17 +142,18 @@ set(SOURCE_LIST
 #if(NOT APPLE)
 add_executable(${GLD_MODULE_NAME} ${SOURCE_LIST})
 
-set_target_properties(gridlabd PROPERTIES POSITION_INDEPENDENT_CODE ON)
+if(APPLE)
+	set_target_properties(gridlabd PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-target_compile_options(gridlabd PRIVATE -fPIC)
-set_target_properties(gridlabd PROPERTIES LINK_FLAGS "-no-pie")
+	target_compile_options(gridlabd PRIVATE -fPIC)
+	set_target_properties(gridlabd PROPERTIES LINK_FLAGS "-no-pie")
 
-target_compile_options(gridlabd PRIVATE -fPIC -no-pie)
-target_link_options(gridlabd PRIVATE -no-pie)
+	target_compile_options(gridlabd PRIVATE -fPIC -no-pie)
+	target_link_options(gridlabd PRIVATE -no-pie)
 
-target_compile_options(gridlabd PRIVATE -fPIC -fno-PIE)
-target_link_options(gridlabd PRIVATE -no-pie -fno-PIE)
-
+	target_compile_options(gridlabd PRIVATE -fPIC -fno-PIE)
+	target_link_options(gridlabd PRIVATE -no-pie -fno-PIE)
+endif ()
 
 # Place this after your add_executable(gridlabd ...) command
 if(MSVC)
