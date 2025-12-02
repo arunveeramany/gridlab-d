@@ -60,6 +60,8 @@ public:
 
     OBJECT *target_obj;
 
+    bool minimal_output;
+
 public: // Does this need to be Private?
     RECORDER_MAP *rmap;
     TAPEOPS *ops;
