@@ -30,6 +30,12 @@
 #include <ctime>
 #include <cwctype>
 
+#include <iostream>
+#include <execinfo.h> // For backtrace
+#include <dlfcn.h>    // For dladdr
+#include <cxxabi.h>   // For demangling C++ names
+#include <cstdlib>
+
 #include "platform.h"
 #include "timestamp.h"
 #include "exception.h"
@@ -84,6 +90,51 @@ static char current_tzname[64], tzstd[32], tzdst[32];
 
 #define LOCALTIME(T) ((T)-tzoffset+(isdst((T))?3600:0))
 #define GMTIME(T) ((T)+tzoffset-(isdst((T)+tzoffset)?3600:0))
+
+
+// Helper function to print a demangled stack trace
+void print_stacktrace()
+{
+    const int MAX_FRAMES = 128;
+    void* addr_list[MAX_FRAMES];
+
+    // Retrieve current stack addresses
+    int addr_len = backtrace(addr_list, MAX_FRAMES);
+    if (addr_len == 0) {
+        std::cerr << "  <empty, possibly corrupt>" << std::endl;
+        return;
+    }
+
+    // Resolve addresses into symbols containing "mangled" names
+    char** symbol_list = backtrace_symbols(addr_list, addr_len);
+    if (symbol_list == nullptr) {
+        std::cerr << "  <error resolving symbols>" << std::endl;
+        return;
+    }
+
+    // Demangle and print each symbol
+    for (int i = 0; i < addr_len; i++)
+    {
+        Dl_info info;
+        if (dladdr(addr_list[i], &info) && info.dli_sname)
+        {
+            char* demangled = nullptr;
+            int status = -1;
+            demangled = abi::__cxa_demangle(info.dli_sname, NULL, 0, &status);
+            
+            fprintf(stderr, "  frame #%d: %s\n", i, (status == 0 ? demangled : info.dli_sname));
+            
+            free(demangled);
+        }
+        else
+        {
+            // Fallback to the raw symbol from backtrace_symbols
+            fprintf(stderr, "  frame #%d: %s\n", i, symbol_list[i]);
+        }
+    }
+
+    free(symbol_list);
+}
 
 /** Read the current timezone specification
 	@return a pointer to the first character in the timezone spec string
@@ -239,7 +290,8 @@ int local_datetime(TIMESTAMP ts, DATETIME *dt)
 
 	if( dt==nullptr || ts<TS_ZERO || ts>TS_MAX ) /* no buffer or timestamp out of range */
 	{
-		output_error("local_datetime(ts=%lli,...): invalid local_datetime request",ts);
+		output_error("local_datetime(ts=%lli,...): invalid local_datetime request in %s:%s:%d",ts, __FILE__, __FUNCTION__, __LINE__);
+		print_stacktrace();
 		return 0;
 	}
 #ifdef USE_TS_CACHE
@@ -263,7 +315,7 @@ int local_datetime(TIMESTAMP ts, DATETIME *dt)
 			This is the result of an internal core or module coding error which resulted in an
 			invalid UTC clock time being converted to local time.
 		*/
-		output_error("local_datetime(ts=%lli,...): invalid local_datetime request",ts);
+		output_error("local_datetime(ts=%lli,...): invalid local_datetime request in %s:%s:%d",ts, __FILE__, __FUNCTION__,__LINE__);
 		return 0;
 	}
 
@@ -373,7 +425,7 @@ int local_datetime_delta(double tsdbl, DATETIME *dt)
 
 	if( dt==nullptr || ts<TS_ZERO || ts>TS_MAX ) /* no buffer or timestamp out of range */
 	{
-		output_error("local_datetime_delta(ts=%lli,...): invalid local_datetime request",ts);
+		output_error("local_datetime_delta(ts=%lli,...): invalid local_datetime request in local_datetime_delta %s:%s:%d",ts, __FILE__,__FUNCTION__,__LINE__);
 		return 0;
 	}
 #ifdef USE_TS_CACHE
@@ -397,7 +449,7 @@ int local_datetime_delta(double tsdbl, DATETIME *dt)
 			This is the result of an internal core or module coding error which resulted in an
 			invalid UTC clock time being converted to local time.
 		*/
-		output_error("local_datetime_delta(ts=%lli,...): invalid local_datetime request",ts);
+		output_error("local_datetime_delta(ts=%lli,...): invalid local_datetime request in local_datetime_delta %s:%s:%s",ts, __FILE__,__FUNCTION__,__LINE__);
 		return 0;
 	}
 

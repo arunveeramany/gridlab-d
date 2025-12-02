@@ -21,6 +21,9 @@ private:
 	unsigned int n_states;
 	unsigned int state;
 	double *transition_probabilities;
+
+	PROPERTY *pTarget;
+	
 private:
 	void update_next_t(void);
 	void update_power(void);

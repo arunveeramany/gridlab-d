@@ -51,6 +51,13 @@
 
 std::vector<std::pair<gld_object*, std::string>> allocated_objects;
 
+EXPORT int gld_major = 5;
+EXPORT int gld_minor = 3;
+
+
+// 1. DEFINE the global callback pointer here and only here.
+CALLBACKS *callback = nullptr;
+
 
 template <typename T>
 void register_object(MODULE* module) {
@@ -101,13 +108,33 @@ void cleanup_tracked_objects() {
 
 EXPORT CLASS *init(CALLBACKS *fntable, MODULE *module, int argc, char *argv[])
 {
+	std::cerr << "Powerflow *init called" << std::endl;
 
-
+	 // Save the callback table pointer
+    callback = fntable;
 	
-	if (!set_callback(fntable)) {
-		errno = EINVAL;
-		return nullptr;
-	}
+	// Validate the callback structure before storing it
+    if (!callback) {
+        gl_error("FATAL: init_powerflow received null callback table");
+        return 0;
+    }
+
+	if (!callback->time.local_datetime) {
+        gl_error("FATAL: init_powerflow received invalid callback table - time functions not initialized");
+        gl_error("Callback address: %p", (void*)fntable);
+        gl_error("Expected valid time.local_datetime but got null");
+        return 0; // Fail module load instead of crashing later
+    }
+    
+    // Debug output
+    std::cerr << "Powerflow module - callback address: " << (void*)callback << std::endl;
+    std::cerr << "Powerflow module - time.local_datetime: " << (void*)callback->time.local_datetime << std::endl;
+
+
+	// if (!set_callback(fntable)) {
+	// 	errno = EINVAL;
+	// 	return nullptr;
+	// }
 
 	/* exported globals */
 	gl_global_create("powerflow::show_matrix_values",PT_bool,&show_matrix_values,nullptr);

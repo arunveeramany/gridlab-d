@@ -27,6 +27,70 @@
 // useful macros
 #define TO_HOURS(t) (((double)t) / (3600 * TS_SECOND))
 
+// EXPORT int gld_major = 5;
+// EXPORT int gld_minor = 3;
+
+extern "C" CALLBACKS *callback;
+
+
+// Similar to init_climate_object
+EXPORT int init_triplex_meter_object(OBJECT *obj)
+{
+    try {
+        triplex_meter *my = object_data<triplex_meter>(obj);
+        return my->init(obj->parent);
+    }
+    catch (const char *msg) {
+        gl_error("init_triplex_meter_object(obj=%d; %s) error: %s", obj->id, obj->name, msg);
+        return 0;
+    }
+}
+
+// EXPORT TIMESTAMP sync_triplex_meter(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+extern "C" TIMESTAMP sync_triplex_meter(void *object, ...)
+{
+
+	// Add early validation of callback
+    if (!callback) {
+        gl_error("sync_triplex_meter: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_triplex_meter: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
+
+	try {
+		triplex_meter *pObj = object_data<triplex_meter>(obj);
+		TIMESTAMP t1;
+		switch (pass) {
+		case PC_PRETOPDOWN:
+			return pObj->presync(t0);
+		case PC_BOTTOMUP:
+			return pObj->sync(t0);
+		case PC_POSTTOPDOWN:
+			t1 = pObj->postsync(obj->clock,t0);
+			obj->clock = t0;
+			return t1;
+		default:
+			throw "invalid pass request";
+		}
+		throw "invalid pass request";
+	}
+	SYNC_CATCHALL(triplex_meter);
+}
+
+
+
 // meter reset function
 EXPORT int64 triplex_meter_reset(OBJECT *obj)
 {
@@ -57,6 +121,15 @@ triplex_meter::triplex_meter(MODULE *mod) : triplex_node(mod)
 			throw "unable to register class triplex_meter";
 		else
 			oclass->trl = TRL_PROVEN;
+
+		// Validate callback existence before using it
+		if (callback == nullptr) {
+			gl_error("triplex_meter: callback table not initialized");
+			// Set safe defaults instead of crashing
+		}
+
+		oclass->init = (FUNCTIONADDR)init_triplex_meter_object;
+		oclass->sync = (FUNCTIONADDR)sync_triplex_meter;
 
 		// publish the class properties
 		if (gl_publish_variable(oclass,
@@ -250,6 +323,13 @@ int triplex_meter::init(OBJECT *parent)
 
 	OBJECT *obj = object_header(this);
 
+	// Verify callback table 
+    if (!callback || !callback->time.local_datetime) {
+        gl_error("triplex_meter:%d - callback or local_datetime function missing", obj->id);
+        return 0; // Fail initialization
+    }
+
+
 	if(power_market != 0){
 		price_prop = gl_get_property(power_market, market_price_name);
 		if(price_prop == 0){
@@ -345,6 +425,18 @@ TIMESTAMP triplex_meter::presync(TIMESTAMP t0)
 //Sync needed for reliability
 TIMESTAMP triplex_meter::sync(TIMESTAMP t0)
 {
+
+	if (!callback) {
+		gl_error("callback is null in %s", __FUNCTION__);
+		return FAILED;
+	}
+
+	if (!callback->time.local_datetime) {
+		gl_error("local_datetime function is null in %s", __FUNCTION__);
+		return FAILED;
+	}
+
+
 	int TempNodeRef;
 	OBJECT *obj = object_header(this);
 
@@ -1080,27 +1172,6 @@ EXPORT int init_triplex_meter(OBJECT *obj)
 	INIT_CATCHALL(triplex_meter);
 }
 
-EXPORT TIMESTAMP sync_triplex_meter(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
-{
-	try {
-		triplex_meter *pObj = object_data<triplex_meter>(obj);
-		TIMESTAMP t1;
-		switch (pass) {
-		case PC_PRETOPDOWN:
-			return pObj->presync(t0);
-		case PC_BOTTOMUP:
-			return pObj->sync(t0);
-		case PC_POSTTOPDOWN:
-			t1 = pObj->postsync(obj->clock,t0);
-			obj->clock = t0;
-			return t1;
-		default:
-			throw "invalid pass request";
-		}
-		throw "invalid pass request";
-	}
-	SYNC_CATCHALL(triplex_meter);
-}
 
 EXPORT int notify_triplex_meter(OBJECT *obj, int update_mode, PROPERTY *prop, char *value){
 	triplex_meter *n = object_data<triplex_meter>(obj);

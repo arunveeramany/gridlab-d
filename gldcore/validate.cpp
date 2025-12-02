@@ -480,9 +480,19 @@ return status;
 #endif
 
 
+// A simple signal handler for SIGCHLD.
+// Its only purpose is to catch the signal so we can control its behavior.
+void sigchld_handler(int sig)
+{
+    // The OS will still reap the terminated child process.
+    // By catching the signal, we prevent it from interrupting blocking calls
+    // when SA_RESTART is used.
+}
+
 
 #ifndef _WIN32
 #include <sys/wait.h> // Required for waitpid
+
 
 // A robust vsystem implementation for POSIX systems (macOS, Linux)
 // that correctly returns the child process's wait status.
@@ -1042,6 +1052,15 @@ char *encode_result(std::atomic<char> *data, size_t sz)
 /** main validation routine */
 int validate(int argc, char *argv[])
 {
+	struct sigaction sa;
+    sa.sa_handler = &sigchld_handler; // Set the handler
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART | SA_NOCLDSTOP; // Key flags: restart interrupted calls
+    if (sigaction(SIGCHLD, &sa, 0) == -1) {
+        perror("sigaction"); // Or use output_error
+        return FAILED;
+    }
+	
 	size_t i;
 	int redirect_found = 0;
 	strcpy(validate_cmdargs, "");

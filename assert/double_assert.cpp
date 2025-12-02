@@ -16,7 +16,7 @@
 EXPORT_CREATE(double_assert);
 EXPORT_INIT(double_assert);
 EXPORT_COMMIT(double_assert);
-EXPORT_NOTIFY(double_assert);
+//EXPORT_NOTIFY(double_assert);
 
 CLASS *double_assert::oclass = nullptr;
 // double_assert *double_assert::defaults = nullptr;
@@ -95,18 +95,90 @@ int double_assert::create(void)
 
 int double_assert::init(OBJECT *parent)
 {
-	const char *msg = "A non-positive value has been specified for within.";
-	if (within <= 0.0)
-		throw msg;
+	//const char *msg = "A non-positive value has been specified for within.";
+	//if (within <= 0.0)
+	//	throw msg;
 	/*  TROUBLESHOOT
 	Within is the range in which the check is being performed.  Please check to see that you have
 	specified a value for "within" and it is positive.
 	*/
-	return 1;
+	//return 1;
+
+	// if (parent == nullptr) {
+    //     gl_error("double_assert has no parent, cannot find target '%s'", target.get_string());
+    //     return 0; // Fail initialization
+    // }
+
+    // 1. Find the PROPERTY structure
+    // pTarget = gl_get_property(parent, target.get_string());
+    // if (pTarget == nullptr) {
+    //     gl_error("double_assert: target property '%s' not found in parent '%s'", target.get_string(), parent->name);
+    //     return 0;
+    // }
+
+    // 2. Verify property type
+    // if (pTarget->ptype != PT_double) {
+    //     gl_error("double_assert: target property '%s' is not of type double", target.get_string());
+    //     return 0;
+    // }
+
+    // 3. Get and cache the direct memory address
+    // pDouble = (double*)gl_get_addr(parent, target.get_string());
+    // if (pDouble == nullptr) {
+    //     gl_error("double_assert: unable to get address of target property '%s'", target.get_string());
+    //     return 0;
+    // }
+
+	pDouble = nullptr;
+
+    if (within <= 0.0) {
+        gl_warning("double_assert: a non-positive value has been specified for 'within'");
+    }
+
+	return 1; // Success
+
 }
 
 TIMESTAMP double_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 {
+
+	// Check if init was successful
+    // if (pDouble == nullptr) {
+    //     return TS_INVALID;
+    // }
+
+    // --- NEW "LAZY LINKING" BLOCK ---
+    // If pDouble is null, this is our first time running. Link the property now.
+    if (pDouble == nullptr)
+    {
+        OBJECT *parent = get_parent()->my();
+        if (parent == nullptr)
+        {
+            // This should not happen if the model is structured correctly
+            return TS_INVALID;
+        }
+
+        // 1. Find the PROPERTY structure
+        PROPERTY *pTarget = gl_get_property(parent, get_target().c_str());
+        if (pTarget == nullptr) {
+            gl_error("double_assert:%d: target property '%s' not found in parent '%s'", get_id(), get_target().c_str(), parent->name);
+            return TS_INVALID; // Stop simulation
+        }
+
+        // 2. Verify property type
+        if (pTarget->ptype != PT_double) {
+            gl_error("double_assert:%d: target property '%s' is not of type double", get_id(), get_target().c_str());
+            return TS_INVALID; // Stop simulation
+        }
+
+        // 3. Get and cache the direct memory address
+        pDouble = (double*)gl_get_addr(parent, get_target().c_str());
+        if (pDouble == nullptr) {
+            gl_error("double_assert:%d: unable to get address of target property '%s'", get_id(), get_target().c_str());
+            return TS_INVALID; // Stop simulation
+        }
+    }
+
 	// Check if this is an error test based on parent name
 	bool is_error_test = false;
 	if (get_parent() && get_parent()->get_name())
@@ -135,18 +207,18 @@ TIMESTAMP double_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 	}
 
 	// get the target property
-	gld_property target_prop(get_parent(), get_target().c_str());
-	if (!target_prop.is_valid() || target_prop.get_type() != PT_double)
-	{
-		gl_error("Specified target %s for %s is not valid.", get_target().c_str(), get_parent()->get_name());
+	// gld_property target_prop(get_parent(), get_target().c_str());
+	// if (!target_prop.is_valid() || target_prop.get_type() != PT_double)
+	// {
+		// gl_error("Specified target %s for %s is not valid.", get_target().c_str(), get_parent()->get_name());
 		/*  TROUBLESHOOT
 		Check to make sure the target you are specifying is a published variable of type double for the object
 		that you are pointing to.  Refer to the documentation of the command flag --modhelp, or
 		check the wiki page to determine which variables can be published within the object you
 		are pointing to with the assert function.
 		*/
-		return TS_INVALID; // Changed from 0 to TS_INVALID
-	}
+		// return TS_INVALID; // Changed from 0 to TS_INVALID
+	// }
 
 	// get the within range
 	double range = 0.0;
@@ -164,10 +236,13 @@ TIMESTAMP double_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 	}
 
 	// test the target value
-	double x;
-	target_prop.getp(x);
+	//double x;
+	//target_prop.getp(x);
+	double x = *pDouble;
+
 	if (status == ASSERT_TRUE)
 	{
+		// Get the current value using the direct, efficient pointer
 		double m = fabs(x - value);
 		if (_isnan(m) || m > range)
 		{

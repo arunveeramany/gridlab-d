@@ -1707,10 +1707,22 @@ void object_profile(OBJECT *obj, OBJECTPROFILEITEM pass, clock_t t)
 }
 
 
-TIMESTAMP _object_sync(OBJECT *obj,		/**< the object to synchronize */
-					   TIMESTAMP ts,	/**< the desire clock to sync to */
-					   PASSCONFIG pass) /**< the pass configuration */
+// TIMESTAMP _object_sync(OBJECT *obj,		/**< the object to synchronize */
+// 					   TIMESTAMP ts,	/**< the desire clock to sync to */
+// 					   PASSCONFIG pass) /**< the pass configuration */
+// {
+
+extern "C" TIMESTAMP _object_sync(void *object, ...)
 {
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP ts = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
+
+
 	CLASS *oclass = obj->oclass;
 	TIMESTAMP plc_time = TS_NEVER, sync_time;
 	TIMESTAMP effective_valid_to = std::min(obj->clock + global_skipsafe, obj->valid_to);

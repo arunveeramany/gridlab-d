@@ -66,7 +66,7 @@ EXPORT CLASS* init(CALLBACKS *fntable, MODULE *mod, int argc, char *argv[])
     }
 	std::cerr << "properties.get_property callback initialized at address: " << (void*)callback->properties.get_property << std::endl;
 
-	new g_assert(mod);
+	//new g_assert(mod);
     new enum_assert(mod); // Instantiate the class to trigger registration
 	new complex_assert(mod);
 	new int_assert(mod);

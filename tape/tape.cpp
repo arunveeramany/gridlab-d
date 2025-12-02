@@ -62,10 +62,13 @@ extern CLASS *collector_class;
 extern "C"
 {
 	int create_player(OBJECT **obj, OBJECT *parent);
-	TIMESTAMP sync_player(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass);
+	// TIMESTAMP sync_player(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass);
+	TIMESTAMP sync_player(void *object, ...);
 	int create_recorder(OBJECT **obj, OBJECT *parent);
 	int init_recorder(OBJECT *obj);
-	TIMESTAMP sync_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass);
+	// TIMESTAMP sync_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass);
+	TIMESTAMP sync_recorder(void *object, ...);
+
 }
 
 /* delta mode control */
@@ -133,6 +136,14 @@ char *strtok_t(char *str, const char *delim, char **nextp)
 #define strtok_s strtok_t
 #endif
 #endif
+
+
+// Required module version info to match the core
+EXPORT int gld_major = 5;
+EXPORT int gld_minor = 3;
+
+EXPORT CALLBACKS *callback = nullptr;
+
 
 static TAPEFUNCS *funcs = nullptr;
 static char1024 tape_gnuplot_path;
@@ -256,11 +267,30 @@ EXPORT CLASS *init(CALLBACKS *fntable, MODULE *module, int argc, char *argv[])
 	struct recorder my;
 	struct collector my2;
 
-	if (set_callback(fntable) == nullptr)
-	{
-		errno = EINVAL;
-		return nullptr;
-	}
+	callback = fntable;
+
+	std::cerr << "Received callback table in init_tape at address: " << (void*)callback << std::endl;
+
+	if (!callback) {
+        std::cerr << "FATAL: init_tape received null callback table" << std::endl;
+        return 0;
+    }
+    std::cerr << "Callback initialized at address: " << (void*)callback << std::endl;
+	std::cerr << "properties.get_property callback value: " << (void*)callback->properties.get_property << std::endl;
+
+	if (!callback->properties.get_property) {
+        std::cerr << "FATAL: properties.get_property callback is null" << std::endl;
+        return 0;
+    }
+	std::cerr << "properties.get_property callback initialized at address: " << (void*)callback->properties.get_property << std::endl;
+
+	
+
+	// if (set_callback(fntable) == nullptr)
+	// {
+	// 	errno = EINVAL;
+	// 	return nullptr;
+	// }
 
 	/* globals for the tape module*/
 #ifdef _WIN32
@@ -285,6 +315,8 @@ EXPORT CLASS *init(CALLBACKS *fntable, MODULE *module, int argc, char *argv[])
 	}
 	// fprintf(stderr, "Player class registered successfully with name=%s and size=%u\n", player_class->name, player_class->size);
 	player_class->trl = TRL_PROVEN;
+	
+
 	// player_class->create = (FUNCTIONADDR)create_player;
 	// player_class->sync = (FUNCTIONADDR)sync_player;
 	if (gl_publish_function(player_class, "create", (FUNCTIONADDR)create_player) == NULL)
@@ -552,6 +584,23 @@ EXPORT unsigned long preupdate(MODULE *module, TIMESTAMP t0, unsigned int64 dt)
 
 EXPORT SIMULATIONMODE interupdate(MODULE *module, TIMESTAMP t0, unsigned int64 delta_time, unsigned long dt, unsigned int iteration_count_val)
 {
+
+	std::cerr << "Received callback table in tape interupdate at address: " << (void*)callback << std::endl;
+
+	if (!callback) {
+        std::cerr << "FATAL: tape interupdate received null callback table" << std::endl;
+        return SM_ERROR;
+    }
+    std::cerr << "Callback initialized at address: " << (void*)callback << std::endl;
+	std::cerr << "properties.get_property callback value: " << (void*)callback->properties.get_property << std::endl;
+
+	if (!callback->properties.get_property) {
+        std::cerr << "FATAL: properties.get_property callback is null" << std::endl;
+        return SM_ERROR;
+    }
+	std::cerr << "properties.get_property callback initialized at address: " << (void*)callback->properties.get_property << std::endl;
+
+
 	DELTAOBJ_LIST *index_item;
 	SIMULATIONMODE mode = SM_EVENT;
 
@@ -794,6 +843,24 @@ EXPORT SIMULATIONMODE interupdate(MODULE *module, TIMESTAMP t0, unsigned int64 d
 
 EXPORT STATUS postupdate(MODULE *module, TIMESTAMP t0, unsigned int64 dt)
 {
+
+	std::cerr << "Received callback table in tape interupdate at address: " << (void*)callback << std::endl;
+
+	if (!callback) {
+        std::cerr << "FATAL: tape interupdate received null callback table" << std::endl;
+        return FAILED;
+    }
+    std::cerr << "Callback initialized at address: " << (void*)callback << std::endl;
+	std::cerr << "properties.get_property callback value: " << (void*)callback->properties.get_property << std::endl;
+
+	if (!callback->properties.get_property) {
+        std::cerr << "FATAL: properties.get_property callback is null" << std::endl;
+        return FAILED;
+    }
+	std::cerr << "properties.get_property callback initialized at address: " << (void*)callback->properties.get_property << std::endl;
+
+
+
 	DELTAOBJ_LIST *index_item;
 	OBJECT *obj = nullptr;
 	struct recorder *myrec = nullptr;

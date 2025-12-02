@@ -210,10 +210,15 @@ public:
 	double system_rated_capacity;	///< rated capacity of the system
 	gld::complex hvac_power;				///< actual power draw of the hvac system (includes fan and motor where applicable)
 
+
 	/* inherited res_enduse::load is hvac system load */
 	double hvac_load;
 	double total_load;
 	enduse total; /* total load */
+
+	double panel_energy_real;
+	double panel_energy_imag;
+
 	double heating_demand;
 	double cooling_demand;
 	double last_heating_load; ///< stores the previous heater load for use in the controller

@@ -83,10 +83,10 @@ extern "C" TIMESTAMP sync_climate(void *obj, ...)
     }
 
 	    // Add structure validation
-    std::cerr << "Callback structure size check:" << std::endl;
-    std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
-    std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
-    std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
+    // std::cerr << "Callback structure size check:" << std::endl;
+    // std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
+    // std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
+    // std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
     
 
 	if (!callback->time.local_datetime) {

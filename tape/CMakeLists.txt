@@ -21,7 +21,7 @@ add_library(${GLD_MODULE_NAME}
         histogram.h
         loadshape.cpp
         loadshape.h
-        main.cpp
+        #main.cpp
         memory.cpp
         memory.h
         multi_recorder.cpp
@@ -60,7 +60,19 @@ endif ()
 target_compile_options(${GLD_MODULE_NAME} PRIVATE ${GLD_COMPILE_OPTIONS})
 set_target_properties(${GLD_MODULE_NAME} PROPERTIES PREFIX "")
 target_include_directories(${GLD_MODULE_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/gldcore")
-target_link_libraries(${GLD_MODULE_NAME} PRIVATE ${OS_SPECIFIC_LIBRARIES})
+
+
+if(APPLE)
+    target_link_libraries(${GLD_MODULE_NAME} PRIVATE
+        gridlabd
+        ${OS_SPECIFIC_LIBRARIES}
+    )
+    target_link_options(${GLD_MODULE_NAME} PRIVATE -Wl,-export_dynamic)
+else ()
+    target_link_libraries(${GLD_MODULE_NAME} PRIVATE ${OS_SPECIFIC_LIBRARIES})
+endif ()
+
+
 if (GLD_USE_CLANG_TIDY)
     set_target_properties(${GLD_MODULE_NAME} PROPERTIES
             CXX_CLANG_TIDY "${CMAKE_CXX_CLANG_TIDY}"

@@ -25,7 +25,7 @@ target_include_directories(${GLD_MODULE_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/gldco
 # target_link_libraries(${GLD_MODULE_NAME} PRIVATE ${OS_SPECIFIC_LIBRARIES})
 
 target_link_libraries(climate PRIVATE
-    "-Wl,-undefined,dynamic_lookup"
+    gridlabd
     ${OS_SPECIFIC_LIBRARIES}
 )
 target_link_options(climate PRIVATE -Wl,-export_dynamic)

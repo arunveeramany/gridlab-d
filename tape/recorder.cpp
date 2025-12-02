@@ -40,7 +40,7 @@ static OBJECT *last_recorder = nullptr;
 
 EXPORT int create_recorder(OBJECT **obj, OBJECT *parent)
 {
-	*obj = gl_create_object(recorder_class);
+	*obj = gl_create_object	(recorder_class);
 	if (*obj != nullptr)
 	{
 		struct recorder *my = object_data<recorder>(*obj);
@@ -62,6 +62,7 @@ EXPORT int create_recorder(OBJECT **obj, OBJECT *parent)
 		my->status = TS_INIT;
 		my->trigger[0] = '\0';
 		my->format = 0;
+		my->target_obj = nullptr;
 		strcpy(my->plotcommands, "");
 		// my->target = gl_get_property(*obj,my->property,nullptr);
 		my->target = nullptr;
@@ -662,14 +663,15 @@ EXPORT int init_recorder(OBJECT *obj)
 	// Perform the property linking here, during the INIT pass.
 	// This is safe because all parent properties (even formulas)
 	// will have been evaluated by the time the global init pass runs.
-	my->target = link_properties(my, obj->parent, my->property);
+	// my->target = link_properties(my, obj->parent, my->property);
+	my->target = nullptr;
 
 	// Check for failure
-	if (my->target == nullptr)
-	{
-		gl_error("recorder %s: failed to link properties '%s'", obj->name ? (const char *)obj->name : "anonymous", (const char *)my->property);
-		return 0; // FAILED
-	}
+	// if (my->target == nullptr)
+	// {
+	// 	gl_error("recorder %s: failed to link properties '%s'", obj->name ? (const char *)obj->name : "anonymous", (const char *)my->property);
+	// 	return 0; // FAILED
+	// }
 
 	return 1; // SUCCESS
 }
@@ -740,10 +742,95 @@ int read_properties(struct recorder *my, OBJECT *obj, PROPERTY *prop, char *buff
 	return count;
 }
 
-EXPORT TIMESTAMP sync_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+// EXPORT TIMESTAMP sync_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+extern "C" TIMESTAMP sync_recorder(void *object, ...)
 {
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
+
+	if (!callback) {
+        gl_error("callback is null in sync_recorder");
+        return 0;  // Fail module load
+    }
+
+	// Add structure validation
+    // std::cerr << "Callback structure size check:" << std::endl;
+    // std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
+    // std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
+    // std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
+    
+
+	if (!callback->time.local_datetime) {
+        gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
+        return FAILED;
+    }
+
+
 	TIMESTAMP return_value;
 	struct recorder *my = object_data<struct recorder>(obj);
+
+	// --- "LAZY LINKING" BLOCK ---
+	if (my->target_obj == nullptr) // Use the new target_obj as the flag for linking
+	{
+		char obj_name[1024] = "";
+		char prop_name[1024] = "";
+		OBJECT *target_obj = obj->parent; // Default to parent if no object is specified
+
+		// Duplicate the property string so we can modify it
+		char prop_str[2048];
+		strncpy(prop_str, my->property.get_string(), sizeof(prop_str)-1);
+
+		// Find the last '.' to separate object name from property name
+		char *last_dot = strrchr(prop_str, '.');
+
+		if (last_dot != nullptr)
+		{
+			// Property is in the form "object_name.property_name"
+			strncpy(prop_name, last_dot + 1, sizeof(prop_name)-1);
+			*last_dot = '\0'; // Terminate the string at the dot
+			strncpy(obj_name, prop_str, sizeof(obj_name)-1);
+
+			// Find the object by its name
+			target_obj = gl_get_object(obj_name);
+			if (target_obj == nullptr)
+			{
+				gl_error("recorder:%d: target object '%s' not found for property '%s'", obj->id, obj_name, my->property.get_string());
+				my->status = TS_ERROR;
+				return TS_INVALID;
+			}
+		}
+		else
+		{
+			// Property is just "property_name", so the target is the parent
+			strncpy(prop_name, prop_str, sizeof(prop_name)-1);
+			if (target_obj == nullptr)
+			{
+				gl_error("recorder:%d: has no parent and property '%s' does not specify an object", obj->id, my->property.get_string());
+				my->status = TS_ERROR;
+				return TS_INVALID;
+			}
+		}
+
+		// Now get the property from the identified target object
+		my->target = gl_get_property(target_obj, prop_name, nullptr);
+		if (my->target == nullptr)
+		{
+			// gl_get_property already prints a "not found" error
+			my->status = TS_ERROR;
+			return TS_INVALID;
+		}
+
+		// If we got this far, linking was successful. Store the target object.
+		my->target_obj = target_obj;
+	}
+	// --- END OF LINKING BLOCK ---
+	
+
 	typedef enum
 	{
 		NONE = '\0',
@@ -761,15 +848,15 @@ EXPORT TIMESTAMP sync_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 		return TS_NEVER;
 	}
 
-	if (obj->parent == nullptr)
-	{
-		char tb[32];
-		sprintf(buffer, "'%s' lacks a parent object",
-				obj->name ? obj->name : (sprintf(tb, "recorder:%i", obj->id), tb));
-		close_recorder(my);
-		my->status = TS_ERROR;
-		return sync_recorder_error(&obj, &my, buffer);
-	}
+	// if (obj->parent == nullptr)
+	// {
+	// 	char tb[32];
+	// 	sprintf(buffer, "'%s' lacks a parent object",
+	// 			obj->name ? obj->name : (sprintf(tb, "recorder:%i", obj->id), tb));
+	// 	close_recorder(my);
+	// 	my->status = TS_ERROR;
+	// 	return sync_recorder_error(&obj, &my, buffer);
+	// }
 
 	if (my->last.ts < 1 && my->interval != -1)
 	{
@@ -778,18 +865,18 @@ EXPORT TIMESTAMP sync_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 	}
 
 	/* connect to property */
-	if (my->target == nullptr)
-	{
-		my->target = link_properties(my, obj->parent, my->property);
-	}
-	if (my->target == nullptr)
-	{
-		sprintf(buffer, "'%s' contains a property of %s %d that is not found", my->property.get_string(),
-				obj->parent->oclass->name, obj->parent->id);
-		close_recorder(my);
-		my->status = TS_ERROR;
-		return sync_recorder_error(&obj, &my, buffer);
-	}
+	// if (my->target == nullptr)
+	// {
+	// 	my->target = link_properties(my, obj->parent, my->property);
+	// }
+	// if (my->target == nullptr)
+	// {
+	// 	sprintf(buffer, "'%s' contains a property of %s %d that is not found", my->property.get_string(),
+	// 			obj->parent->oclass->name, obj->parent->id);
+	// 	close_recorder(my);
+	// 	my->status = TS_ERROR;
+	// 	return sync_recorder_error(&obj, &my, buffer);
+	// }
 
 	// update clock
 	if ((my->status == TS_OPEN) && (t0 > obj->clock))
@@ -817,7 +904,8 @@ EXPORT TIMESTAMP sync_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 	/* update property value */
 	if ((my->target != nullptr) && (my->interval == 0 || my->interval == -1))
 	{
-		if (read_properties(my, obj->parent, my->target, buffer, sizeof(buffer)) == 0)
+		//if (read_properties(my, obj->parent, my->target, buffer, sizeof(buffer)) == 0)
+		if (read_properties(my, my->target_obj, my->target, buffer, sizeof(buffer)) == 0)
 		{
 			sprintf(buffer, "unable to read property '%s' of %s %d", my->property.get_string(),
 					obj->parent->oclass->name, obj->parent->id);
@@ -829,7 +917,7 @@ EXPORT TIMESTAMP sync_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 	{
 		if ((t0 >= my->last.ts + my->interval) || ((t0 == my->last.ts) && (my->last.ns == 0)))
 		{
-			if (read_properties(my, obj->parent, my->target, buffer, sizeof(buffer)) == 0)
+			if (read_properties(my, my->target_obj, my->target, buffer, sizeof(buffer)) == 0)
 			{
 				sprintf(buffer, "unable to read property '%s' of %s %d", my->property.get_string(),
 						obj->parent->oclass->name, obj->parent->id);

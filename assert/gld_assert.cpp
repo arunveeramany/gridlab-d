@@ -20,10 +20,21 @@ EXPORT_NOTIFY_C(assert, g_assert);
 
 CLASS *g_assert::oclass = nullptr;
 // g_assert *g_assert::defaults = nullptr;
-static g_assert defaults_storage; // Static storage for default values
-g_assert *g_assert::defaults = &defaults_storage;
+// static g_assert defaults_storage; // Static storage for default values
+// g_assert *g_assert::defaults = &defaults_storage;
 
-g_assert::g_assert(MODULE *module)
+g_assert::g_assert()
+{
+    status = AS_INIT;
+    relation = TCOP_EQ;
+    target[0] = '\0';
+    part[0] = '\0';
+    value[0] = '\0';
+    value2[0] = '\0';
+}
+
+
+g_assert::g_assert(MODULE *module): g_assert()
 {
 
 	if (oclass == nullptr)
@@ -54,9 +65,9 @@ g_assert::g_assert(MODULE *module)
 								PT_KEYWORD, "inside", (enumeration)TCOP_IN,
 								PT_KEYWORD, "outside", (enumeration)TCOP_NI,
 								PT_char1024, "value", get_value_offset(), PT_DESCRIPTION, "the value to compare with for binary tests",
-								PT_char1024, "within", get_value2_offset(), PT_DESCRIPTION, "the bounds within which the value must bed compared",
-								PT_char1024, "lower", get_value_offset(), PT_DESCRIPTION, "the lower bound to compare with for interval tests",
-								PT_char1024, "upper", get_value2_offset(), PT_DESCRIPTION, "the upper bound to compare with for interval tests",
+								PT_char1024, "value2", get_value2_offset(), PT_DESCRIPTION, "the bounds within which the value must bed compared",
+								// PT_char1024, "lower", get_value_offset(), PT_DESCRIPTION, "the lower bound to compare with for interval tests",
+								// PT_char1024, "upper", get_value2_offset(), PT_DESCRIPTION, "the upper bound to compare with for interval tests",
 								nullptr) < 1)
 		{
 			char msg[256];
@@ -65,24 +76,24 @@ g_assert::g_assert(MODULE *module)
 		}
 
 		// memset(this,0,sizeof(g_assert));
-		status = AS_INIT;
-		relation = TCOP_EQ;
-		target[0] = '\0';
-		part[0] = '\0';
-		value[0] = '\0';
-		value2[0] = '\0';
+		// status = AS_INIT;
+		// relation = TCOP_EQ;
+		// target[0] = '\0';
+		// part[0] = '\0';
+		// value[0] = '\0';
+		// value2[0] = '\0';
 	}
 }
 
 int g_assert::create(void)
 {
 	// memcpy(this, defaults, sizeof(*this));
-	status = defaults->status;
-	relation = defaults->relation;
-	strcpy(target, defaults->target);
-	strcpy(part, defaults->part);
-	strcpy(value, defaults->value);
-	strcpy(value2, defaults->value2);
+	// status = defaults->status;
+	// relation = defaults->relation;
+	// strcpy(target, defaults->target);
+	// strcpy(part, defaults->part);
+	// strcpy(value, defaults->value);
+	// strcpy(value2, defaults->value2);
 
 	return 1; /* return 1 on success, 0 on failure */
 }

@@ -41,6 +41,9 @@ public:
     GL_ATOMIC(enumeration, within_mode);
     GL_ATOMIC(double,within);*/
 
+    PROPERTY *pTarget = nullptr;
+    double *pDouble = nullptr;
+
 public:
     static inline double_assert *get_defaults()
     {

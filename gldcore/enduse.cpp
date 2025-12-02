@@ -598,6 +598,11 @@ int convert_from_enduse(char *string,int size,void *data, PROPERTY *prop)
 
 int enduse_publish(CLASS *oclass, PROPERTYADDR struct_address, char *prefix)
 {
+	// if (prefix != nullptr && strcmp(prefix, "") != 0)
+    // {
+    //     return 1; // Do not publish individual enduse members for sub-objects
+    // }
+	
 	enduse *self=nullptr; // temporary enduse structure used for mapping variables
 	int result = 0;
     struct s_map_enduse{
@@ -634,86 +639,91 @@ int enduse_publish(CLASS *oclass, PROPERTYADDR struct_address, char *prefix)
 	prop->flags = 0;
 	class_add_property(oclass,prop);
 
-	for (p=prop_list;p<prop_list+sizeof(prop_list)/sizeof(prop_list[0]);p++)
-	{
-		char name[256], lastname[256];
+	//if (prefix == nullptr || strcmp(prefix, "") == 0)
+	//{
+		for (p = prop_list; p < prop_list + sizeof(prop_list) / sizeof(prop_list[0]); p++)
+		{
+			char name[256], lastname[256];
 
-		if(prefix == nullptr || strcmp(prefix,"")==0)
-		{
-			strcpy(name,p->name);
-		}
-		else
-		{
-			//strcpy(name,prefix);
-			//strcat(name, ".");
-			//strcat(name, p->name);
-			sprintf(name,"%s.%s",prefix,p->name);
-		}
+			if (prefix == nullptr || strcmp(prefix, "") == 0)
+			{
+				strcpy(name, p->name);
+			}
+			else
+			{
+				strcpy(name,prefix);
+				strcat(name, ".");
+				strcat(name, p->name);
+				// sprintf(name, "%s.%s", prefix, p->name);
+			}
 
-		if (p->type<_PT_LAST)
-		{
-			prop = property_malloc(p->type,oclass,name,p->addr+(int64)struct_address,nullptr);
-			prop->description = p->description;
-			prop->flags = p->flags;
-			class_add_property(oclass,prop);
-			result++;
-		}
-		else if (last==nullptr)
-		{
-			output_error("PT_KEYWORD not allowed unless it follows another property specification");
-			/* TROUBLESHOOT
-				The enduse_publish structure is not defined correctly.  This is an internal error and cannot be corrected by
-				users.  Contact technical support and report this problem.
-			 */
-			return -result;
-		}
-		else if (p->type==PT_KEYWORD) {
-			switch (last->type) {
-			case PT_enumeration:
-				if (!class_define_enumeration_member(oclass,last->name,p->name,p->type))
-				{
-					output_error("unable to publish enumeration member '%s' of enduse '%s'", p->name,last->name);
-					/* TROUBLESHOOT
-					The enduse_publish structure is not defined correctly.  This is an internal error and cannot be corrected by
-					users.  Contact technical support and report this problem.
-					 */
-					return -result;
-				}
-				break;
-			case PT_set:
-				if (!class_define_set_member(oclass,last->name,p->name,p->value))
-				{
-					output_error("unable to publish set member '%s' of enduse '%s'", p->name,last->name);
-					/* TROUBLESHOOT
-					The enduse_publish structure is not defined correctly.  This is an internal error and cannot be corrected by
-					users.  Contact technical support and report this problem.
-					 */
-					return -result;
-				}
-				break;
-			default:
-				output_error("PT_KEYWORD not supported after property '%s %s' in enduse_publish", class_get_property_typename(last->type), last->name);
+			if (p->type < _PT_LAST)
+			{
+				prop = property_malloc(p->type, oclass, name, p->addr + (int64)struct_address, nullptr);
+				prop->description = p->description;
+				prop->flags = p->flags;
+				class_add_property(oclass, prop);
+				result++;
+			}
+			else if (last == nullptr)
+			{
+				output_error("PT_KEYWORD not allowed unless it follows another property specification");
 				/* TROUBLESHOOT
-				The enduse_publish structure is not defined correctly.  This is an internal error and cannot be corrected by
-				users.  Contact technical support and report this problem.
+					The enduse_publish structure is not defined correctly.  This is an internal error and cannot be corrected by
+					users.  Contact technical support and report this problem.
 				 */
 				return -result;
 			}
-			continue;
-		}
-		else
-		{
-			output_error("property type '%s' not recognized in enduse_publish", class_get_property_typename(last->type));
-			/* TROUBLESHOOT
-				The enduse_publish structure is not defined correctly.  This is an internal error and cannot be corrected by
-				users.  Contact technical support and report this problem.
-			*/
-			return -result;
-		}
+			else if (p->type == PT_KEYWORD)
+			{
+				switch (last->type)
+				{
+				case PT_enumeration:
+					if (!class_define_enumeration_member(oclass, last->name, p->name, p->type))
+					{
+						output_error("unable to publish enumeration member '%s' of enduse '%s'", p->name, last->name);
+						/* TROUBLESHOOT
+						The enduse_publish structure is not defined correctly.  This is an internal error and cannot be corrected by
+						users.  Contact technical support and report this problem.
+						 */
+						return -result;
+					}
+					break;
+				case PT_set:
+					if (!class_define_set_member(oclass, last->name, p->name, p->value))
+					{
+						output_error("unable to publish set member '%s' of enduse '%s'", p->name, last->name);
+						/* TROUBLESHOOT
+						The enduse_publish structure is not defined correctly.  This is an internal error and cannot be corrected by
+						users.  Contact technical support and report this problem.
+						 */
+						return -result;
+					}
+					break;
+				default:
+					output_error("PT_KEYWORD not supported after property '%s %s' in enduse_publish", class_get_property_typename(last->type), last->name);
+					/* TROUBLESHOOT
+					The enduse_publish structure is not defined correctly.  This is an internal error and cannot be corrected by
+					users.  Contact technical support and report this problem.
+					 */
+					return -result;
+				}
+				continue;
+			}
+			else
+			{
+				output_error("property type '%s' not recognized in enduse_publish", class_get_property_typename(last->type));
+				/* TROUBLESHOOT
+					The enduse_publish structure is not defined correctly.  This is an internal error and cannot be corrected by
+					users.  Contact technical support and report this problem.
+				*/
+				return -result;
+			}
 
-		last = p;
-		strcpy(lastname,name);
-	}
+			last = p;
+			strcpy(lastname, name);
+		} // end for
+	//} // end if
 
 	return result;
 }

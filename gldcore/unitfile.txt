@@ -170,8 +170,8 @@ C=A*s ; Coulomb
 F=C/V ; Farad
 Ohm=V/A ; resistance
 H=Ohm*s ; Henry
-VA=V*A	; Volt-Amp
 var=1 V*A	; Volt-Amp reactive - IEEE designation
+VA=V*A	; Volt-Amp
 VAh=1 VA*h
 Wb=J/A ; Weber
 lm=cd*sr ; lumen
@@ -201,3 +201,4 @@ therm=100000 Btu
 ; @todo get rid of bad unit definitions
 ohm=Ohm ; should be capitalized but often isn't
 VAr=1 V*A	; Volt-Amp reactive - based on names, but doesn't match IEEE
+

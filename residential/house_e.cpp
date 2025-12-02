@@ -119,6 +119,9 @@
 #include "house_e.h"
 #include "gld_complex.h"
 
+extern "C" CALLBACKS *callback;
+
+
 #ifndef WIN32
 char *_strlwr(char *s)
 {
@@ -455,6 +458,15 @@ house_e::house_e(MODULE *mod) : residential_enduse(mod)
 			PT_complex,"hvac_power[kVA]",PADDR(hvac_power),PT_DESCRIPTION,"describes hvac load complex power consumption",
 			PT_double,"total_load[kVA]",PADDR(total_load),
 			PT_enduse,"panel",PADDR(total),PT_DESCRIPTION,"total panel enduse load",
+			// PT_complex,"panel.energy[kVAh]",PADDR(total.energy),PT_DESCRIPTION,"total energy consumed by the panel", 
+			
+			//PT_complex, "panel.power[kVA]", PADDR(total.power), PT_DESCRIPTION, "The total power consumption of the load (complex)",
+			PT_complex, "total.current[kVA]", PADDR(total.current), PT_DESCRIPTION, "The total current portion of the load (complex)",
+			PT_complex, "total.admittance[kVA]", PADDR(total.admittance), PT_DESCRIPTION, "The total admittance portion of the load (complex)",
+			PT_complex, "total.energy[kVAh]", PADDR(total.energy), PT_DESCRIPTION, "The total energy consumed by the load since the last meter reading",
+			PT_double, "panel.energy.real[kVAh]", PADDR(panel_energy_real), PT_DESCRIPTION, "Real component of total energy consumed",
+        	PT_double, "panel.energy.imag[kVAh]", PADDR(panel_energy_imag), PT_DESCRIPTION, "Imaginary component of total energy consumed",
+
 			PT_double,"design_internal_gain_density[W/sf]",PADDR(design_internal_gain_density),PT_DESCRIPTION,"average density of heat generating devices in the house",
 			PT_bool,"compressor_on",PADDR(compressor_on),
 			PT_int32,"compressor_count",PADDR(compressor_count),
@@ -2919,7 +2931,7 @@ TIMESTAMP house_e::sync(TIMESTAMP t0, TIMESTAMP t1)
 	update_Tevent();
 
 	/* solve for the time to the next event */
-	double dt2;
+	double dt2 = TS_NEVER;
 	
 	/* dt2 is for the next thermal event ... avoid calculating the next time to a given
 		temperature until the cycle time has elapse.
@@ -3219,8 +3231,8 @@ TIMESTAMP house_e::sync_thermostat(TIMESTAMP t0, TIMESTAMP t1)
 	*/
 	// change control mode if necessary
 
-	DATETIME t_next;
-	gl_localtime(t1,&t_next);
+	//DATETIME t_next;
+	//gl_localtime(t1,&t_next);
 
 	if (thermostat_control!=TC_NONE)
 	{
@@ -3386,7 +3398,7 @@ double house_e::sync_panel(double t0_dbl, double t1_dbl)
 	if(((t0_dbl >= simulation_beginning_time_dbl) && (t1_dbl > t0_dbl)) || (!heat_start)){
 		total.heatgain = 0;
 	}
-	total.total = total.power = total.current = total.admittance = gld::complex(0,0);
+	total.total = total.power = total.current = total.admittance = total.energy = gld::complex(0,0);
 
 	//Pull in the current powerflow values, if relevant
 	if (proper_meter_parent == true)
@@ -3541,6 +3553,7 @@ double house_e::sync_panel(double t0_dbl, double t1_dbl)
 				total.power += c->pLoad->power;
 				total.current += c->pLoad->current;
 				total.admittance += c->pLoad->admittance;
+				total.energy += c->pLoad->power * (t1_dbl - t0_dbl) / 3600.0;
 				if(((t0_dbl != 0) && (t1_dbl > t0_dbl)) || (!heat_start)){
 					total.heatgain += c->pLoad->heatgain;
 				}
@@ -3557,6 +3570,9 @@ double house_e::sync_panel(double t0_dbl, double t1_dbl)
 	//TIMESTAMP t = gl_enduse_sync(&total,t1); if (t<t2) t2 = t;
 
 	total_load = total.total.Mag();
+
+	panel_energy_real = total.energy.Re();
+	panel_energy_imag = total.energy.Im();
 
 	//Push up the values, if need to do so
 	//Pull in the current powerflow values, if relevant
@@ -4140,16 +4156,16 @@ EXPORT int create_house(OBJECT **obj, OBJECT *parent)
 		{
 			house_e *my = object_data<house_e>(*obj);
 
-			if (parent != nullptr)
-			{
-				gl_set_parent(*obj, parent);
-			}
-			else
-			{
-				gl_warning("create_house: parent is null — skipping gl_set_parent");
-			}
+			// if (parent != nullptr)
+			// {
+			// 	gl_set_parent(*obj, parent);
+			// }
+			// else
+			// {
+			// 	gl_warning("create_house: parent is null — skipping gl_set_parent");
+			// }
 
-			//gl_set_parent(*obj,parent);
+			gl_set_parent(*obj,parent);
 			my->create();
 			return 1;
 		}
@@ -4194,15 +4210,15 @@ extern "C" TIMESTAMP sync_house(void *object, ...)
     OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
 
 	if (!callback) {
-        gl_error("callback is null in init_climate");
+        gl_error("callback is null in sync_house");
         return 0;  // Fail module load
     }
 
 	    // Add structure validation
-    std::cerr << "Callback structure size check:" << std::endl;
-    std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
-    std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
-    std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
+    // std::cerr << "Callback structure size check:" << std::endl;
+    // std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
+    // std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
+    // std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
     
 
 	if (!callback->time.local_datetime) {

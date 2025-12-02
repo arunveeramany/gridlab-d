@@ -45,6 +45,8 @@ int appliance::create()
 int appliance::init(OBJECT *parent)
 {
 
+	pTarget=nullptr;
+
 	gl_warning("This device, %s, is considered very experimental and has not been validated.", get_name());
 
 	// check that duration is a vector

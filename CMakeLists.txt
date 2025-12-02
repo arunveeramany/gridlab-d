@@ -7,12 +7,12 @@ project(GridLAB-D)
 
 set(CMAKE_BUILD_TYPE Debug)
 
-
-# Force non-PIE executable on macOS
-set(CMAKE_OSX_ARCHITECTURES "arm64")
-set(CMAKE_OSX_SYSROOT "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk")
-set(CMAKE_EXE_LINKER_FLAGS "-Wl,-no_pie")
-
+if(APPLE)
+    # Force non-PIE executable on macOS
+    set(CMAKE_OSX_ARCHITECTURES "arm64")
+    set(CMAKE_OSX_SYSROOT "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk")
+    set(CMAKE_EXE_LINKER_FLAGS "-Wl,-no_pie")
+endif ()
 
 
 if(WIN32)

@@ -7,6 +7,8 @@
 #ifndef _GLD_ASSERT_H
 #define _GLD_ASSERT_H
 
+#include <stddef.h>
+
 #include "gridlabd.h"
 
 #undef g_assert
@@ -28,21 +30,13 @@ public:
     GL_ATOMIC(enumeration, relation);
     GL_STRING(char1024,value);
     GL_STRING(char1024,value2);*/
-    g_assert()
-    {
-        status = g_assert::AS_INIT; // status
-        strcpy(target, "");         // target
-        strcpy(part, "");           // part
-        relation = TCOP_EQ;         // relation
-        strcpy(value, "");          // value
-        strcpy(value2, "");         // value2
-    }
 
-    static inline g_assert *get_defaults()
-    {
 
-        return defaults;
-    }
+    // static inline g_assert *get_defaults()
+    // {
+
+    //     return defaults;
+    // }
 
 protected:
     enumeration status;   // Member variable of type `enumeration`.
@@ -56,8 +50,9 @@ public:
     // Static inline method to get the byte offset of the member `status`.
     static inline size_t get_status_offset(void)
     {
-        g_assert *current_defaults = get_defaults();
-        return reinterpret_cast<const char *>(&(current_defaults->status)) - reinterpret_cast<const char *>(current_defaults);
+        return offsetof(g_assert, status);
+        // g_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->status)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Inline function to get the value of `status`.
@@ -97,8 +92,9 @@ public:
     // Static inline method to get the byte offset of the member `relation`.
     static inline size_t get_relation_offset(void)
     {
-        g_assert *current_defaults = get_defaults();
-        return reinterpret_cast<const char *>(&(current_defaults->relation)) - reinterpret_cast<const char *>(current_defaults);
+        return offsetof(g_assert, relation);
+        // g_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->relation)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Inline function to get the value of `relation`.
@@ -137,8 +133,9 @@ public:
     // Static inline method to get the byte offset of the member ``
     static inline size_t get_value_offset(void)
     {
-        g_assert *current_defaults = get_defaults();
-        return reinterpret_cast<const char *>(&(current_defaults->value)) - reinterpret_cast<const char *>(current_defaults);
+        return offsetof(g_assert, value);
+        // g_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->value)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Inline function to get the value of `value`.
@@ -162,8 +159,8 @@ public:
     {
         auto &mtx = SharedMutexManager::get_mutex(my());
         std::unique_lock<std::shared_mutex> lock(mtx);
-        strncpy(target, p, sizeof(target) - 1);
-        target[sizeof(target) - 1] = '\0'; // Ensure null-termination
+        strncpy(value, p, sizeof(value) - 1);
+        value[sizeof(value) - 1] = '\0'; // Ensure null-termination
     }
 
     // Inline method to get the string representation of the `value` property.
@@ -182,8 +179,9 @@ public:
     // Static inline method to get the byte offset of the member `part`
     static inline size_t get_part_offset(void)
     {
-        g_assert *current_defaults = get_defaults();
-        return reinterpret_cast<const char *>(&(current_defaults->part)) - reinterpret_cast<const char *>(current_defaults);
+        return offsetof(g_assert, part);
+        // g_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->part)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Getter method to safely retrieve the string value of `part` as std::string
@@ -216,8 +214,9 @@ public:
     // Static inline method to get the byte offset of the member `target`
     static inline size_t get_target_offset(void)
     {
-        g_assert *current_defaults = get_defaults();
-        return reinterpret_cast<const char *>(&(current_defaults->target)) - reinterpret_cast<const char *>(current_defaults);
+        return offsetof(g_assert, target);
+        // g_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->target)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Getter method to safely retrieve the string value of `target` as std::string
@@ -250,8 +249,9 @@ public:
     // Static inline method to get the byte offset of the member `value2`
     static inline size_t get_value2_offset(void)
     {
-        g_assert *current_defaults = get_defaults();
-        return reinterpret_cast<const char *>(&(current_defaults->value2)) - reinterpret_cast<const char *>(current_defaults);
+        return offsetof(g_assert, value2);
+        // g_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->value2)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Getter method to safely retrieve the string value of `value2` as std::string
@@ -285,6 +285,7 @@ private:
 
 public:
     /* required implementations */
+    g_assert();
     g_assert(MODULE *module);
     int create(void);
     int init(OBJECT *parent);
@@ -294,7 +295,7 @@ public:
 
 public:
     static CLASS *oclass;
-    static g_assert *defaults;
+    // static g_assert *defaults;
 };
 
 #endif // _GLD_ASSERT_H

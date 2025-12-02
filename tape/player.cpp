@@ -500,8 +500,35 @@ TIMESTAMP player_read(OBJECT *obj) {
     return my->next.ns == 0 ? my->next.ts : (my->next.ts + 1); // 'break' statements sent here
 }
 
-EXPORT TIMESTAMP sync_player(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+// EXPORT TIMESTAMP sync_player(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+//{
+extern "C" TIMESTAMP sync_player(void *object, ...)
 {
+	// Add early validation of callback
+    if (!callback) {
+        gl_error("sync_player: callback is null");
+        return TS_INVALID;
+    }
+
+    // Add structure validation
+    // std::cerr << "Callback structure size check:" << std::endl;
+    // std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
+    // std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
+    // std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
+    
+    if (!callback->time.local_datetime) {
+        gl_error("sync_player: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
+
 	int return_val;
     struct player *my = object_data< player>(obj);
     TIMESTAMP t1 = (TS_OPEN == my->status) ? my->next.ts : TS_NEVER;

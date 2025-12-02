@@ -59,21 +59,20 @@ public:
         once_value = 0;
         operation = FULL;
         strcpy(target, "");
+        pTarget = nullptr;
+        pComplex = nullptr;
     }
     ~complex_assert()
     {
-
-        defaults = nullptr;
+        // delete defaults;
+        // defaults = nullptr;
     }
 
-    static inline complex_assert *get_defaults()
-    {
-        // if (!defaults)
-        // {
-        //     defaults = new complex_assert(); // Initialize lazily
-        // }
-        return defaults;
-    }
+    // static inline complex_assert *get_defaults()
+    // {
+        
+    //     return defaults;
+    // }
 
 protected:
     enumeration status;    // Member variable of type `enumeration`.
@@ -84,14 +83,19 @@ protected:
     complex once_value;    // Member variable of type `complex`.
     char1024 target;       // Protected member variable
 
-    PROPERTY *pTarget;
+    PROPERTY *pTarget = nullptr;
+    gld::complex *pComplex = nullptr;
+ 
+    int resolve_target_property();
+
 
 public:
     // Static inline method to get the byte offset of the member `status`.
     static inline size_t get_status_offset(void)
     {
-        complex_assert *current_defaults = get_defaults();
-        return reinterpret_cast<const char *>(&(current_defaults->status)) - reinterpret_cast<const char *>(current_defaults);
+        return offsetof(complex_assert, status);
+        // complex_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->status)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Inline function to get the value of `status`.
@@ -138,8 +142,9 @@ public:
     // Static inline method to get the byte offset of the member `operation`.
     static inline size_t get_operation_offset(void)
     {
-        complex_assert *current_defaults = get_defaults();
-        return reinterpret_cast<const char *>(&(current_defaults->operation)) - reinterpret_cast<const char *>(current_defaults);
+        return offsetof(complex_assert, operation);
+        //complex_assert *current_defaults = get_defaults();
+        //return reinterpret_cast<const char *>(&(current_defaults->operation)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Inline function to get the value of `operation`.
@@ -186,8 +191,9 @@ public:
     // Static inline method to get the byte offset of the member `once`.
     static inline size_t get_once_offset(void)
     {
-        complex_assert *current_defaults = get_defaults();
-        return reinterpret_cast<const char *>(&(current_defaults->once)) - reinterpret_cast<const char *>(current_defaults);
+        return offsetof(complex_assert, once);
+        // complex_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->once)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Inline function to get the value of `once`.
@@ -234,8 +240,9 @@ public:
     // Static inline method to get the byte offset of the member `within`.
     static inline size_t get_within_offset(void)
     {
-        complex_assert *current_defaults = get_defaults();
-        return reinterpret_cast<const char *>(&(current_defaults->within)) - reinterpret_cast<const char *>(current_defaults);
+        return offsetof(complex_assert, within);
+        // complex_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->within)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Inline function to get the value of `within`.
@@ -282,8 +289,9 @@ public:
     // Static inline method to get the byte offset of the member ``
     static inline size_t get_value_offset(void)
     {
-        complex_assert *current_defaults = get_defaults();
-        return reinterpret_cast<const char *>(&(current_defaults->value)) - reinterpret_cast<const char *>(current_defaults);
+        return offsetof(complex_assert, value);
+        // complex_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->value)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Inline function to get the value of `value`.
@@ -330,8 +338,9 @@ public:
     // Static inline method to get the byte offset of the member
     static inline size_t get_once_value_offset(void)
     {
-        complex_assert *current_defaults = get_defaults();
-        return reinterpret_cast<const char *>(&(current_defaults->once_value)) - reinterpret_cast<const char *>(current_defaults);
+        return offsetof(complex_assert, once_value);
+        // complex_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->once_value)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Inline function to get the value of `once_value`.
@@ -384,8 +393,11 @@ public:
     // Static inline method to get the byte offset of the member `target`
     static inline size_t get_target_offset(void)
     {
-        complex_assert *current_defaults = get_defaults();
-        return reinterpret_cast<const char *>(&(current_defaults->target)) - reinterpret_cast<const char *>(current_defaults);
+        return offsetof(complex_assert, target);
+        // complex_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->target)) - reinterpret_cast<const char *>(current_defaults);
+    
+
     }
 
     // Getter method to safely retrieve the string value of `target` as std::string
@@ -398,10 +410,25 @@ public:
 
     inline void set_target(const char *str)
     {
+        printf("DEBUG: Setting target to: '%s'\n", str ? str : "NULL");
+        if (!str) {
+            gl_error("Attempt to set target to null string");
+            return;
+        }
         auto &mtx = SharedMutexManager::get_mutex(my());
         std::unique_lock<std::shared_mutex> lock(mtx);
+
+        size_t len = strlen(str);
+        if (len >= sizeof(target)) {
+            gl_error("Target string too long: %zu >= %zu", len, sizeof(target));
+            return;
+        }
+        
         strncpy(target, str, sizeof(target) - 1);
         target[sizeof(target) - 1] = '\0'; // Ensure null-termination
+
+        printf("DEBUG: Target set successfully to: '%s'\n", target);
+
     }
 
     // Getter method to retrieve gld_property for `target`
@@ -426,7 +453,7 @@ public:
 public:
     static CLASS *oclass;
     // static std::shared_ptr<complex_assert> defaults;
-    static complex_assert *defaults;
+    // static complex_assert *defaults;
 };
 
 #endif
