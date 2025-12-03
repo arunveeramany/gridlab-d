@@ -69,7 +69,6 @@ EXPORT int create_recorder(OBJECT **obj, OBJECT *parent)
 		my->header_units = HU_DEFAULT;
 		my->line_units = LU_DEFAULT;
 		my->flush = -1; /* -1 (default): flush when buffer full, 0 flush each line, >0 flush seconds */
-		my->minimal_output = false;
 		return 1;
 	}
 	return 0;
@@ -685,62 +684,8 @@ int read_properties(struct recorder *my, OBJECT *obj, PROPERTY *prop, char *buff
     int offset = 0;
     int count = 0;
 
-    // --- START OF MODIFICATION ---
 
-    if (my->minimal_output)
-    {
-        // MINIMAL OUTPUT PATH: Process only the single property passed in, do not loop.
-        if (prop != nullptr)
-        {
-            // Get the generic memory address of the property's data.
-            void* pValue = get_addr(obj, prop);
-
-            if (pValue == nullptr) {
-                gl_warning("recorder (file: %s): could not get address for property '%s'", my->file, prop->name);
-                buffer[0] = '\0'; // Write an empty string
-                return 0; // Return 0 properties read
-            }
-
-            // Format the value based on its specific type.
-            switch (prop->ptype)
-            {
-                case PT_complex:
-                {
-                    complex* pComplex = (complex*)pValue;
-                    offset += sprintf(buffer + offset, "%+.6f%+.6fj", pComplex->Re(), pComplex->Im());
-                    break;
-                }
-                case PT_double:
-                {
-                    double* pDouble = (double*)pValue;
-                    offset += sprintf(buffer + offset, "%.6f", *pDouble);
-                    break;
-                }
-                case PT_int32:
-                {
-                    int32* pInt32 = (int32*)pValue;
-                    offset += sprintf(buffer + offset, "%d", *pInt32);
-                    break;
-                }
-                case PT_int64:
-                {
-                    int64* pInt64 = (int64*)pValue;
-                    offset += sprintf(buffer + offset, "%" FMT_INT64 "d", *pInt64);
-                    break;
-                }
-                default:
-                {
-                    // For any other data type, fall back to the safe default.
-                    offset += gl_get_value(obj, pValue, buffer + offset, size - offset - 1, prop);
-                    break;
-                }
-            }
-            buffer[offset] = '\0';
-            count = 1; // We processed exactly one property.
-        }
-    }
-    else
-    {
+   
         // ORIGINAL DEFAULT PATH: Iterate through the linked list of properties.
         // This entire for loop is now inside the 'else' block.
         PROPERTY *p;
@@ -802,137 +747,11 @@ int read_properties(struct recorder *my, OBJECT *obj, PROPERTY *prop, char *buff
             buffer[offset] = '\0';
             count++;
         }
-    }
 
-    // --- END OF MODIFICATION ---
 
     return count;
 }
 
-
-// int read_properties(struct recorder *my, OBJECT *obj, PROPERTY *prop, char *buffer, int size)
-// {
-// 	PROPERTY *p;
-// 	PROPERTY *p2 = 0;
-// 	PROPERTY fake;
-// 	int offset = 0;
-// 	int count = 0;
-// 	double value;
-// 	memset(&fake, 0, sizeof(PROPERTY));
-// 	fake.ptype = PT_double;
-// 	fake.unit = 0;
-// 	for (p = prop; p != nullptr && offset < size - 33; p = p->next)
-// 	{
-// 		if (offset > 0)
-// 			strcpy(buffer + offset++, ",");
-
-// 		if (my->minimal_output)
-//         {
-//             // NEW MINIMAL OUTPUT LOGIC:
-//             // Directly access the data and format it into a string, bypassing gl_get_value.
-
-//             // Get the generic memory address of the property's data.
-//             void* pValue = get_addr(obj, p);
-
-//             if (pValue == nullptr) {
-//                 // Handle case where address is not valid, write an empty string for this property
-//                 gl_warning("recorder:(file: %s): could not get address for property '%s'", my->file, p->name);
-//                 continue;
-//             }
-
-//             // Format the value based on its specific type.
-//             switch (p->ptype)
-//             {
-//                 case PT_complex:
-//                 {
-//                     // Cast the generic pointer to the correct type for this scope.
-//                     complex* pComplex = (complex*)pValue;
-//                     offset += sprintf(buffer + offset, "%+.6f%+.6fj", pComplex->Re(), pComplex->Im());
-//                     break;
-//                 }
-//                 case PT_double:
-//                 {
-//                     // Cast the generic pointer to the correct type for this scope.
-//                     double* pDouble = (double*)pValue;
-//                     offset += sprintf(buffer + offset, "%.6f", *pDouble);
-//                     break;
-//                 }
-//                 case PT_int32:
-//                 {
-//                     int32* pInt32 = (int32*)pValue;
-//                     offset += sprintf(buffer + offset, "%d", *pInt32);
-//                     break;
-//                 }
-//                 case PT_int64:
-//                 {
-//                     int64* pInt64 = (int64*)pValue;
-//                     offset += sprintf(buffer + offset, "%" FMT_INT64 "d", *pInt64);
-//                     break;
-//                 }
-//                 default:
-//                 {
-//                     // For any other data type we don't handle manually,
-//                     // fall back to the original method as a safe default.
-//                     offset += gl_get_value(obj, pValue, buffer + offset, size - offset - 1, p);
-//                     break;
-//                 }
-//             }
-//         }
-// 		else
-// 		{
-// 			// OLD LOGIC:
-// 			// Use gl_get_value which may be overridden by modules like powerflow
-// 			if (p->ptype == PT_double)
-// 			{
-// 				switch (my->line_units)
-// 				{
-// 				case LU_ALL:
-// 					// cascade into 'default', as prop->unit should've been set, if there's a unit available.
-// 				case LU_DEFAULT:
-// 					offset += gl_get_value(obj, get_addr(obj, p), buffer + offset, size - offset - 1, p); /* pointer => int64 */
-// 					break;
-// 				case LU_NONE:
-// 					// copy value into local value, use fake PROP, feed into gl_get_vaule
-// 					value = *gl_get_double(obj, p);
-// 					p2 = gl_get_property(obj, p->name, nullptr);
-// 					if (p2 == 0)
-// 					{
-// 						gl_error("unable to locate %s.%s for LU_NONE", obj->name, p->name);
-// 						return 0;
-// 					}
-// 					if (p->unit != 0 && p2->unit != 0)
-// 					{
-// 						if (0 == gl_convert_ex(p2->unit, p->unit, &value))
-// 						{
-// 							gl_error("unable to convert %s to %s for LU_NONE", p->unit, p2->unit);
-// 							return 0;
-// 						}
-// 						else
-// 						{																					// converted
-// 							offset += gl_get_value(obj, &value, buffer + offset, size - offset - 1, &fake); /* pointer => int64 */
-// 							;
-// 						}
-// 					}
-// 					else
-// 					{
-// 						offset += gl_get_value(obj, get_addr(obj, p), buffer + offset, size - offset - 1, p); /* pointer => int64 */
-// 						;
-// 					}
-// 					break;
-// 				default:
-// 					break;
-// 				}
-// 			}
-// 			else
-// 			{
-// 				offset += gl_get_value(obj, get_addr(obj, p), buffer + offset, size - offset - 1, p); /* pointer => int64 */
-// 			}
-// 		}
-// 		buffer[offset] = '\0';
-// 		count++;
-// 	}
-// 	return count;
-// }
 
 
 
@@ -969,58 +788,79 @@ extern "C" TIMESTAMP sync_recorder(void *object, ...)
 	struct recorder *my = object_data<struct recorder>(obj);
 
 	// --- "LAZY LINKING" BLOCK ---
-	if (my->target_obj == nullptr) // Use the new target_obj as the flag for linking
+	if (my->target_obj == nullptr) // Use target_obj as a flag for one-time linking
 	{
-		char obj_name[1024] = "";
-		char prop_name[1024] = "";
-		OBJECT *target_obj = obj->parent; // Default to parent if no object is specified
+		// This block now correctly handles single or multiple comma-separated properties.
+		char *item;
+		PROPERTY *first = nullptr, *last = nullptr;
+		PROPERTY *prop_copy;
+		PROPERTY *original_prop;
+		char1024 property_list_copy;
 
-		// Duplicate the property string so we can modify it
-		char prop_str[2048];
-		strncpy(prop_str, my->property.get_string(), sizeof(prop_str)-1);
-
-		// Find the last '.' to separate object name from property name
-		char *last_dot = strrchr(prop_str, '.');
-
-		if (last_dot != nullptr)
+		// Default target object is the recorder's parent.
+		OBJECT *target_obj = obj->parent;
+		if (target_obj == nullptr)
 		{
-			// Property is in the form "object_name.property_name"
-			strncpy(prop_name, last_dot + 1, sizeof(prop_name)-1);
-			*last_dot = '\0'; // Terminate the string at the dot
-			strncpy(obj_name, prop_str, sizeof(obj_name)-1);
-
-			// Find the object by its name
-			target_obj = gl_get_object(obj_name);
-			if (target_obj == nullptr)
-			{
-				gl_error("recorder:%d: target object '%s' not found for property '%s'", obj->id, obj_name, my->property.get_string());
-				my->status = TS_ERROR;
-				return TS_INVALID;
-			}
-		}
-		else
-		{
-			// Property is just "property_name", so the target is the parent
-			strncpy(prop_name, prop_str, sizeof(prop_name)-1);
-			if (target_obj == nullptr)
-			{
-				gl_error("recorder:%d: has no parent and property '%s' does not specify an object", obj->id, my->property.get_string());
-				my->status = TS_ERROR;
-				return TS_INVALID;
-			}
-		}
-
-		// Now get the property from the identified target object
-		my->target = gl_get_property(target_obj, prop_name, nullptr);
-		if (my->target == nullptr)
-		{
-			// gl_get_property already prints a "not found" error
+			gl_error("recorder:%d: has no parent object to record from", obj->id);
 			my->status = TS_ERROR;
 			return TS_INVALID;
 		}
 
-		// If we got this far, linking was successful. Store the target object.
+		// strtok modifies the string, so we must use a copy.
+		strcpy(property_list_copy, my->property.get_string());
+
+		// Iterate through each comma-separated property name.
+		for (item = strtok(property_list_copy, ","); item != nullptr; item = strtok(nullptr, ","))
+		{
+			// Trim leading whitespace from the item.
+			while (isspace(*item))
+				item++;
+
+			// Find the original property definition on the target object.
+			original_prop = gl_get_property(target_obj, item, nullptr);
+			if (original_prop == nullptr)
+			{
+				// gl_get_property already prints a "not found" error.
+				my->status = TS_ERROR;
+				// Clean up any partially created list before returning.
+				while (first != nullptr) {
+					prop_copy = first;
+					first = first->next;
+					free(prop_copy);
+				}
+				return TS_INVALID;
+			}
+
+			// Create a copy of the property to build our own clean linked list.
+			prop_copy = (PROPERTY *)malloc(sizeof(PROPERTY));
+			if (prop_copy == nullptr)
+			{
+				gl_error("recorder:%d: memory allocation failed", obj->id);
+				my->status = TS_ERROR;
+				return TS_INVALID;
+			}
+			memcpy(prop_copy, original_prop, sizeof(PROPERTY));
+			prop_copy->next = nullptr; // Explicitly terminate this new node.
+
+			// Append the new property copy to our list.
+			if (first == nullptr)
+				first = prop_copy; // This is the first item in the list.
+			else
+				last->next = prop_copy; // Link the previous item to this one.
+			last = prop_copy; // This is now the last item.
+		}
+
+		// Linking is complete. Store the head of our new property list and the target object.
+		my->target = first;
 		my->target_obj = target_obj;
+
+		// Final check to ensure at least one property was linked.
+		if (my->target == nullptr)
+		{
+			gl_error("recorder:%d: failed to link any properties from '%s'", obj->id, my->property.get_string());
+			my->status = TS_ERROR;
+			return TS_INVALID;
+		}
 	}
 	// --- END OF LINKING BLOCK ---
 	

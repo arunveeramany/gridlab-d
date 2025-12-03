@@ -371,7 +371,6 @@ EXPORT CLASS *init(CALLBACKS *fntable, MODULE *module, int argc, char *argv[])
 							PT_KEYWORD, "DEFAULT", LU_DEFAULT,
 							PT_KEYWORD, "ALL", LU_ALL,
 							PT_KEYWORD, "NONE", LU_NONE,
-							PT_bool, "minimal_output", ((char*)&(my.minimal_output) - (char*)&my),
 							nullptr) < 1)
 		GL_THROW(const_cast<char *>("Could not publish property output for recorder"));
 
