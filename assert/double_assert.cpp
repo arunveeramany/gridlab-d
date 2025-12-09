@@ -5,6 +5,7 @@
    a failure code.
 */
 
+
 #include <cerrno>
 #include <cmath>
 #include <cstdio>
@@ -20,17 +21,25 @@ EXPORT_COMMIT(double_assert);
 
 CLASS *double_assert::oclass = nullptr;
 // double_assert *double_assert::defaults = nullptr;
-static double_assert defaults_storage; // POD storage for defaults
-double_assert *double_assert::defaults = &defaults_storage;
+// static double_assert defaults_storage; // POD storage for defaults
+// double_assert *double_assert::defaults = &defaults_storage;
 
 double_assert::double_assert(MODULE *module)
 {
+	// defaults = this;
+	
+	
 	if (oclass == nullptr)
 	{
 		// register to receive notice for first top down. bottom up, and second top down synchronizations
-		oclass = gl_register_class(module, "double_assert", sizeof(double_assert), PC_AUTOLOCK | PC_OBSERVER);
-		if (oclass == nullptr)
-			throw "unable to register class double_assert";
+		//oclass = gl_register_class(module, "double_assert", sizeof(struct double_assert), PC_AUTOLOCK | PC_OBSERVER);
+		oclass = gld_class::create(module, "double_assert", sizeof(double_assert), PC_AUTOLOCK | PC_OBSERVER );
+
+		if (oclass == nullptr){
+			// throw "unable to register class double_assert";
+		    gl_error("unable to register class double_assert");
+            return; // Exit cleanly on failure
+		}
 		else
 			oclass->trl = TRL_PROVEN;
 
@@ -45,9 +54,10 @@ double_assert::double_assert(MODULE *module)
 								PT_KEYWORD, "ONCE_TRUE", (enumeration)ONCE_TRUE,
 								PT_KEYWORD, "ONCE_DONE", (enumeration)ONCE_DONE,
 								PT_enumeration, "within_mode", get_within_mode_offset(), PT_DESCRIPTION, "Method of applying tolerance",
-								PT_KEYWORD, "WITHIN_VALUE", (enumeration)IN_ABS,
-								PT_KEYWORD, "WITHIN_RATIO", (enumeration)IN_RATIO,
+								PT_KEYWORD, "IN_ABS", (enumeration)IN_ABS,
+								PT_KEYWORD, "IN_RATIO", (enumeration)IN_RATIO,
 								PT_double, "value", get_value_offset(), PT_DESCRIPTION, "Value to assert",
+								PT_double, "once_value", get_once_value_offset(), PT_DESCRIPTION, "Value for a single assert check",
 								PT_double, "within", get_within_offset(), PT_DESCRIPTION, "Tolerance for a successful assert",
 								PT_char1024, "target", get_target_offset(), PT_DESCRIPTION, "Property to perform the assert upon",
 								nullptr) < 1)
@@ -57,31 +67,33 @@ double_assert::double_assert(MODULE *module)
 			throw msg;
 		}
 
-		// defaults = this;
-		status = ASSERT_TRUE;
-		within = 0.0;
-		within_mode = IN_ABS;
-		value = 0.0;
-		once = ONCE_FALSE;
-		once_value = 0;
-		target.erase();
+		
 	}
+
+	status = ASSERT_TRUE;
+	within = 0.0;
+	within_mode = IN_ABS;
+	value = 0.0;
+	once = ONCE_FALSE;
+	once_value = 0;
+	target.erase();
+	
 }
 
 /* Object creation is called once for each object that is created by the core */
 int double_assert::create(void)
 {
 	// memcpy(this, defaults, sizeof(*this));
-	status = defaults->status;
-	within = defaults->within;
-	within_mode = defaults->within_mode;
-	value = defaults->value;
-	once = defaults->once;
-	once_value = defaults->once_value;
+	// status = defaults->status;
+	// within = defaults->within;
+	// within_mode = defaults->within_mode;
+	// value = defaults->value;
+	// once = defaults->once;
+	// once_value = defaults->once_value;
 
 	// Make sure target is a clean string
-	if (defaults->target[0] != '\0')
-		target.copy_from(defaults->target);
+	// if (defaults->target[0] != '\0')
+	// 	target.copy_from(defaults->target);
 
 	gl_output("double_assert defaults: status=%d value=%g within=%g within_mode=%d once=%d target='%s' once_value=%g",
 			  static_cast<int>(status),

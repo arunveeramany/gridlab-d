@@ -1684,8 +1684,21 @@ EXPORT int init_solar(OBJECT *obj, OBJECT *parent)
 	INIT_CATCHALL(solar);
 }
 
-EXPORT TIMESTAMP sync_solar(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+
+//EXPORT TIMESTAMP sync_solar(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+//{
+
+extern "C" TIMESTAMP sync_solar(void *object, ...)
 {
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t1 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
+
+
 	TIMESTAMP t2 = TS_NEVER;
 	solar *my = /*OBJECTDATA(obj,<>)*/ object_data<solar>(obj);
 	try

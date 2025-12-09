@@ -2110,8 +2110,21 @@ EXPORT int isa_waterheater(OBJECT *obj, char *classname)
 }
 
 
-EXPORT TIMESTAMP sync_waterheater(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+//EXPORT TIMESTAMP sync_waterheater(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+//{
+
+extern "C" TIMESTAMP sync_waterheater(void *object, ...)
 {
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
+
+
+
 	try {
 		waterheater *my = object_data<waterheater>(obj);
 		if (obj->clock <= ROUNDOFF)

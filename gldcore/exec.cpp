@@ -990,132 +990,273 @@ static STATUS init_by_creation()
 	return rv;
 }
 
-static int init_by_deferral_retry(std::vector<OBJECT *> &def_array, int def_ct)
+
+/**
+ * Retries the initialization of deferred objects until all are initialized or a deadlock is detected.
+ *
+ * @param def_array A vector of objects that were deferred during the initial pass.
+ * @return SUCCESS if all objects are initialized, FAILED otherwise.
+ */
+static STATUS init_by_deferral_retry(std::vector<OBJECT *> &def_array)
 {
-	OBJECT *obj;
-	int ct = 0, i = 0, obj_rv = 0;
-	// OBJECT **next_arr, **tarray;
-	std::vector<OBJECT *> next_arr(def_ct, nullptr);
-	std::vector<OBJECT *> tarray = {};
-	int rv = SUCCESS;
-	char b[64];
-	int retry = 1, tries = 0, exit_check = 0;
-	// tarray = nullptr;
+    int tries = 0;
 
-	// Split out the malloc so it can be checked
-	// next_arr = (OBJECT **)malloc(def_ct * sizeof(OBJECT *));
+    // Loop until the deferred list is empty or we detect a deadlock.
+    while (!def_array.empty())
+    {
+        if (tries++ >= global_init_max_defer)
+        {
+            output_error("init_by_deferral_retry(): exhausted maximum initialization attempts (%d)", global_init_max_defer);
+            for (const auto& obj : def_array)
+            {
+                char obj_name_buf[256];
+                output_error("  - object '%s' (id %d) is still uninitialized.", object_name(obj, obj_name_buf, sizeof(obj_name_buf)), obj->id);
+            }
+            exec_setexitcode(XC_EXCEPTION);
+            return FAILED;
+        }
 
-	if (global_init_max_defer < 1)
-	{
-		output_warning("init_max_defer is less than 1, disabling deferred initialization");
-	}
-	while (retry)
-	{
-		if (global_init_max_defer <= tries)
-		{
-			output_error("init_by_deferral_retry(): exhausted initialization attempts");
+        // Keep track of how many objects were deferred before this pass.
+        size_t last_deferred_count = def_array.size();
+        
+        // This vector will hold objects that are still deferred after this pass.
+        std::vector<OBJECT *> next_deferred_pass;
+
+        // Attempt to initialize each object in the current deferred list.
+        for (OBJECT *obj : def_array)
+        {
+            if (obj == nullptr || (obj->flags & OF_INIT))
+            {
+                // Should not happen, but good to be safe.
+                continue;
+            }
+            
+			            // Validate the parent pointer BEFORE any dereferencing
+            if (obj->parent != nullptr)
+            {
+                // Check if parent's oclass is valid (sanity check for memory corruption)
+                if (obj->parent->oclass == nullptr)
+                {
+                    char obj_name_buf[256];
+                    output_error("init_by_deferral_retry(): object '%s' has a corrupted parent pointer. Aborting.",
+                        object_name(obj, obj_name_buf, sizeof(obj_name_buf)));
+                    /* TROUBLESHOOT
+                        An object's parent pointer was found to be invalid during the deferred initialization retry sequence.
+                        This indicates a critical memory corruption issue in the core's object linking logic.
+                        This is a fatal error.
+                    */
+                    exec_setexitcode(XC_EXCEPTION);
+                    return FAILED;
+                }
+            }
+
+			if (obj->parent)
+            {
+                char obj_name_buf[256], parent_name_buf[256];
+                // Use output_verbose to get detailed debug info
+                output_verbose("RETRY_DEBUG: Attempting to init '%s'. Parent is '%s' (id:%d). Parent flags are 0x%08x.",
+                    object_name(obj, obj_name_buf, sizeof(obj_name_buf)),
+                    object_name(obj->parent, parent_name_buf, sizeof(parent_name_buf)),
+                    obj->parent->id,
+                    obj->parent->flags);
+            }
+
+			if (obj->parent != nullptr && (obj->parent->flags & OF_INIT) == 0)
+            {
+                // Parent is not ready, so this object must also be deferred for the next pass.
+                next_deferred_pass.push_back(obj);
+                continue; // Skip to the next object in the current pass.
+            }
+
+            int obj_rv = object_init(obj);
+            switch (obj_rv)
+            {
+                case 0: // Hard failure
+                {
+                    char b[64];
+                    output_error("init_by_deferral_retry(): object %s initialization failed", object_name(obj, b, 63));
+                    return FAILED;
+                }
+                case 1: // Success
+                {
+                    // std::unique_lock<std::shared_mutex> write_lock(SharedMutexManager::get_mutex(&obj->lock));
+                    // obj->flags |= OF_INIT;
+					// obj->flags &= ~OF_DEFERRED;
+                    // Do not add it to the next_deferred_pass list.
+                    break;
+                }
+                case 2: // Still deferred
+                {
+                    // Add it to the list for the next retry pass.
+                    next_deferred_pass.push_back(obj);
+                    break;
+                }
+            }
+        }
+
+        // After the pass, update the main deferred list.
+        def_array = next_deferred_pass;
+
+        // DEADLOCK DETECTION: If the number of deferred objects has not decreased, we're stuck.
+        if (!def_array.empty() && def_array.size() == last_deferred_count)
+        {
+            output_error("init_by_deferral_retry(): all uninitialized objects deferred, model is unable to initialize");
+            /* TROUBLESHOOT
+                This error indicates an initialization deadlock. All remaining uninitialized objects
+                are waiting for other objects that are also waiting, creating a circular dependency
+                that cannot be resolved. Check the model for logical errors in object parenting
+                or dependencies.
+            */
+            for (const auto& obj : def_array)
+            {
+                char obj_name_buf[256];
+                char parent_name_buf[256];
+                output_error("  - object '%s' is waiting for parent '%s' (id %d) which is also deferred.",
+                    object_name(obj, obj_name_buf, sizeof(obj_name_buf)),
+                    (obj->parent ? object_name(obj->parent, parent_name_buf, sizeof(parent_name_buf)) : "none"),
+                    (obj->parent ? obj->parent->id : -1));
+            }
+            // exec_setexitcode(XC_INIT);
 			exec_setexitcode(XC_EXCEPTION);
-			rv = FAILED;
-			break;
-		}
 
-		// Zero the temp array AND its tracking variable
-		// memset(next_arr, 0, def_ct * sizeof(OBJECT *));
-		// std::ranges::fill(next_arr, nullptr);  // Fill with nullptr
-		// std::fill(next_arr, next_arr + size, nullptr);
-		ct = 0;
+			return FAILED;
+        }
+    }
 
-		// initialize each object in def_array
-		for (i = 0; i < def_ct; ++i)
-		{
-			obj = def_array[i];
-			obj_rv = object_init(obj);
-			switch (obj_rv)
-			{
-			case 0:
-				rv = FAILED;
-				memset(b, 0, 64);
-				output_error("init_by_deferral_retry(): object %s initialization failed", object_name(obj, b, 63));
-				break;
-			case 1:
-			{
-				// wlock(&obj->lock);
-				// replace the above with SharedMutexManager
-				std::unique_lock<std::shared_mutex> write_lock(SharedMutexManager::get_mutex(&obj->lock));
-
-				obj->flags |= OF_INIT;
-				obj->flags -= OF_DEFERRED;
-				// wunlock(&obj->lock);
-				write_lock.unlock();
-				break;
-			}
-			case 2:
-				next_arr[ct] = obj;
-				++ct;
-				break;
-				// no default
-			}
-			if (rv == FAILED)
-			{
-				// free(next_arr);
-				next_arr = {}; // nullptr;
-				return rv;
-			}
-		}
-
-		if (ct == def_ct)
-		{
-			output_error("init_by_deferral_retry(): all uninitialized objects deferred, model is unable to initialize");
-			rv = FAILED;
-			retry = 0;
-
-			// See which iteration we exited on - multi-swap messes up pointers alternatingly
-			exit_check = tries % 2;
-
-			// Determine how to handle that iteration
-			if (exit_check == 1)
-			{
-				// Yes - fix the pointers before leaving, otherwise we'll double-free things!
-				tarray = def_array;
-				def_array = next_arr;
-				next_arr = tarray;
-			}
-			// Default else - we failed first try, so pointer swap-around below didn't occur
-		}
-		else if (0 == ct)
-		{
-			rv = SUCCESS;
-			retry = 0;
-
-			// See which iteration we exited on - multi-swap messes up pointers alternatingly
-			exit_check = tries % 2;
-
-			// Determine how to handle that iteration
-			if (exit_check == 1)
-			{
-				// Yes - fix the pointers before leaving, otherwise we'll double-free things!
-				tarray = def_array;
-				def_array = next_arr;
-				next_arr = tarray;
-			}
-			// Default else - we succeeded first try, so pointer swap-around below didn't occur
-		}
-		else
-		{
-			++tries;
-			retry = 1;
-			tarray = next_arr;
-			next_arr = def_array;
-			def_array = tarray;
-			def_ct = ct;
-			// three-point turn to swap the 'next' and the 'old' arrays, memset 0'ing at the top, along with ct reset
-		}
-	}
-
-	// free(next_arr);
-	next_arr = {}; // nullptr;
-	return rv;
+    // If we get here, the deferred list is empty, meaning everything was initialized.
+    return SUCCESS;
 }
+
+
+// static int init_by_deferral_retry(std::vector<OBJECT *> &def_array, int def_ct)
+// {
+// 	OBJECT *obj;
+// 	int ct = 0, i = 0, obj_rv = 0;
+// 	// OBJECT **next_arr, **tarray;
+// 	std::vector<OBJECT *> next_arr(def_ct, nullptr);
+// 	std::vector<OBJECT *> tarray = {};
+// 	int rv = SUCCESS;
+// 	char b[64];
+// 	int retry = 1, tries = 0, exit_check = 0;
+// 	// tarray = nullptr;
+
+// 	// Split out the malloc so it can be checked
+// 	// next_arr = (OBJECT **)malloc(def_ct * sizeof(OBJECT *));
+
+// 	if (global_init_max_defer < 1)
+// 	{
+// 		output_warning("init_max_defer is less than 1, disabling deferred initialization");
+// 	}
+// 	while (retry)
+// 	{
+// 		if (global_init_max_defer <= tries)
+// 		{
+// 			output_error("init_by_deferral_retry(): exhausted initialization attempts");
+// 			exec_setexitcode(XC_EXCEPTION);
+// 			rv = FAILED;
+// 			break;
+// 		}
+
+// 		// Zero the temp array AND its tracking variable
+// 		// memset(next_arr, 0, def_ct * sizeof(OBJECT *));
+// 		// std::ranges::fill(next_arr, nullptr);  // Fill with nullptr
+// 		// std::fill(next_arr, next_arr + size, nullptr);
+// 		ct = 0;
+
+// 		// initialize each object in def_array
+// 		for (i = 0; i < def_ct; ++i)
+// 		{
+// 			obj = def_array[i];
+// 			obj_rv = object_init(obj);
+// 			switch (obj_rv)
+// 			{
+// 			case 0:
+// 				rv = FAILED;
+// 				memset(b, 0, 64);
+// 				output_error("init_by_deferral_retry(): object %s initialization failed", object_name(obj, b, 63));
+// 				break;
+// 			case 1:
+// 			{
+// 				// wlock(&obj->lock);
+// 				// replace the above with SharedMutexManager
+// 				std::unique_lock<std::shared_mutex> write_lock(SharedMutexManager::get_mutex(&obj->lock));
+
+// 				obj->flags |= OF_INIT;
+// 				obj->flags -= OF_DEFERRED;
+// 				// wunlock(&obj->lock);
+// 				write_lock.unlock();
+// 				break;
+// 			}
+// 			case 2:
+// 				next_arr[ct] = obj;
+// 				++ct;
+// 				break;
+// 				// no default
+// 			}
+// 			if (rv == FAILED)
+// 			{
+// 				// free(next_arr);
+// 				next_arr = {}; // nullptr;
+// 				return rv;
+// 			}
+// 		}
+
+// 		if (ct == def_ct)
+// 		{
+// 			output_error("init_by_deferral_retry(): all uninitialized objects deferred, model is unable to initialize");
+// 			rv = FAILED;
+// 			retry = 0;
+
+// 			// See which iteration we exited on - multi-swap messes up pointers alternatingly
+// 			exit_check = tries % 2;
+
+// 			// Determine how to handle that iteration
+// 			if (exit_check == 1)
+// 			{
+// 				// Yes - fix the pointers before leaving, otherwise we'll double-free things!
+// 				tarray = def_array;
+// 				def_array = next_arr;
+// 				next_arr = tarray;
+// 			}
+// 			// Default else - we failed first try, so pointer swap-around below didn't occur
+// 		}
+// 		else if (0 == ct)
+// 		{
+// 			rv = SUCCESS;
+// 			retry = 0;
+
+// 			// See which iteration we exited on - multi-swap messes up pointers alternatingly
+// 			exit_check = tries % 2;
+
+// 			// Determine how to handle that iteration
+// 			if (exit_check == 1)
+// 			{
+// 				// Yes - fix the pointers before leaving, otherwise we'll double-free things!
+// 				tarray = def_array;
+// 				def_array = next_arr;
+// 				next_arr = tarray;
+// 			}
+// 			// Default else - we succeeded first try, so pointer swap-around below didn't occur
+// 		}
+// 		else
+// 		{
+// 			++tries;
+// 			retry = 1;
+// 			tarray = next_arr;
+// 			next_arr = def_array;
+// 			def_array = tarray;
+// 			def_ct = ct;
+// 			// three-point turn to swap the 'next' and the 'old' arrays, memset 0'ing at the top, along with ct reset
+// 		}
+// 	}
+
+// 	// free(next_arr);
+// 	next_arr = {}; // nullptr;
+// 	return rv;
+// }
+
+
+
 
 static int init_by_deferral()
 {
@@ -1133,6 +1274,18 @@ static int init_by_deferral()
 	obj = object_get_first();
 	while (obj != 0)
 	{
+		        if (obj->parent != nullptr)
+        {
+            // Validate parent pointer before object_init tries to use it
+            if (obj->parent->oclass == nullptr)
+            {
+                char obj_name_buf[256];
+                output_error("init_by_deferral(): object '%s' has corrupted parent pointer. Aborting.",
+                    object_name(obj, obj_name_buf, sizeof(obj_name_buf)));
+                exec_setexitcode(XC_EXCEPTION);
+                return FAILED;
+            }
+        }
 		obj_rv = object_init(obj);
 		switch (obj_rv)
 		{
@@ -1145,10 +1298,10 @@ static int init_by_deferral()
 		{
 			// wlock(&obj->lock);
 			// replace the above with SharedMutexManager
-			std::unique_lock<std::shared_mutex> write_lock(SharedMutexManager::get_mutex(&obj->lock));
-			obj->flags |= OF_INIT;
+			// std::unique_lock<std::shared_mutex> write_lock(SharedMutexManager::get_mutex(&obj->lock));
+			// obj->flags |= OF_INIT;
 			// wunlock(&obj->lock);
-			write_lock.unlock();
+			// write_lock.unlock();
 			break;
 		}
 		case 2:
@@ -1179,7 +1332,10 @@ static int init_by_deferral()
 	// recursecursecursive
 	if (def_ct > 0)
 	{
-		rv = static_cast<STATUS>(init_by_deferral_retry(def_array, def_ct));
+		// Trim the vector to the actual number of deferred objects before passing it.
+        def_array.resize(def_ct);
+
+		rv = init_by_deferral_retry(def_array);
 		if (rv == FAILED) // got hung up retrying
 		{
 			// free(def_array);

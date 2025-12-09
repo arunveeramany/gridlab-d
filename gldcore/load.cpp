@@ -1050,6 +1050,7 @@ static UNRESOLVED *first_unresolved = nullptr;
 	first_unresolved = item;
 	return item;
 }
+
 static int resolve_object(UNRESOLVED *item, char *filename)
 {
 	OBJECT *obj;
@@ -1152,10 +1153,30 @@ static int resolve_object(UNRESOLVED *item, char *filename)
 		return FAILED;
 	}
 	*(OBJECT **)(item->ref) = obj;
+
+	// VALIDATION: Verify the write was successful by checking if it's the parent field
+	if (item->by != nullptr)
+	{
+		// Check if this resolved to the object's parent field
+		void *expected_parent_addr = (void *)&(item->by->parent);
+		if (item->ref == expected_parent_addr)
+		{
+			// Resolved correctly to obj->parent field
+			if (item->by->parent != obj)
+			{
+				output_error_raw("%s(%d): parent pointer write verification failed for %s", 
+					filename, item->line, format_object(item->by));
+				return FAILED;
+			}
+		}
+	}
+
+
 	if ((item->flags & UR_RANKS) == UR_RANKS)
 		object_set_rank(obj, item->by->rank);
 	return SUCCESS;
 }
+
 static int resolve_double(UNRESOLVED *item, char *context)
 {
 	FULLNAME oname;
@@ -4400,6 +4421,7 @@ MODULE *load_get_current_module(void)
 	return current_module;
 }
 static int object_block(PARSER, OBJECT *parent, OBJECT **obj);
+
 static int object_properties(PARSER, CLASS *oclass, OBJECT *obj)
 {
 	PROPERTYNAME propname;
@@ -8143,8 +8165,83 @@ STATUS loadall_glm_roll(char *file) /**< a pointer to the first character in the
 	}
 
 	/* establish ranks */
+	// for (obj = first ? first : object_get_first(); obj != nullptr; obj = obj->next)
+	// 	object_set_parent(obj, obj->parent);
+
+    /* VALIDATE parent pointers IMMEDIATELY after resolution */
+    for (obj = first ? first : object_get_first(); obj != nullptr; obj = obj->next)
+    {
+        if (obj->parent != nullptr)
+        {
+            // Check if parent is in the valid object list
+            bool found = false;
+            for (OBJECT *check = first ? first : object_get_first(); check != nullptr; check = check->next)
+            {
+                if (check == obj->parent)
+                {
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (!found)
+            {
+                char objname[256];
+                output_error("Object '%s' parent pointer (%p) is INVALID after resolution!",
+                    object_name(obj, objname, sizeof(objname)), obj->parent);
+                output_error("Parent name was not resolved correctly. Check that parent object exists.");
+                status = FAILED;
+                goto Failed;
+            }
+        }
+    }
+
+	/* establish ranks */
 	for (obj = first ? first : object_get_first(); obj != nullptr; obj = obj->next)
-		object_set_parent(obj, obj->parent);
+	{
+		if (obj->parent != nullptr)
+		{
+			char objname[256];
+			
+			// SAFETY CHECK: Detect stack addresses (on macOS, stack is around 0x16fd...)
+			// Heap addresses should be in a different range
+			// uintptr_t parent_addr = (uintptr_t)obj->parent;
+			// uintptr_t stack_addr_low = 0x0000000016000000ULL;
+			// uintptr_t stack_addr_high = 0x0000000017000000ULL;
+			
+			// if (parent_addr >= stack_addr_low && parent_addr <= stack_addr_high)
+			// {
+			// 	output_error("Object '%s' has parent pointer pointing to STACK memory (%p) - this is a critical bug!",
+			// 		object_name(obj, objname, sizeof(objname)), obj->parent);
+			// 	output_error("  This indicates parent was set to a temporary/local variable address");
+			// 	status = FAILED;
+			// 	goto Failed;
+			// }
+			
+			// Additional validation: check if parent is in the valid object list
+			bool found_parent = false;
+			for (OBJECT *check = first ? first : object_get_first(); check != nullptr; check = check->next)
+			{
+				if (check == obj->parent)
+				{
+					found_parent = true;
+					break;
+				}
+			}
+			
+			if (!found_parent)
+			{
+				output_error("Object '%s' has parent pointer (%p) that doesn't point to any valid object!",
+					object_name(obj, objname, sizeof(objname)), obj->parent);
+				status = FAILED;
+				goto Failed;
+			}
+			
+			// Only NOW is it safe to dereference
+			object_set_parent(obj, obj->parent);
+		}
+	}
+	
 	output_verbose("%d object%s loaded", object_get_count(), object_get_count() > 1 ? "s" : "");
 	goto Done;
 Failed:

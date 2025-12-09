@@ -1629,10 +1629,14 @@ int object_set_parent(OBJECT *obj,	  /**< the object to set */
 		output_error("object %s tried to set itself as its parent", object_name(obj, b, 63));
 		return -1;
 	}
+
 	obj->parent = parent;
-	obj->child_count++;
-	if (parent != nullptr)
+
+	if (parent != nullptr){
+		parent->child_count++;
 		return set_rank(parent, obj->rank, nullptr);
+	}
+
 	return obj->rank;
 }
 
@@ -1896,8 +1900,59 @@ int object_init(OBJECT *obj) /**< the object to initialize */
 	clock_t t = (clock_t)exec_clock();
 	int rv = 1;
 	obj->clock = global_starttime;
-	if (obj->oclass->init != nullptr)
+
+	    // VALIDATION WITH DEBUG OUTPUT
+    if (obj->parent != nullptr)
+    {
+        char objname[256];
+        bool parent_valid = false;
+        
+        fprintf(stderr, "DEBUG: Validating parent %p for object %s\n", 
+                obj->parent, object_name(obj, objname, sizeof(objname)));
+        
+        // Check: parent must be in the global object list
+        OBJECT *check = object_get_first();
+        int check_count = 0;
+        while (check != nullptr)
+        {
+            check_count++;
+            if (check == obj->parent)
+            {
+                parent_valid = true;
+                fprintf(stderr, "DEBUG: Found valid parent at position %d\n", check_count);
+                break;
+            }
+            check = check->next;
+        }
+        
+        fprintf(stderr, "DEBUG: Checked %d objects, parent_valid = %d\n", check_count, parent_valid);
+        
+        if (!parent_valid)
+        {
+            output_error("object %s (id:%d) has INVALID parent pointer (%p)!", 
+                object_name(obj, objname, sizeof(objname)), obj->id, obj->parent);
+            output_error("Parent was NOT found in object list of %d objects", check_count);
+            // obj->parent = nullptr;
+            return 0;
+        }
+        
+        // Verify oclass
+        if (obj->parent->oclass == nullptr)
+        {
+            output_error("object %s has corrupted parent (null oclass)!", 
+                object_name(obj, objname, sizeof(objname)));
+            obj->parent = nullptr;
+            return 0;
+        }
+    }
+	
+	if (obj->oclass->init != nullptr){
 		rv = (int)(*(obj->oclass->init))(obj, obj->parent);
+		if (rv == 1)
+		{
+			obj->flags |= OF_INIT;
+		}
+	}
 	object_profile(obj, OPI_INIT, t);
 	if (global_debug_output > 0)
 		output_debug("object %s:%d init -> %s", obj->oclass->name, obj->id, rv ? "ok" : "failed");

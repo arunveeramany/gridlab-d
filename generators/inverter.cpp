@@ -627,7 +627,7 @@ int inverter::create(void)
 }
 
 /* Object initialization is called once after all object have been created */
-int inverter::init(OBJECT *parent)
+int inverter::init(OBJECT *parent_arg)
 {
 	OBJECT *obj = object_header(this);
 	PROPERTY *pval = nullptr;
@@ -657,12 +657,21 @@ int inverter::init(OBJECT *parent)
 	WT_is_connected = false;
 	STATUS fxn_return_status;
 
+	// ALWAYS use obj->parent, not the parameter
+    OBJECT *parent = obj->parent;
+
 	if(parent != nullptr){
 		if((parent->flags & OF_INIT) != OF_INIT){
 			char objname[256];
 			gl_verbose("inverter::init(): deferring initialization on %s", gl_name(parent, objname, 255));
 			return 2; // defer
 		}
+	}
+	else if (parent == nullptr && obj->parent != nullptr)
+	{
+		// Parent pointer exists in obj but passed as null - this shouldn't happen
+		gl_error("inverter::init(): parent pointer mismatch!");
+		return 0;
 	}
 	// construct circuit variable map to meter
 	std::string tempV, tempQ, tempf, tempP;
@@ -9700,8 +9709,38 @@ EXPORT int init_inverter(OBJECT *obj, OBJECT *parent)
 	INIT_CATCHALL(inverter);
 }
 
-EXPORT TIMESTAMP sync_inverter(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+//EXPORT TIMESTAMP sync_inverter(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+//{
+
+extern "C" TIMESTAMP sync_inverter(void *object, ...)
 {
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t1 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
+
+	if (!callback) {
+        gl_error("callback is null in sync_recorder");
+        return 0;  // Fail module load
+    }
+
+	// Add structure validation
+    // std::cerr << "Callback structure size check:" << std::endl;
+    // std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
+    // std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
+    // std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
+    
+
+	if (!callback->time.local_datetime) {
+        gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
+        return FAILED;
+    }
+
+
+
 	TIMESTAMP t2 = TS_NEVER;
 	inverter *my = /*OBJECTDATA(obj,inverter)*/ object_data<inverter>(obj);
 	try

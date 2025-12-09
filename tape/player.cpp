@@ -138,6 +138,20 @@ PROPERTY *player_link_properties(struct player *player, OBJECT *obj, char *prope
 
 int player_write_properties(struct player *my, OBJECT *thisplyr, OBJECT *obj, PROPERTY *prop, const char *buffer)
 {
+
+    // LOGIC: Check the property type at the very beginning.
+    // We also check that the property list is not a comma-separated list,
+    // as this logic only handles a single property target.
+    if (prop->next == nullptr && (prop->ptype == PT_char1024 || prop->ptype == PT_char256))
+    {
+        // STRING PASS-THROUGH: The target is a single string property.
+        // Perform a direct, safe memory copy and bypass all conversion logic.
+        char *target_buffer = (char*)((int64)(obj) + (int64)(prop->addr));
+        strncpy(target_buffer, buffer, prop->size - 1);
+        target_buffer[prop->size - 1] = '\0'; // Ensure null termination
+        return 1; // Return success
+    }
+
     int count = 0;
     const char delim[] = ",\n\r\t";
     char1024 bufcpy;
@@ -500,6 +514,10 @@ TIMESTAMP player_read(OBJECT *obj) {
     return my->next.ns == 0 ? my->next.ts : (my->next.ts + 1); // 'break' statements sent here
 }
 
+
+
+
+
 // EXPORT TIMESTAMP sync_player(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 //{
 extern "C" TIMESTAMP sync_player(void *object, ...)
@@ -738,6 +756,8 @@ extern "C" TIMESTAMP sync_player(void *object, ...)
 
     obj->clock = t0;
     return t1;
+
+    
 }
 
 /**@}*/

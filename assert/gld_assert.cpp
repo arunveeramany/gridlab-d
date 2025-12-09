@@ -65,7 +65,8 @@ g_assert::g_assert(MODULE *module): g_assert()
 								PT_KEYWORD, "inside", (enumeration)TCOP_IN,
 								PT_KEYWORD, "outside", (enumeration)TCOP_NI,
 								PT_char1024, "value", get_value_offset(), PT_DESCRIPTION, "the value to compare with for binary tests",
-								PT_char1024, "value2", get_value2_offset(), PT_DESCRIPTION, "the bounds within which the value must bed compared",
+								// PT_char1024, "reference_value", get_value_offset(), PT_DESCRIPTION, "alias for 'value' to solve player name conflicts",
+								PT_char1024, "within", get_value2_offset(), PT_DESCRIPTION, "the bounds within which the value must bed compared",
 								// PT_char1024, "lower", get_value_offset(), PT_DESCRIPTION, "the lower bound to compare with for interval tests",
 								// PT_char1024, "upper", get_value2_offset(), PT_DESCRIPTION, "the upper bound to compare with for interval tests",
 								nullptr) < 1)
@@ -164,6 +165,7 @@ TIMESTAMP g_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 g_assert::ASSERTSTATUS g_assert::evaluate_status(void)
 {
 	gld_property target_prop(get_parent(), get_target().c_str());
+
 	if (get_part() == "")
 		return target_prop.compare(relation, get_value().c_str(), get_value2().c_str()) ? AS_TRUE : AS_FALSE;
 	else

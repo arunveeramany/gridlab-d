@@ -241,8 +241,19 @@ int read_aggregates(std::vector<std::shared_ptr<struct s_aggregate>>& aggregates
 }
 
 
-TIMESTAMP sync_collector(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+//TIMESTAMP sync_collector(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+//{
+
+extern "C" TIMESTAMP sync_collector(void *object, ...)
 {
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
+
 	struct collector *my = object_data<struct collector>(obj);
 	typedef enum {NONE='\0', LT='<', EQ='=', GT='>'} COMPAREOP;
 	COMPAREOP comparison;

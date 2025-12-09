@@ -5,6 +5,7 @@
 #define _double_assert_H
 
 #include <stdarg.h>
+#include <cstddef>
 
 #include "gridlabd.h"
 
@@ -45,24 +46,25 @@ public:
     double *pDouble = nullptr;
 
 public:
-    static inline double_assert *get_defaults()
-    {
-        // if (!defaults) {
-        //     defaults = new double_assert(); // Initialize lazily
-        // }
-        return defaults;
-    }
+    // static inline double_assert *get_defaults()
+    // {
+    //     // if (!defaults) {
+    //     //     defaults = new double_assert(); // Initialize lazily
+    //     // }
+    //     return defaults;
+    // }
 
-    double_assert()
-    {
-        defaults->status = ASSERT_TRUE;
-        defaults->within = 0.0;
-        defaults->within_mode = IN_ABS;
-        defaults->value = 0.0;
-        defaults->once = ONCE_FALSE;
-        defaults->once_value = 0.0;
-        std::memset(defaults->target, 0, sizeof(defaults->target));
-    }
+    //double_assert()
+    //{
+        // defaults->status = ASSERT_TRUE;
+        // defaults->within = 0.0;
+        // defaults->within_mode = IN_ABS;
+        // defaults->value = 0.0;
+        // defaults->once = ONCE_FALSE;
+        // defaults->once_value = 0.0;
+        // std::memset(defaults->target, 0, sizeof(defaults->target));
+    //}
+
     ~double_assert()
     {
         }
@@ -80,8 +82,9 @@ public:
     // Static inline method to get the byte offset of the member `status`.
     static inline size_t get_status_offset(void)
     {
-        double_assert *current_defaults = get_defaults();
-        return reinterpret_cast<const char *>(&(current_defaults->status)) - reinterpret_cast<const char *>(current_defaults);
+        return offsetof(double_assert, status);
+        // double_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->status)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Inline function to get the value of `status`.
@@ -118,8 +121,9 @@ public:
     // Static inline method to get the byte offset of the member `operation`.
     static inline size_t get_within_mode_offset(void)
     {
-        double_assert *current_defaults = get_defaults();
-        return reinterpret_cast<const char *>(&(current_defaults->within_mode)) - reinterpret_cast<const char *>(current_defaults);
+        return offsetof(double_assert, within_mode);
+        // double_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->within_mode)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Inline function to get the value of `operation`.
@@ -128,10 +132,10 @@ public:
         return within_mode;
     }
 
-    // Inline method to return a gld_property object for `operation`.
+    // Inline method to return a gld_property object for `within_mode`.
     inline gld_property get_within_mode_property(void)
     {
-        return gld_property(my(), std::string("operation").c_str());
+        return gld_property(my(), std::string("within_mode").c_str());
     }
 
     // Inline method to set the value of `operation`.
@@ -156,8 +160,9 @@ public:
     // Static inline method to get the byte offset of the member `once`.
     static inline size_t get_once_offset(void)
     {
-        double_assert *current_defaults = get_defaults();
-        return reinterpret_cast<const char *>(&(current_defaults->once)) - reinterpret_cast<const char *>(current_defaults);
+        return offsetof(double_assert, once);
+        // double_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->once)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Inline function to get the value of `once`.
@@ -194,8 +199,9 @@ public:
     // Static inline method to get the byte offset of the member `within`.
     static inline size_t get_within_offset(void)
     {
-        double_assert *current_defaults = get_defaults();
-        return reinterpret_cast<const char *>(&(current_defaults->within)) - reinterpret_cast<const char *>(current_defaults);
+        return offsetof(double_assert, within);
+        // double_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->within)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Inline function to get the value of `within`.
@@ -232,8 +238,9 @@ public:
     // Static inline method to get the byte offset of the member ``
     static inline size_t get_value_offset(void)
     {
-        double_assert *current_defaults = get_defaults();
-        return reinterpret_cast<const char *>(&(current_defaults->value)) - reinterpret_cast<const char *>(current_defaults);
+        return offsetof(double_assert, value);
+        // double_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->value)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Inline function to get the value of `value`.
@@ -270,8 +277,9 @@ public:
     // Static inline method to get the byte offset of the member
     static inline size_t get_once_value_offset(void)
     {
-        double_assert *current_defaults = get_defaults();
-        return reinterpret_cast<const char *>(&(current_defaults->once_value)) - reinterpret_cast<const char *>(current_defaults);
+        return offsetof(double_assert, once_value);
+        // double_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->once_value)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Inline function to get the value of `once_value`.
@@ -316,8 +324,9 @@ public:
     // Static inline method to get the byte offset of the member `target`
     static inline size_t get_target_offset(void)
     {
-        double_assert *current_defaults = get_defaults();
-        return reinterpret_cast<const char *>(&(current_defaults->target)) - reinterpret_cast<const char *>(current_defaults);
+        return offsetof(double_assert, target);
+        // double_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->target)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Getter method to safely retrieve the string value of `target` as std::string
@@ -357,6 +366,6 @@ public:
 
 public:
     static CLASS *oclass;
-    static double_assert *defaults;
+    // static double_assert *defaults;
 };
 #endif

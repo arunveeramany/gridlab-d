@@ -51,7 +51,9 @@ struct collector {
     std::vector<std::shared_ptr<struct s_aggregate>> aggr;
 };
 
-EXPORT TIMESTAMP sync_collector(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass);
+// EXPORT TIMESTAMP sync_collector(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass);
+extern "C" TIMESTAMP sync_collector(void *object, ...);
+
 EXPORT TIMESTAMP sync_collector_error(OBJECT **obj, struct collector **my, char2048 buffer);
 
 #endif //_COLLECTOR_H

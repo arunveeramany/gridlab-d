@@ -508,8 +508,9 @@ TIMESTAMP ZIPload::sync(TIMESTAMP t0, TIMESTAMP t1)
 	}
 
 	t2 = residential_enduse::sync(t0,t1);
+	
 
-	if (pCircuit->status==BRK_CLOSED) 
+	if (pCircuit != nullptr && pCircuit->status==BRK_CLOSED) 
 	{
 		//All values placed as kW/kVAr values - to be consistent with other loads
 		double demand_power = multiplier * base_power;
