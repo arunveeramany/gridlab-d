@@ -2049,6 +2049,7 @@ EXPORT int create_transformer(OBJECT **obj, OBJECT *parent)
 {
 	try
 	{
+		
 		*obj = gl_create_object(transformer::oclass);
 		if (*obj!=nullptr)
 		{

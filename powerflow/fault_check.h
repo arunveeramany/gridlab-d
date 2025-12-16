@@ -4,12 +4,17 @@
 #ifndef _FAULT_CHECK_H
 #define _FAULT_CHECK_H
 
+#include <set>
+
 #include "powerflow.h"
 
 #define TIME_BUF_SIZE 64 // TODO: this ought to be in gridlabd.h, which has hard-coded value of 15 that is apparently too small
 
 class fault_check : public powerflow_object
 {
+	int recursion_depth = 0;
+    static const int MAX_RECURSION_DEPTH = 500;  // Track visited nodes to prevent infinite loops
+
 public:
 	static CLASS *oclass;
 	static CLASS *pclass;

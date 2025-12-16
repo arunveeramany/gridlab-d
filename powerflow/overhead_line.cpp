@@ -1012,6 +1012,7 @@ EXPORT int create_overhead_line(OBJECT **obj, OBJECT *parent)
 {
 	try
 	{
+
 		*obj = gl_create_object(overhead_line::oclass);
 		if (*obj!=nullptr)
 		{

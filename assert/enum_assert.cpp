@@ -53,8 +53,11 @@ extern "C" CALLBACKS *callback;
 // 	return enum_assert::oclass;
 // }
 
-enum_assert::enum_assert(MODULE *module)
+enum_assert::enum_assert(MODULE *module): gld_object() 
 {
+		
+
+
 	if (oclass == nullptr)
 	{
 		// register to receive notice for first top down. bottom up, and second top down synchronizations
@@ -107,8 +110,7 @@ int enum_assert::init(OBJECT *parent)
 
 TIMESTAMP enum_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 {
-
-	std::cerr << "Commit for enum_assert, parent: " << (void*)get_parent() << ", target: " << get_target().c_str() << std::endl;
+	// std::cerr << "Commit for enum_assert, parent: " << (void*)get_parent() << ", target: " << get_target().c_str() << std::endl;
     if (!get_parent()) {
         gl_error("Parent object is null for enum_assert");
         return TS_INVALID;

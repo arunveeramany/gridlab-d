@@ -128,8 +128,8 @@ triplex_meter::triplex_meter(MODULE *mod) : triplex_node(mod)
 			// Set safe defaults instead of crashing
 		}
 
-		oclass->init = (FUNCTIONADDR)init_triplex_meter_object;
-		oclass->sync = (FUNCTIONADDR)sync_triplex_meter;
+		// oclass->init = (FUNCTIONADDR)init_triplex_meter_object;
+		// oclass->sync = (FUNCTIONADDR)sync_triplex_meter;
 
 		// publish the class properties
 		if (gl_publish_variable(oclass,
@@ -420,6 +420,14 @@ TIMESTAMP triplex_meter::presync(TIMESTAMP t0)
     if (t0 != 0 && start_timestamp == 0)
         start_timestamp = t0;
 
+	// Reset current injection accumulators for this timestep
+    current_inj[0] = current_inj[1] = current_inj[2] = gld::complex(0.0, 0.0);
+
+	// Reset the load accumulators that child objects will populate
+    power[0] = power[1] = power[2] = gld::complex(0.0, 0.0);
+    current[0] = current[1] = current[2] = gld::complex(0.0, 0.0);
+    shunt[0] = shunt[1] = shunt[2] = gld::complex(0.0, 0.0);
+
 	return triplex_node::presync(t0);
 }
 //Sync needed for reliability
@@ -530,7 +538,13 @@ TIMESTAMP triplex_meter::postsync(TIMESTAMP t0, TIMESTAMP t1)
 	measured_voltage[1].SetPolar(voltage[1].Mag(),voltage[1].Arg());
 	measured_voltage[2].SetPolar(voltage[2].Mag(),voltage[2].Arg());
 
-	if (t1 > last_t)
+	// Initialize last_t on first call
+    if (last_t == 0)
+    {
+        last_t = t1;
+        dt = 0;
+    }
+	else if (t1 > last_t)
 	{
 		dt = t1 - last_t;
 		last_t = t1;
@@ -544,12 +558,7 @@ TIMESTAMP triplex_meter::postsync(TIMESTAMP t0, TIMESTAMP t1)
 	//READUNLOCK_OBJECT(obj);
 	measured_current[2] = -(measured_current[1]+measured_current[0]);
 
-//		if (dt > 0 && last_t != dt)
-	if (dt > 0)
-	{
-		measured_real_energy += measured_real_power * TO_HOURS(dt);
-		measured_reactive_energy += measured_reactive_power * TO_HOURS(dt);
-	}
+
 
 	indiv_measured_power[0] = measured_voltage[0]*(~measured_current[0]);
 	indiv_measured_power[1] = gld::complex(-1,0) * measured_voltage[1]*(~measured_current[1]);
@@ -561,9 +570,30 @@ TIMESTAMP triplex_meter::postsync(TIMESTAMP t0, TIMESTAMP t1)
 						+ (indiv_measured_power[1]).Re()
 						+ (indiv_measured_power[2]).Re();
 
+	gl_verbose("triplex_meter:postsync: measured_voltage[0]=%f+%fj, measured_current[0]=%f+%fj",
+           measured_voltage[0].Re(), measured_voltage[0].Im(),
+           measured_current[0].Re(), measured_current[0].Im());
+	gl_verbose("triplex_meter:postsync: indiv_measured_power[0]=%f+%fj, measured_real_power=%f",
+           indiv_measured_power[0].Re(), indiv_measured_power[0].Im(),
+           measured_real_power);
+
 	measured_reactive_power = (indiv_measured_power[0]).Im()
 							+ (indiv_measured_power[1]).Im()
 							+ (indiv_measured_power[2]).Im();
+
+	//		if (dt > 0 && last_t != dt)
+	if (dt > 0)
+	{
+		gl_verbose("triplex_meter:postsync: t1=%lld, last_t=%lld, dt=%lld, measured_real_power=%.2f, TO_HOURS(dt)=%.6f", 
+               t1, last_t, dt, measured_real_power, TO_HOURS(dt));
+		measured_real_energy += measured_real_power * TO_HOURS(dt);
+		measured_reactive_energy += measured_reactive_power * TO_HOURS(dt);
+		gl_verbose("triplex_meter:postsync: measured_real_energy now = %.2f", measured_real_energy);
+
+	}else{
+		    gl_verbose("triplex_meter:postsync: SKIPPED energy accumulation - dt=%lld", dt);
+
+	}
 
 	if (measured_real_power>measured_demand)
 		measured_demand=measured_real_power;

@@ -27,30 +27,6 @@ EXPORT_CREATE(complex_assert);
 EXPORT_INIT(complex_assert);
 
 
-// EXPORT CLASS* init(CALLBACKS *fntable, MODULE *mod, int argc, char *argv[])
-// {
-//     callback = fntable;
-// 	std::cerr << "Received callback table in init_enum_assert at address: " << (void*)callback << std::endl;
-
-// 	if (!callback) {
-//         std::cerr << "FATAL: complex_enum_assert received null callback table" << std::endl;
-//         return 0;
-//     }
-//     std::cerr << "Callback initialized at address: " << (void*)callback << std::endl;
-// 	std::cerr << "properties.get_property callback value: " << (void*)callback->properties.get_property << std::endl;
-
-// 	if (!callback->properties.get_property) {
-//         std::cerr << "FATAL: properties.get_property callback is null" << std::endl;
-//         return 0;
-//     }
-// 	std::cerr << "properties.get_property callback initialized at address: " << (void*)callback->properties.get_property << std::endl;
-
-//     new complex_assert(mod); // Instantiate the class to trigger registration
-//     // return 1;
-// 	return complex_assert::oclass;
-// }
-
-
 EXPORT_COMMIT(complex_assert);
 //EXPORT_NOTIFY(complex_assert);
 
@@ -59,32 +35,20 @@ CLASS *complex_assert::oclass = nullptr;
 // complex_assert *complex_assert::defaults = &defaults_storage;
 extern "C" CALLBACKS *callback;
 
-// EXPORT CLASS* init(CALLBACKS *fntable, MODULE *mod, int argc, char *argv[])
-// {
-//     callback = fntable;
-// 	std::cerr << "Received callback table in complex_enum_assert at address: " << (void*)callback << std::endl;
 
-// 	if (!callback) {
-//         std::cerr << "FATAL: init_complex_assert received null callback table" << std::endl;
-//         return 0;
-//     }
-//     std::cerr << "Callback initialized at address: " << (void*)callback << std::endl;
-// 	std::cerr << "properties.get_property callback value: " << (void*)callback->properties.get_property << std::endl;
-
-// 	if (!callback->properties.get_property) {
-//         std::cerr << "FATAL: properties.get_property callback is null" << std::endl;
-//         return 0;
-//     }
-// 	std::cerr << "properties.get_property callback initialized at address: " << (void*)callback->properties.get_property << std::endl;
-
-//     new complex_assert(mod); // Instantiate the class to trigger registration
-//     // return 1;
-// 	return complex_assert::oclass;
-// }
-
-
-complex_assert::complex_assert(MODULE *module) : complex_assert() 
+complex_assert::complex_assert(MODULE *module) : gld_object() 
 {
+	
+	status = ASSERT_TRUE;
+	within = 0.0;
+	value = 0.0;
+	once = ONCE_FALSE;
+	once_value = 0;
+	operation = FULL;
+	strcpy(target, "");
+	pTarget = nullptr;
+	pComplex = nullptr;
+	
 	if (oclass == nullptr)
 	{
 		// register to receive notice for first top down. bottom up, and second top down synchronizations
@@ -176,360 +140,11 @@ int complex_assert::init(OBJECT *parent)
     return 1; // Success - actual property resolution happens in commit()
 }
 
-
-
-// int complex_assert::init(OBJECT *parent)
-// {
-// 	printf("*** INIT METHOD CALLED FOR OBJECT %d ***\n", get_id());
-//     fflush(stdout);
-
-// 	    // Enhanced safety checks for parent object
-//     printf("DEBUG: parent=%p\n", parent);
-    
-//     if (parent == nullptr) {
-//         printf("ERROR: Parent object is null\n");
-//         return 0;
-//     }
-
-// 	// Test 1: Check if parent is valid
-//     printf("DEBUG: parent=%p, parent->name=%s\n", parent, parent ? (parent->name ? parent->name : "null") : "null");
-    
-// 	// Use the callback table to access properties
-//     if (callback && callback->properties.get_property) {
-//         PROPERTY *test_prop = callback->properties.get_property(parent, "voltage_A", nullptr);
-//         printf("DEBUG: callback->properties.get_property returned: %p\n", test_prop);
-        
-//         if (test_prop) {
-//             printf("DEBUG: Property found - type=%d, name=%s\n", test_prop->ptype, test_prop->name);
-//         }
-//     } else {
-//         printf("DEBUG: Callback or get_property is null\n");
-//         return 0;
-//     }
-
-//     // Test 2: Try gl_get_property with a known property
-//     printf("DEBUG: Testing gl_get_property...\n");
-//     PROPERTY *test_prop = gl_get_property(parent, "voltage_A");
-//     printf("DEBUG: gl_get_property returned: %p\n", test_prop);
-    
-//     if (test_prop) {
-//         printf("DEBUG: Property found - type=%d, name=%s\n", test_prop->ptype, test_prop->name);
-//     }
-    
-//     // Test 3: Try gl_get_addr
-//     printf("DEBUG: Testing gl_get_addr...\n");
-//     void *test_addr = gl_get_addr(parent, "voltage_A");
-//     printf("DEBUG: gl_get_addr returned: %p\n", test_addr);
-    
-//     fflush(stdout);
-
-// 	gl_verbose("DEBUG: complex_assert::init called for object %d", get_id());
-//     gl_verbose("DEBUG: parent=%p, target='%s'", parent, get_target().c_str());
-
-// 	OBJECT *target_obj = nullptr;
-//     char obj_name_str[256] = ""; // To hold the parsed object name
-//     char prop_name_str[256] = ""; // To hold the parsed property name
-
-//     // Get the full target string from the GLM, e.g., "house_meter.measured_energy"
-//     const char* target_str = get_target().c_str();
-// 	gl_verbose("DEBUG: target_str='%s'", target_str);
-
-//     // Parse the target string to separate the object name and property name
-//     const char *dot = strchr(target_str, '.');
-//     if (dot != nullptr)
-//     {
-//         // Copy the object name part (the part before the dot)
-//         size_t obj_name_len = dot - target_str;
-//         if (obj_name_len >= sizeof(obj_name_str)) {
-//             gl_error("complex_assert: target object name in '%s' is too long", target_str);
-//             return 0; // Return 0 for failure
-//         }
-//         strncpy(obj_name_str, target_str, obj_name_len);
-//         obj_name_str[obj_name_len] = '\0'; // Null-terminate the object name
-
-//         // The rest of the string is the property name
-//         strcpy(prop_name_str, dot + 1);
-
-//         // Use the correct API to find the object by its name
-//         FINDLIST *pFindList = gl_find_objects(FL_NEW, FT_NAME, SAME, obj_name_str, FT_END);
-
-//         // Check if the find operation was successful and if we got exactly one match
-//         if (pFindList == nullptr)
-//         {
-//             gl_error("complex_assert: gl_find_objects failed to run for target '%s'", obj_name_str);
-//             return 0;
-//         }
-//         else if (pFindList->hit_count == 0)
-//         {
-//             gl_error("complex_assert: target object '%s' not found in the model", obj_name_str);
-//             gl_free((void**)&pFindList);
-//             return 0;
-//         }
-//         else if (pFindList->hit_count > 1)
-//         {
-//             gl_warning("complex_assert: %d objects named '%s' found, using the first one", pFindList->hit_count, obj_name_str);
-//         }
-
-//         // Get the first (and only expected) object from the findlist
-//         target_obj = gl_find_next(pFindList, nullptr);
-// 		gl_free((void**)&pFindList);   
-// 	 }
-//     else
-//     {
-//         // Fallback for old syntax: if no dot, the target property is on the immediate parent
-//         target_obj = parent;
-//         if (target_obj == nullptr) {
-//              gl_error("complex_assert: has no parent and target '%s' does not specify an object", target_str);
-//              return 0; // Return 0 for failure
-//         }
-//         strcpy(prop_name_str, target_str);
-//     }
-	
-		
-		
-//     // 1. Find the PROPERTY structure on the parent
-// 	gl_verbose("DEBUG: About to call gl_get_property(target_obj=%p, prop_name='%s')", target_obj, prop_name_str);
-//     pTarget = gl_get_property(target_obj, prop_name_str);
-//     if (pTarget == nullptr) {
-//         gl_error("complex_assert: target property '%s' was not found on parent object '%s'", get_target().c_str(), parent->name);
-//         return 0;
-//     }
-// 	gl_verbose("DEBUG: gl_get_property returned pTarget=%p", pTarget);
-
-
-//     // 2. Verify the property type
-// 	gl_verbose("DEBUG: Property type is %d (PT_complex=%d)", pTarget->ptype, PT_complex);
-//     if (pTarget->ptype != PT_complex) {
-//         gl_error("complex_assert: target property '%s' is not of type 'complex'", get_target().c_str());
-//         return 0;
-//     }	
-
-//     // 3. Get the direct memory address of the data and cache it
-// 	gl_verbose("DEBUG: About to call gl_get_addr(target_obj=%p, prop_name='%s')", target_obj, prop_name_str);
-//     pComplex = (gld::complex*)gl_get_addr(target_obj, prop_name_str);
-// 	gl_verbose("DEBUG: gl_get_addr returned pComplex=%p", pComplex);
-
-//     if (pComplex == nullptr) {
-//         gl_error("complex_assert: unable to get the address of target property '%s'", get_target().c_str());
-//         return 0;
-//     }
-
-//     // Check 'within' value
-//     if (within <= 0.0)
-//     {
-//         gl_warning("complex_assert: a non-positive value has been specified for 'within'");
-//         // Note: This is a warning, not an error, to allow certain tests.
-//     }
-	
-// 	gl_verbose("DEBUG: complex_assert::init successful, pComplex=%p", pComplex);
-
-// 	return 1; // Success
-
-
-
-// }
-
-
-
-// TIMESTAMP complex_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
-// {
-
-// 	// The target is now resolved in init(). If pComplex is null, init() failed.
-//     if (pComplex == nullptr) {
-//         return TS_INVALID; // Don't run if initialization failed
-//     }
-
-// 	// Get the current value from the cached pointer
-//     complex x = *pComplex;
-
-
-// 	gl_verbose("complex_assert::commit called for %s (operation=%d) on %s",
-// 			   get_target().c_str(), operation, get_parent() ? get_parent()->get_name() : "unknown");
-
-// 	// Instead of checking global_modelname, check a local property
-// 	bool is_error_test = false;
-
-// 	// Try to determine if this is an error test based on the object or parent name
-// 	if (get_parent() && get_parent()->get_name())
-// 	{
-// 		const char *parent_name = get_parent()->get_name();
-// 		is_error_test = strstr(parent_name, "_err") != nullptr;
-// 	}
-
-// 	// handle once mode
-// 	if (once == ONCE_TRUE)
-// 	{
-// 		once_value = value;
-// 		once = ONCE_DONE;
-// 	}
-// 	else if (once == ONCE_DONE)
-// 	{
-// 		if (once_value.Re() == value.Re() && once_value.Im() == value.Im())
-// 		{
-// 			gl_verbose("Assert skipped with ONCE logic");
-// 			return TS_NEVER;
-// 		}
-// 		else
-// 		{
-// 			once_value = value;
-// 		}
-// 	}
-
-// 	// get the target property
-// 	// gld_property target_prop(get_parent(),get_target());
-// 	gld_property target_prop(get_parent(), get_target().c_str());
-// 	if (!target_prop.is_valid() || target_prop.get_type() != PT_complex)
-// 	{
-// 		gl_error("Specified target %s for %s is not valid.", get_target().c_str(), get_parent()->get_name());
-// 		/*  TROUBLESHOOT
-// 		Check to make sure the target you are specifying is a published variable for the object
-// 		that you are pointing to.  Refer to the documentation of the command flag --modhelp, or
-// 		check the wiki page to determine which variables can be published within the object you
-// 		are pointing to with the assert function.
-// 		*/
-// 		return TS_INVALID;
-// 	}
-
-// 	// test the target value
-// 	//complex x;
-// 	//target_prop.getp(x);
-
-// 	if (status == ASSERT_TRUE)
-// 	{
-// 		// Get the parent object
-// 		OBJECT *pParent = get_parent()->my();
-
-// 		// Manually calculate the memory address of the target property's data.
-// 		// The property address (pTarget->addr) is a byte offset from the start of the object's data.
-// 		void *pPropAddr = (char*)(pParent + 1) + (int64)(pTarget->addr);
-
-// 		// Cast the generic address to a pointer of the correct type (complex*)
-// 		complex *y = (complex*)pPropAddr;
-// 		complex x = complex(y->Re(), y->Im());
-		
-// 		if (operation == FULL || operation == REAL || operation == IMAGINARY)
-// 		{
-// 			complex error = x - value;
-// 			double real_error = error.Re();
-// 			double imag_error = error.Im();
-// 			if ((_isnan(real_error) || fabs(real_error) > within) && (operation == FULL || operation == REAL))
-// 			{
-// 				gl_error("Assert failed on %s: real part of %s %g not within %f of given value %g",
-// 						 get_parent()->get_name(), get_target().c_str(), x.Re(), within, value.Re());
-// 				return TS_INVALID;
-// 			}
-// 			if ((_isnan(imag_error) || fabs(imag_error) > within) && (operation == FULL || operation == IMAGINARY))
-// 			{
-// 				gl_error("Assert failed on %s: imaginary part of %s %+gi not within %f of given value %+gi",
-// 						 get_parent()->get_name(), get_target().c_str(), x.Im(), within, value.Im());
-// 				return TS_INVALID;
-// 			}
-// 		}
-// 		else if (operation == MAGNITUDE)
-// 		{
-// 			double magnitude_error = x.Mag() - value.Mag();
-// 			if (_isnan(magnitude_error) || fabs(magnitude_error) > within)
-// 			{
-// 				gl_error("Assert failed on %s: Magnitude of %s (%g) not within %f of given value %g",
-// 						 get_parent()->get_name(), get_target().c_str(), x.Mag(), within, value.Mag());
-// 				return TS_INVALID;
-// 			}
-// 		}
-// 		else if (get_operation() == ANGLE)
-// 		{
-// 			// The expected angle is stored in the real part of the 'value' property.
-// 			double expected_angle = value.Re(); 
-// 			double actual_angle = x.Arg(); // Angle of the target property
-			
-// 			// Calculate the absolute difference.
-// 			double angle_error = fabs(actual_angle - expected_angle);
-
-// 			// Fail if the error is GREATER THAN the tolerance.
-// 			// Also fail if the angle is NaN, which can happen for a 0+0j target.
-// 			if (_isnan(actual_angle) || angle_error > within)
-// 			{
-// 				gl_error("Assert failed on %s: Angle of target %s (%g rad) is not within %f of expected value %g rad",
-// 						get_parent()->get_name(), get_target().c_str(), actual_angle, within, expected_angle);
-			
-// 				// Check if this is an error test
-// 				if (is_error_test)
-// 				{
-// 					gl_verbose("Expected failure in error test file");
-// 					// Return TS_INVALID to signal failure without throwing exception
-// 					return TS_INVALID;
-// 				}
-// 				else
-// 				{
-// 					// For regular tests that fail unexpectedly
-// 					gl_error("Unexpected assertion failure in non-error test");
-// 					// For non-error tests, still return TS_INVALID
-// 					return TS_INVALID;
-// 				}
-// 			}
-// 		}
-// 		gl_verbose("Assert passed on %s", get_parent()->get_name());
-// 		return TS_NEVER;
-// 	}
-// 	else if (get_status() == ASSERT_FALSE)
-// 	{
-// 		if (operation == FULL || operation == REAL || operation == IMAGINARY)
-// 		{
-// 			complex error = x - value;
-// 			double real_error = error.Re();
-// 			double imag_error = error.Im();
-// 			if ((_isnan(real_error) || fabs(real_error) < within) && (operation == FULL || operation == REAL))
-// 			{
-// 				gl_error("Assert failed on %s: real part of %s %g is within %f of given value %g",
-// 						 get_parent()->get_name(), get_target().c_str(), x.Re(), within, value.Re());
-// 				return TS_INVALID;
-// 			}
-// 			if ((_isnan(imag_error) || fabs(imag_error) < within) && (operation == FULL || operation == IMAGINARY))
-// 			{
-// 				gl_error("Assert failed on %s: imaginary part of %s %+gi is within %f of given value %+gi",
-// 						 get_parent()->get_name(), get_target().c_str(), x.Im(), within, value.Im());
-// 				return TS_INVALID;
-// 			}
-// 		}
-// 		else if (operation == MAGNITUDE)
-// 		{
-// 			double magnitude_error = x.Mag() - value.Mag();
-// 			if (_isnan(magnitude_error) || fabs(magnitude_error) < within)
-// 			{
-// 				gl_error("Assert failed on %s: Magnitude of %s %g is within %f of given value %g",
-// 						 get_parent()->get_name(), get_target().c_str(), x.Mag(), within, value.Mag());
-// 				return TS_INVALID;
-// 			}
-// 		}
-// 		else if (get_operation() == ANGLE)
-// 		{
-// 			// The expected angle is stored in the real part of the 'value' property.
-// 			double expected_angle = value.Re(); 
-// 			double actual_angle = x.Arg(); // Angle of the target property
-			
-// 			// Calculate the absolute difference.
-// 			double angle_error = fabs(actual_angle - expected_angle);
-// 			if (_isnan(actual_angle) || angle_error < within)
-// 			{
-// 				("Assert failed on %s: Angle of target %s (%g rad) IS within %f of expected value %g rad",
-//                     get_parent()->get_name(), get_target().c_str(), actual_angle, within, expected_angle);
-// 				// return 0;
-// 				// Return TS_INVALID instead of 0 to indicate failure properly
-// 				return TS_INVALID;
-// 			}
-// 		}
-// 		gl_verbose("Assert passed on %s", get_parent()->get_name());
-// 		return TS_NEVER;
-// 	}
-// 	else
-// 	{
-// 		gl_verbose("Assert test is not being run on %s", get_parent()->get_name());
-// 		return TS_NEVER;
-// 	}
-// }
-
 // Add a new method for property resolution
 int complex_assert::resolve_target_property()
 {
+		return TS_NEVER;
+
     const char* target_str = get_target().c_str();
 
 	printf("DEBUG: target_str raw content: '");
@@ -609,6 +224,7 @@ int complex_assert::resolve_target_property()
 
 TIMESTAMP complex_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 {
+	
 	    // Resolve properties on first commit (lazy initialization)
     if (pComplex == nullptr) {
         if (resolve_target_property() == 0) {

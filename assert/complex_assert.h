@@ -48,20 +48,20 @@ public:
     // GL_STRUCT(complex,once_value);
     // GL_ATOMIC(double,within);
 
-    complex_assert()
-    {
-        // Initialize default values if needed
-        // Initialize default values here
-        status = ASSERT_TRUE;
-        within = 0.0;
-        value = 0.0;
-        once = ONCE_FALSE;
-        once_value = 0;
-        operation = FULL;
-        strcpy(target, "");
-        pTarget = nullptr;
-        pComplex = nullptr;
-    }
+    // complex_assert()
+    // {
+    //     // Initialize default values if needed
+    //     // Initialize default values here
+    //     status = ASSERT_TRUE;
+    //     within = 0.0;
+    //     value = 0.0;
+    //     once = ONCE_FALSE;
+    //     once_value = 0;
+    //     operation = FULL;
+    //     strcpy(target, "");
+    //     pTarget = nullptr;
+    //     pComplex = nullptr;
+    // }
     ~complex_assert()
     {
         // delete defaults;

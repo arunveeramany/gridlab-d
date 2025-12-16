@@ -118,6 +118,7 @@ typedef struct {
 	SP_E* llheap;
 	unsigned int llptr;
 	unsigned int ncols;
+	int nels;         // Number of allocated elements
 } SPARSE;
 
 typedef struct {

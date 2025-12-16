@@ -27,6 +27,13 @@ CLASS *double_assert::oclass = nullptr;
 double_assert::double_assert(MODULE *module)
 {
 	// defaults = this;
+	status = ASSERT_TRUE;
+	within = 0.0;
+	within_mode = IN_ABS;
+	value = 0.0;
+	once = ONCE_FALSE;
+	once_value = 0;
+	target.erase();
 	
 	
 	if (oclass == nullptr)
@@ -70,30 +77,20 @@ double_assert::double_assert(MODULE *module)
 		
 	}
 
-	status = ASSERT_TRUE;
-	within = 0.0;
-	within_mode = IN_ABS;
-	value = 0.0;
-	once = ONCE_FALSE;
-	once_value = 0;
-	target.erase();
 	
 }
 
 /* Object creation is called once for each object that is created by the core */
 int double_assert::create(void)
 {
-	// memcpy(this, defaults, sizeof(*this));
-	// status = defaults->status;
-	// within = defaults->within;
-	// within_mode = defaults->within_mode;
-	// value = defaults->value;
-	// once = defaults->once;
-	// once_value = defaults->once_value;
-
-	// Make sure target is a clean string
-	// if (defaults->target[0] != '\0')
-	// 	target.copy_from(defaults->target);
+	
+	status = ASSERT_TRUE;
+    within = 0.0;
+    within_mode = IN_ABS;
+    value = 0.0;
+    once = ONCE_FALSE;
+    once_value = 0;
+    target.erase();
 
 	gl_output("double_assert defaults: status=%d value=%g within=%g within_mode=%d once=%d target='%s' once_value=%g",
 			  static_cast<int>(status),
@@ -107,40 +104,7 @@ int double_assert::create(void)
 
 int double_assert::init(OBJECT *parent)
 {
-	//const char *msg = "A non-positive value has been specified for within.";
-	//if (within <= 0.0)
-	//	throw msg;
-	/*  TROUBLESHOOT
-	Within is the range in which the check is being performed.  Please check to see that you have
-	specified a value for "within" and it is positive.
-	*/
-	//return 1;
-
-	// if (parent == nullptr) {
-    //     gl_error("double_assert has no parent, cannot find target '%s'", target.get_string());
-    //     return 0; // Fail initialization
-    // }
-
-    // 1. Find the PROPERTY structure
-    // pTarget = gl_get_property(parent, target.get_string());
-    // if (pTarget == nullptr) {
-    //     gl_error("double_assert: target property '%s' not found in parent '%s'", target.get_string(), parent->name);
-    //     return 0;
-    // }
-
-    // 2. Verify property type
-    // if (pTarget->ptype != PT_double) {
-    //     gl_error("double_assert: target property '%s' is not of type double", target.get_string());
-    //     return 0;
-    // }
-
-    // 3. Get and cache the direct memory address
-    // pDouble = (double*)gl_get_addr(parent, target.get_string());
-    // if (pDouble == nullptr) {
-    //     gl_error("double_assert: unable to get address of target property '%s'", target.get_string());
-    //     return 0;
-    // }
-
+	
 	pDouble = nullptr;
 
     if (within <= 0.0) {
@@ -167,6 +131,7 @@ TIMESTAMP double_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
         if (parent == nullptr)
         {
             // This should not happen if the model is structured correctly
+			gl_error("double_assert:%d: object requires a 'parent' to be defined. The 'parent' property is missing.", get_id());
             return TS_INVALID;
         }
 

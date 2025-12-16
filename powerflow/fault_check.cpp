@@ -17,6 +17,9 @@ CLASS* fault_check::pclass = nullptr;
 
 fault_check::fault_check(MODULE *mod) : powerflow_object(mod)
 {
+	// Correct syntax
+	// GETOBJECT(this)->parent = nullptr;
+	object_header(this)->parent = nullptr;
 	if(oclass == nullptr)
 	{
 		pclass = powerflow_object::oclass;
@@ -85,6 +88,8 @@ int fault_check::create(void)
 int fault_check::init(OBJECT *parent)
 {
 	OBJECT *obj = object_header(this);
+
+
 	FILE *FPoint;
 
 	//Register us in the global - so faults know who they gonna call
@@ -198,27 +203,52 @@ TIMESTAMP fault_check::sync(TIMESTAMP t0)
 	TIMESTAMP tret = powerflow_object::sync(t0);
 	unsigned int index;
 	int return_val;
-	bool perform_check, override_output;
+	bool perform_check = false, override_output;
 
 	gl_strftime (t0, time_buf, TIME_BUF_SIZE);
 	gl_verbose ("*** fault_check::sync:%s:%ld", time_buf, t0);
 
+
 	if (prev_time == 0)	//First run - see if restoration exists (we need it for now)
 	{
 		allocate_alterations_values(reliability_mode);
+		prev_time = t0;
+        return TS_NEVER;
+		// ONLY skip grid association on very first initialization
+    	// Let it be called normally in the mesh checking block below
 
 		//Override tret to force a reiteration - mostly to catch "initially islanded nodes" in single runs
-		tret = t0;
+		// tret = t0;
 	}
+	
+	gld_property strictly_radial_prop(fault_check_object, "strictly_radial");
+
+	if (strictly_radial_prop.get_bool() == false)	//Not strictly radial - need to do mesh checking
+    {
+        //Call a support check -- reset handled inside
+        //Always assumed to NOT be in "restoration object" mode
+        support_check_mesh();
+
+        //Now loop through and remove those components that are not supported anymore
+        support_search_links_mesh();
+
+        //Do the grid association check (if needed)
+        if (grid_association_mode)
+        {
+            // ← RESET recursion depth before each call
+            recursion_depth = 0;
+            associate_grids();
+        }
+    }//End not strictly radial assumption
 
 	if (fault_check_override_mode)	//Special mode -- do a single topology check and then fail
 	{
 		perform_check = true;
 	}
-	else if ((fcheck_state == SINGLE) && (prev_time == 0))	//Single only occurs on first iteration
-	{
-		perform_check = true;	//Flag for a check
-	}//end single check
+	// else if ((fcheck_state == SINGLE) && (prev_time == 0))	//Single only occurs on first iteration
+	// {
+	// 	perform_check = true;	//Flag for a check
+	// }//end single check
 	else if ((fcheck_state == ONCHANGE) && NR_admit_change)	//Admittance change has been flagged
 	{
 		perform_check = true;	//Flag the check
@@ -422,9 +452,33 @@ TIMESTAMP fault_check::sync(TIMESTAMP t0)
 		*/
 		return TS_INVALID;
 	}
+	// else	//Standard mode
+	// {
+	// 	return tret;	//Return where we want to go.  If >t0, NR will force us back anyways
+	// }
 	else	//Standard mode
 	{
-		return tret;	//Return where we want to go.  If >t0, NR will force us back anyways
+		// On first run, don't re-request - let powerflow converge
+		if (prev_time == 0)
+		{
+			prev_time = t0;  
+			return TS_NEVER;  // ← Allow progression past initialization
+		}
+		
+		// After first iteration, use normal logic
+		if (perform_check)
+		{
+			// Now we can do topology checks
+			// Returning t0 causes infinite re-sync on macOS.
+            // Use tret (from powerflow_object::sync) so time advances normally,
+            // or TS_NEVER if you want to suppress further checks.
+			// return t0;  // Re-sync if needed
+			return tret;
+		}
+		else
+		{
+			return TS_NEVER;
+		}
 	}
 }
 
@@ -1179,51 +1233,63 @@ void fault_check::support_check_alterations(int baselink_int, bool rest_mode)
 	else	//Not assumed to be strictly radial, or just being safe -- check EVERYTHING
 	{
 		//See if we should even go in first
-		if (!restoration_checks_active)
-		{
-			//Now see if the restoration object and function are mapped
-			if ((restoration_object != nullptr) && (restoration_fxn != nullptr))
-			{
-				//Call restoration -- fault_checks will occur as part of this
-				return_val = ((int (*)(OBJECT *,int))(*restoration_fxn))(restoration_object,baselink_int);
+		// if (!restoration_checks_active)
+		// {
+		// 	//Now see if the restoration object and function are mapped
+		// 	if ((restoration_object != nullptr) && (restoration_fxn != nullptr))
+		// 	{
+		// 		//Call restoration -- fault_checks will occur as part of this
+		// 		return_val = ((int (*)(OBJECT *,int))(*restoration_fxn))(restoration_object,baselink_int);
 
-				//Make sure it worked
-				if (return_val != 1)
-				{
-					GL_THROW("Restoration failed to execute properly");
-					/*  TROUBLESHOOT
-					While attempting to call the restoration/reconfiguration, an error was encountered in the function.
-					Please look for other error messages from restoration itself.
-					*/
-				}
-			}
+		// 		//Make sure it worked
+		// 		if (return_val != 1)
+		// 		{
+		// 			GL_THROW("Restoration failed to execute properly");
+		// 			/*  TROUBLESHOOT
+		// 			While attempting to call the restoration/reconfiguration, an error was encountered in the function.
+		// 			Please look for other error messages from restoration itself.
+		// 			*/
+		// 		}
+		// 	}
+
+		        // 1. Reset the support status for all buses. This function should clear the valid_phases array.
+        reset_support_check();
+
+        // 2. Perform a mesh-based traversal starting from the SWING bus
+        //    to find all currently supported/energized buses.
+        support_check_mesh();
+
+        // 3. Iterate through the network and de-energize any objects
+        //    on buses that are no longer supported.
+        support_search_links_mesh();
+
 			//Default else -- not mapped, so do nothing
-		}//End restoration checks active
+	}//End restoration checks active
 		//Default else -- no restoration or we're in "exploratory" mode
 
 		//Reset the alteration matrix
-		reset_alterations_check();
+		// reset_alterations_check();
 
 		//Do the grid association check (if needed)
 		//****************** NOTE - is there a better way to do this with islands now -- need to do twice (pre/post) to catch stragglers! ****//
-		if (grid_association_mode)
-		{
-			associate_grids();
-		}
+		// if (grid_association_mode)
+		// {
+		// 	associate_grids();
+		// }
 
 		//Call a support check -- reset handled inside
 		//Always assumed to NOT be in "restoration object" mode
-		support_check_mesh();
+		// support_check_mesh();
 
 		//Now loop through and remove those components that are not supported anymore -- start from SWING, just because we have to start somewhere
-		support_search_links_mesh();
+		// support_search_links_mesh();
 
 		//Do the grid association check (if needed)
-		if (grid_association_mode)
-		{
-			associate_grids();
-		}
-	}//End not strictly radial assumption
+		// if (grid_association_mode)
+		// {
+		// 	associate_grids();
+		// }
+	//}//End not strictly radial assumption
 
 	//Determine if an output is desired and if we're not in restoration check mode (otherwise, it may flood the output log)
 	if (!restoration_checks_active && (output_filename[0] != '\0'))
@@ -2001,7 +2067,8 @@ void fault_check::associate_grids(void)
 	unsigned int indexval;
 	int grid_counter;
 	STATUS stat_return_val;
-
+	recursion_depth = 0;  
+	
 	//Call the reset/allocation routine
 	reset_associated_grid();
 
@@ -2118,6 +2185,10 @@ void fault_check::associate_grids(void)
 			}
 		}
 
+		// Force null before allocating, regardless of path
+		NR_powerflow.island_matrix_values = nullptr;
+		NR_powerflow.BA_diag = nullptr;
+
 		//Now allocate new ones
 		stat_return_val = NR_array_structure_allocate(&NR_powerflow,grid_counter);
 
@@ -2150,6 +2221,14 @@ void fault_check::search_associated_grids(unsigned int node_int, int grid_counte
 {
 	unsigned int index;
 	int node_ref;
+
+	recursion_depth++;
+    if (recursion_depth > MAX_RECURSION_DEPTH)
+    {
+        gl_warning("fault_check::search_associated_grids: Maximum recursion depth (%d) exceeded - mesh may be too complex", MAX_RECURSION_DEPTH);
+        recursion_depth--;
+        return;
+    }
 
 	//Loop through the connection table for this node
 	for (index=0; index<NR_busdata[node_int].Link_Table_Size; index++)
@@ -2214,6 +2293,7 @@ void fault_check::search_associated_grids(unsigned int node_int, int grid_counte
 		}
 		//Default else, not a match, so next
 	}
+	recursion_depth--;
 }
 
 //Function to remove a divergent island
@@ -2364,6 +2444,9 @@ EXPORT int create_fault_check(OBJECT **obj, OBJECT *parent)
 {
 	try
 	{
+		// This object is always top-level, so its parent must be NULL.
+        // This line sanitizes the garbage pointer passed by the loader on some platforms.
+        parent = NULL;
 		*obj = gl_create_object(fault_check::oclass);
 		if (*obj!=nullptr)
 		{
@@ -2394,8 +2477,37 @@ EXPORT int init_fault_check(OBJECT *obj, OBJECT *parent)
 * @param pass the current pass for this sync call
 * @return t1, where t1>t0 on success, t1=t0 for retry, t1<t0 on failure
 */
-EXPORT TIMESTAMP sync_fault_check(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+// EXPORT TIMESTAMP sync_fault_check(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+// {
+
+extern "C" TIMESTAMP sync_fault_check(void *object, ...)
 {
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
+    
+	if (!callback) {
+        gl_error("callback is null in sync_fault_check");
+        return 0;  // Fail module load
+    }
+
+	    // Add structure validation
+    // std::cerr << "Callback structure size check:" << std::endl;
+    // std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
+    // std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
+    // std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
+    
+
+	if (!callback->time.local_datetime) {
+        gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
+        return FAILED;
+    }
+
+
 	try {
 		fault_check *pObj = /*OBJECTDATA(obj,<>)*/ object_data<fault_check>(obj);
 		TIMESTAMP t1 = TS_NEVER;

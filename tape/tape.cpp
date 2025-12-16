@@ -782,7 +782,7 @@ EXPORT SIMULATIONMODE interupdate(MODULE *module, TIMESTAMP t0, unsigned int64 d
 						temp_obj = obj->parent ? obj->parent : obj;
 
 						// Set the value
-						ret_value = gl_set_value(temp_obj, get_addr(temp_obj, my->target), my->next.value, my->target); /* pointer => int64 */
+						ret_value = gl_set_value(temp_obj, get_addr(temp_obj, my->target->target), my->next.value, my->target->target); /* pointer => int64 */
 
 						if (ret_value == 0)
 						{

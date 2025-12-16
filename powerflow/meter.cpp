@@ -1437,6 +1437,7 @@ EXPORT int create_meter(OBJECT **obj, OBJECT *parent)
 {
 	try
 	{
+
 		*obj = gl_create_object(meter::oclass);
 		if (*obj!=nullptr)
 		{

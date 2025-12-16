@@ -545,19 +545,61 @@ inline bool gl_object_isa(OBJECT *obj, /**< object to test */
 						  const char *type,
 						  const char *modname = NULL) /**< type to test */
 {
-	bool rv = (*callback->object_isa)(obj, type) != 0;
-	bool mv = modname ? obj->oclass->module == (*callback->module_find)(modname) : true;
-	return (rv && mv);
+	// bool rv = (*callback->object_isa)(obj, type) != 0;
+	// bool mv = modname ? obj->oclass->module == (*callback->module_find)(modname) : true;
+	// return (rv && mv);
+
+	    try
+    {
+        // 1. Primary safety check for clearly NULL pointers.
+        if (obj == NULL || obj->oclass == NULL || type == NULL)
+        {
+            return false;
+        }
+
+        // 2. Perform the module check first. This might also crash if obj is garbage,
+        // but it's inside the try block, so it's safe.
+        if (modname != NULL)
+        {
+            MODULE *mod = (*callback->module_find)(modname);
+            if (obj->oclass->module != mod)
+            {
+                return false; // Not in the right module.
+            }
+        }
+
+        // 3. Traverse the class inheritance chain.
+        CLASS *pclass = obj->oclass;
+        while (pclass != NULL)
+        {
+            // Check that the name pointer itself is not NULL before comparing.
+            if (pclass->name != NULL && strcmp(pclass->name, type) == 0)
+            {
+                return true; // Found a match.
+            }
+            pclass = pclass->parent; // Move up to the parent class.
+        }
+
+        // 4. No match found in the entire chain.
+        return false;
+    }
+    catch (...)
+    {
+        // If any memory access inside the try block fails (e.g., EXC_BAD_ACCESS),
+        // this will catch it and safely return false instead of crashing.
+        return false;
+    }
+
 }
 
-inline bool gl_object_isa(OBJECT *obj, /**< object to test */
-						  char *type,
-						  char *modname = NULL) /**< type to test */
-{
-	bool rv = (*callback->object_isa)(obj, type) != 0;
-	bool mv = modname ? obj->oclass->module == (*callback->module_find)(modname) : true;
-	return (rv && mv);
-}
+// inline bool gl_object_isa(OBJECT *obj, /**< object to test */
+// 						  char *type,
+// 						  char *modname = NULL) /**< type to test */
+// {
+// 	bool rv = (*callback->object_isa)(obj, type) != 0;
+// 	bool mv = modname ? obj->oclass->module == (*callback->module_find)(modname) : true;
+// 	return (rv && mv);
+// }
 #else
 #define gl_object_isa (*callback->object_isa)
 #endif

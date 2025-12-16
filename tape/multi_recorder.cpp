@@ -59,6 +59,10 @@ static OBJECT *last_recorder = nullptr;
 
 EXPORT int create_multi_recorder(OBJECT **obj, OBJECT *parent)
 {
+	// This object is always top-level, so its parent must be NULL.
+    // This line sanitizes the garbage pointer passed by the loader on some platforms.
+    parent = NULL;
+
 	*obj = gl_create_object(multi_recorder_class);
 	if (*obj!=nullptr)
 	{
@@ -704,7 +708,37 @@ int read_multi_properties(struct recorder *my, OBJECT *obj, RECORDER_MAP *rmap, 
 	return count;
 }
 
-TIMESTAMP sync_multi_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass) {
+// TIMESTAMP sync_multi_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass) 
+// {
+
+extern "C" TIMESTAMP sync_multi_recorder(void *object, ...)
+{
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
+
+	if (!callback) {
+        gl_error("callback is null in sync_multi_recorder");
+        return 0;  // Fail module load
+    }
+
+	// Add structure validation
+    // std::cerr << "Callback structure size check:" << std::endl;
+    // std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
+    // std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
+    // std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
+    
+
+	if (!callback->time.local_datetime) {
+        gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
+        return FAILED;
+    }
+
+
 	struct recorder *my = object_data<struct recorder>(obj);
 	typedef enum {
 		NONE = '\0', LT = '<', EQ = '=', GT = '>'
@@ -821,6 +855,7 @@ TIMESTAMP sync_multi_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass) {
 	}
     return sync_multi_recorder_error(&obj, &my, buffer);
 }
+
 TIMESTAMP sync_multi_recorder_error(OBJECT **obj, struct recorder **my, char2048 buffer) {
 	if ((*my)->status==TS_ERROR)
 	{

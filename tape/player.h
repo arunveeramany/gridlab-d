@@ -8,6 +8,14 @@
 #include "property.h"
 #include "tape.h"
 
+// A new struct to safely link properties with their metadata
+struct linked_property {
+    PROPERTY *target;       // Pointer to the ORIGINAL property struct
+    double scale;           // Scale factor for unit conversion
+    int complex_offset;     // -1 for non-complex, otherwise byte offset for Re/Im
+    linked_property *next;  // Pointer to the next property in the player's list
+};
+
 /** @}
   @addtogroup player
 	@{
@@ -43,7 +51,8 @@ class player : public gld_object {
         TIMESTAMP ns;
         char1024 value;
     } delta_track;	// Added for deltamode fixes
-    PROPERTY *target;
+    // PROPERTY *target;
+    linked_property *target; //< linked list of target properties
     TAPEOPS *ops;
 
     player(MODULE *module);

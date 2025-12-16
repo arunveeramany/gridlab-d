@@ -1563,6 +1563,7 @@ EXPORT int create_regulator(OBJECT **obj, OBJECT *parent)
 {
 	try
 	{
+		
 		*obj = gl_create_object(regulator::oclass);
 		if (*obj!=nullptr)
 		{

@@ -15,6 +15,7 @@
 #include <cstdlib>
 
 #include "triplex_load.h"
+#include "triplex_meter.h"
 
 CLASS* triplex_load::oclass = nullptr;
 CLASS* triplex_load::pclass = nullptr;
@@ -186,8 +187,30 @@ TIMESTAMP triplex_load::presync(TIMESTAMP t0)
 
 TIMESTAMP triplex_load::sync(TIMESTAMP t0)
 {
+	OBJECT *obj = object_header(this);
+
 	//Functionalized load update - so deltamode can parttake
 	triplex_load_update_fxn();
+
+	    // If we have a parent meter, accumulate our load values into it
+    if (obj->parent != nullptr && gl_object_isa(obj->parent, "triplex_meter", "powerflow"))
+    {
+        triplex_meter *pMeter = object_data<triplex_meter>(obj->parent);
+        
+        // Accumulate power, current, and shunt loads into parent
+        pMeter->power[0] += power[0];
+        pMeter->power[1] += power[1];
+        pMeter->power[2] += power[2];
+        
+        pMeter->current[0] += current[0];
+        pMeter->current[1] += current[1];
+        pMeter->current12 += current12;
+        
+        pMeter->shunt[0] += shunt[0];
+        pMeter->shunt[1] += shunt[1];
+        pMeter->shunt[2] += shunt[2];
+    }
+
 
 	//Must be at the bottom, or the new values will be calculated after the fact
 	TIMESTAMP result = triplex_node::sync(t0);
@@ -908,8 +931,32 @@ EXPORT int init_triplex_load(OBJECT *obj)
 * @param pass the current pass for this sync call
 * @return t1, where t1>t0 on success, t1=t0 for retry, t1<t0 on failure
 */
-EXPORT TIMESTAMP sync_triplex_load(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+// EXPORT TIMESTAMP sync_triplex_load(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+// {
+
+extern "C" TIMESTAMP sync_triplex_load(void *object, ...)
 {
+
+	// Add early validation of callback
+    if (!callback) {
+        gl_error("sync_triplex_load: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_triplex_load: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
+
+
 	try {
 		triplex_load *pObj = object_data<triplex_load>(obj);
 		TIMESTAMP t1 = TS_NEVER;

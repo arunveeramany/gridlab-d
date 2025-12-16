@@ -23,19 +23,28 @@ CLASS *g_assert::oclass = nullptr;
 // static g_assert defaults_storage; // Static storage for default values
 // g_assert *g_assert::defaults = &defaults_storage;
 
-g_assert::g_assert()
+// g_assert::g_assert()
+// {
+//     status = AS_INIT;
+//     relation = TCOP_EQ;
+//     target[0] = '\0';
+//     part[0] = '\0';
+//     value[0] = '\0';
+//     value2[0] = '\0';
+// }
+
+
+g_assert::g_assert(MODULE *module): gld_object()
 {
-    status = AS_INIT;
+	
+
+
+	status = AS_INIT;
     relation = TCOP_EQ;
     target[0] = '\0';
     part[0] = '\0';
     value[0] = '\0';
     value2[0] = '\0';
-}
-
-
-g_assert::g_assert(MODULE *module): g_assert()
-{
 
 	if (oclass == nullptr)
 	{

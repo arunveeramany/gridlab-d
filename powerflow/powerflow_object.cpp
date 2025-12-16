@@ -177,6 +177,16 @@ int powerflow_object::init(OBJECT *parent)
 {
 	OBJECT *obj = object_header(this);
 
+	    // --- FIX FOR PLATFORM-SPECIFIC UNINITIALIZED POINTER BUG ---
+    // Any top-level powerflow object (fault_check, configurations, etc.)
+    // may have an uninitialized 'parent' argument on some compilers.
+    // This check sanitizes the pointer before it is used anywhere else.
+    if (obj->parent == NULL)
+    {
+        parent = NULL;
+    }
+
+
 	/* unspecified phase inherits from parent, if any */
 	if (parent && gl_object_isa(parent,"powerflow_object"))
 	{

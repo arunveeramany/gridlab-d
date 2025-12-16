@@ -315,6 +315,10 @@ EXPORT int create_transformer_configuration(OBJECT **obj, OBJECT *parent)
 {
 	try
 	{
+		// This object is always top-level, so its parent must be NULL.
+        // This line sanitizes the garbage pointer passed by the loader on some platforms.
+        parent = NULL;
+
 		*obj = gl_create_object(transformer_configuration::oclass);
 		if (*obj!=nullptr)
 		{

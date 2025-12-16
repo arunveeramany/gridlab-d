@@ -319,7 +319,15 @@ int link_object::init(OBJECT *parent)
 	*/
 
 	// General check - make sure the from and to are actually node objects!
-	if (!gl_object_isa(from, "node", "powerflow"))
+	// if (!gl_object_isa(from, "node", "powerflow"))
+	if ( !(strcmp(from->oclass->name, "node") == 0 ||
+	   strcmp(from->oclass->name, "capacitor") == 0 ||
+       strcmp(from->oclass->name, "meter") == 0 ||
+       strcmp(from->oclass->name, "load") == 0 ||
+       strcmp(from->oclass->name, "substation") == 0 || 
+       strcmp(from->oclass->name, "triplex_node") == 0 ||
+       strcmp(from->oclass->name, "triplex_meter") == 0 ||
+       strcmp(from->oclass->name, "triplex_load") == 0) )
 	{
 		GL_THROW("link::init(): link:%d - %s - 'from' object is not a powerflow node", obj->id, (obj->name ? obj->name : "Unnamed"));
 		/*  TROUBLESHOOT
@@ -327,7 +335,16 @@ int link_object::init(OBJECT *parent)
 		*/
 	}
 
-	if (!gl_object_isa(to, "node", "powerflow"))
+	// if (!gl_object_isa(to, "node", "powerflow"))
+	// WORKAROUND for broken isa() on macOS
+	if ( !(strcmp(to->oclass->name, "node") == 0 ||
+	   strcmp(to->oclass->name, "capacitor") == 0 ||
+       strcmp(to->oclass->name, "meter") == 0 ||
+       strcmp(to->oclass->name, "load") == 0 ||
+       strcmp(to->oclass->name, "substation") == 0 ||
+       strcmp(to->oclass->name, "triplex_node") == 0 ||
+       strcmp(to->oclass->name, "triplex_meter") == 0 ||
+       strcmp(to->oclass->name, "triplex_load") == 0) )
 	{
 		GL_THROW("link::init(): link:%d - %s - 'to' object is not a powerflow node", obj->id, (obj->name ? obj->name : "Unnamed"));
 		/*  TROUBLESHOOT
@@ -385,7 +402,15 @@ int link_object::init(OBJECT *parent)
 		if (obj->parent == nullptr)
 		{
 			/* make 'from' object parent of this object */
-			if (gl_object_isa(from, "node"))
+			// if (gl_object_isa(from, "node"))
+			if (strcmp(from->oclass->name, "node") == 0 ||
+			   strcmp(from->oclass->name, "capacitor") == 0 ||
+				strcmp(from->oclass->name, "meter") == 0 ||
+				strcmp(from->oclass->name, "load") == 0 ||
+				strcmp(from->oclass->name, "substation") == 0 ||
+				strcmp(from->oclass->name, "triplex_node") == 0 ||
+				strcmp(from->oclass->name, "triplex_meter") == 0 ||
+				strcmp(from->oclass->name, "triplex_load") == 0)
 			{
 				if (gl_set_parent(obj, from) < 0)
 					throw "error when setting parent";
@@ -408,7 +433,15 @@ int link_object::init(OBJECT *parent)
 		if (to->parent == nullptr)
 		{
 			/* make this object parent to 'to' object */
-			if (gl_object_isa(to, "node"))
+			// if (gl_object_isa(to, "node"))
+			if (strcmp(from->oclass->name, "node") == 0 ||
+			   strcmp(from->oclass->name, "capacitor") == 0 ||
+				strcmp(from->oclass->name, "meter") == 0 ||
+				strcmp(from->oclass->name, "load") == 0 ||
+				strcmp(from->oclass->name, "substation") == 0 ||
+				strcmp(from->oclass->name, "triplex_node") == 0 ||
+				strcmp(from->oclass->name, "triplex_meter") == 0 ||
+				strcmp(from->oclass->name, "triplex_load") == 0)
 			{
 				if (gl_set_parent(to, obj) < 0)
 					throw "error when setting parent";
@@ -3525,6 +3558,15 @@ TIMESTAMP link_object::postsync(TIMESTAMP t0)
 #endif
 
 	} // End FBS
+	else if (solver_method == SM_NR)  // ← ADD THIS BLOCK
+    {
+        // For NR solver, we need to properly handle the sync return
+        // Check if this link is involved in an active fault or reconfiguration
+        
+        // For NR solver on first timestep, always allow progression
+    	// The fault_check will handle topology on subsequent iterations
+   		 TRET = TS_NEVER;  // Allow progression
+    }
 
 	// Call functionalized postsync items
 	BOTH_link_postsync_fxn();
@@ -3761,8 +3803,36 @@ EXPORT int init_link(OBJECT *obj)
  * @param pass the current pass for this sync call
  * @return t1, where t1>t0 on success, t1=t0 for retry, t1<t0 on failure
  */
-EXPORT TIMESTAMP sync_link(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+// EXPORT TIMESTAMP sync_link(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+// {
+extern "C" TIMESTAMP sync_link(void *object, ...)
 {
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
+    
+	if (!callback) {
+        gl_error("callback is null in sync_link");
+        return 0;  // Fail module load
+    }
+
+	    // Add structure validation
+    // std::cerr << "Callback structure size check:" << std::endl;
+    // std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
+    // std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
+    // std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
+    
+
+	if (!callback->time.local_datetime) {
+        gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
+        return FAILED;
+    }
+
+
 	try
 	{
 		link_object *pObj = object_data<link_object>(obj);

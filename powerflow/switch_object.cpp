@@ -871,8 +871,35 @@ TIMESTAMP switch_object::presync(TIMESTAMP t0)
 			} else {
 				link_fault_on (&protect_obj, fault_type, &implemented_fault, &repair_time);
 			}
+
+			if (!meshed_fault_checking_enabled && fault_check_object != nullptr)
+            {
+                // Signal to fault_check that we've changed
+                std::unique_lock<std::shared_mutex> lock(SharedMutexManager::get_mutex(NR_swing_bus));
+                NR_admit_change = true;
+                lock.unlock();
+            }
 		}
 	}
+	else if (meshed_fault_checking_enabled)  // ← ADD THIS BLOCK
+    {
+        // Meshed mode: delegate topology update to fault_check
+        if (status != prev_status)
+        {
+            if (fault_check_object != nullptr)
+            {
+                FUNCTIONADDR fault_handle = (FUNCTIONADDR)(gl_get_function(fault_check_object, "reliability_alterations"));
+                
+                if (fault_handle != nullptr)
+                {
+                    // Call the fault_check function to update topology
+                    ((int (*)(OBJECT*, int, bool))(fault_handle))(fault_check_object, NR_branch_reference, (status == SW_OPEN));
+                }
+            }
+            
+            prev_status = status;  // ← ADD: Update tracking variable
+        }
+    }
 	// Call the ancestor's presync
 	TIMESTAMP result = link_object::presync(t0);
 	return result;
@@ -2015,6 +2042,7 @@ EXPORT int create_switch(OBJECT **obj, OBJECT *parent)
 {
 	try
 	{
+
 		*obj = gl_create_object(switch_object::oclass);
 		if (*obj!=nullptr)
 		{
@@ -2328,4 +2356,16 @@ int switch_object::kmldata(int (*stream)(const char*,...))
 	return 2;
 }
 
+
+TIMESTAMP switch_object::postsync(TIMESTAMP t0)
+{
+    TIMESTAMP t1 = link_object::postsync(t0);
+    OBJECT *obj = object_header(this);
+    
+    // DO NOT force re-evaluation in meshed mode during postsync
+    // The fault_check should handle mesh topology updates, not postsync
+    // Postsync should only return what the parent link_object computed
+    
+    return t1;  // Simply return parent's result
+}
 /**@}**/

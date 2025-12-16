@@ -100,6 +100,10 @@ EXPORT int create_overhead_line_conductor(OBJECT **obj, OBJECT *parent)
 {
 	try
 	{
+		// This object is always top-level, so its parent must be NULL.
+		// This line sanitizes the garbage pointer passed by the loader on some platforms.
+		parent = NULL;
+
 		*obj = gl_create_object(overhead_line_conductor::oclass);
 		if (*obj!=nullptr)
 		{

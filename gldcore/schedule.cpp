@@ -2109,14 +2109,19 @@ void schedule_syncproc(SCHEDULESYNCDATA *data)
 	// Processing loop
 	while (data->ok)
 	{
+		TIMESTAMP local_t1;
 		// Lock access to start condition using RAII
 		{
 			std::unique_lock<std::mutex> start_lock(start_sch_mutex);
+
+			output_debug("Worker thread waiting: data->t0=%lld, next_t1_sch=%lld", 
+             data->t0, next_t1_sch);
 
 			// Wait for thread start condition with predicate
 			start_sch.wait(start_lock, [data]()
 						   { return data->t0 != next_t1_sch; });
 
+			local_t1 = next_t1_sch;
 			// Lock automatically released at the end of the scope
 		}
 
@@ -2126,13 +2131,13 @@ void schedule_syncproc(SCHEDULESYNCDATA *data)
 		// Fixed the loop condition: replaced comma with logical AND
 		for (sch = data->sch, n = 0; sch != nullptr && n < data->nsch; sch = sch->next, n++)
 		{
-			TIMESTAMP t = schedule_sync(sch, next_t1_sch);
+			TIMESTAMP t = schedule_sync(sch, local_t1);
 			if (t < t2)
 				t2 = t;
 		}
 
 		// Signal completed condition
-		data->t0 = next_t1_sch;
+		data->t0 = local_t1;
 
 		// Lock access to done condition using RAII
 		{
@@ -2447,44 +2452,47 @@ TIMESTAMP schedule_syncall(TIMESTAMP t1) /**< the time to which the schedule is 
 	// no threading required, or only one thread available
 	if (n_threads_sch < 2)
 	{
+
 		// process list directly on the main thread
-		SCHEDULE *sch;
-		// Lock the global list while iterating to ensure thread safety
-		{
-			std::lock_guard<std::recursive_mutex> lock(g_schedule_list_mutex);
-			for (sch = schedule_list; sch != nullptr; sch = sch->next)
+		
+
+    		for (SCHEDULE* sch = schedule_list; sch != nullptr; sch = sch->next)
 			{
 				TIMESTAMP t3 = schedule_sync(sch, t1);
 				if (t3 < t2)
 					t2 = t3;
 			}
-		}
+		
 		next_t2_sch = t2;
 	}
 	else // Use the multi-threaded synchronization logic
 	{
-		// Lock the 'done' condition for the duration of the wait
-		std::unique_lock<std::mutex> doneLock(done_sch_mutex);
-
+		{
+			// Lock the 'done' condition for the duration of the wait
+			std::unique_lock<std::mutex> doneLock(done_sch_mutex);
+			donecount_sch = n_threads_sch;
+			next_t2_sch = TS_NEVER;
+		}
 		// initialize wait count for this sync cycle
-		donecount_sch = n_threads_sch;
 
 		// Use a separate, scoped lock to update and signal the start condition
 		{
 			std::unique_lock<std::mutex> startLock(start_sch_mutex);
 			// update start condition
 			next_t1_sch = t1;
-			next_t2_sch = TS_NEVER;
 
 			// signal all the worker threads to start
 			start_sch.notify_all();
 		} // startLock is automatically released here
 
-		// begin wait with a predicate to safely handle spurious wakeups
-		done_sch.wait(doneLock, []()
-					  { return donecount_sch <= 0; });
-		output_debug("passed donecount==0 condition");
+		{
+			std::unique_lock<std::mutex> waitLock(done_sch_mutex);
 
+			// begin wait with a predicate to safely handle spurious wakeups
+			done_sch.wait(waitLock, []()
+						{ return donecount_sch <= 0; });
+			output_debug("passed donecount==0 condition");
+		}
 		// doneLock is automatically released here
 
 		// process results from all threads

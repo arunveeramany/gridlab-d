@@ -3565,6 +3565,8 @@ EXPORT int create_load(OBJECT **obj, OBJECT *parent)
 {
 	try
 	{
+		
+
 		*obj = gl_create_object(load::oclass);
 		if (*obj!=nullptr)
 		{

@@ -49,6 +49,8 @@ public:
 	void BOTH_switch_sync_pre(unsigned char *work_phases_pre, unsigned char *work_phases_post);
 	void NR_switch_sync_post(unsigned char *work_phases_pre, unsigned char *work_phases_post, OBJECT *obj, TIMESTAMP *t0, TIMESTAMP *t2);
 
+	TIMESTAMP postsync(TIMESTAMP t0);
+	
 	//Deltamode call
 	SIMULATIONMODE inter_deltaupdate_switch(unsigned int64 delta_time, unsigned long dt, unsigned int iteration_count_val, bool interupdate_pos);
 
