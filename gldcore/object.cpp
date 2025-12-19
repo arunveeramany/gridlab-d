@@ -383,6 +383,8 @@ OBJECT *object_create_single(CLASS *oclass)
 	}
 
 	memset(obj, 0, sz + oclass->size);
+	
+
 
 	tp_next %= tp_count;
 
@@ -1125,12 +1127,12 @@ int object_set_value_by_name(OBJECT *obj,		/**< the object to change */
 							 PROPERTYNAME name, /**< the name of the property to change */
 							 char *value)		/**< the value to set */
 {
-	if (global_verbose_mode)
-		std::cerr << "Setting property " << name
-				  << " to value " << value
-				  << " on object type " << obj->oclass->name
-				  << " with id " << obj->id
-				  << std::endl;
+	// if (global_verbose_mode)
+		// std::cerr << "Setting property " << name
+		// 		  << " to value " << value
+		// 		  << " on object type " << obj->oclass->name
+		// 		  << " with id " << obj->id
+		// 		  << std::endl;
 
 	// Step 1: Check if value could be a schedule reference
 	bool might_be_schedule = false;
@@ -1897,6 +1899,19 @@ TIMESTAMP object_heartbeat(OBJECT *obj)
  **/
 int object_init(OBJECT *obj) /**< the object to initialize */
 {
+
+	if (obj->oclass == nullptr || obj->oclass->magic != CLASSVALID)
+    {
+        char oname[256];
+        output_error("object_init(): object '%s' (id %d) has invalid class pointer %p (magic=%08x)",
+                     object_name(obj, oname, sizeof(oname)),
+                     obj->id,
+                     (void*)obj->oclass,
+                     obj->oclass ? (unsigned)obj->oclass->magic : 0);
+        exec_setexitcode(XC_EXCEPTION);
+        return FAILED;
+    }
+
 	clock_t t = (clock_t)exec_clock();
 	int rv = 1;
 	obj->clock = global_starttime;
@@ -1907,8 +1922,8 @@ int object_init(OBJECT *obj) /**< the object to initialize */
         char objname[256];
         bool parent_valid = false;
         
-        fprintf(stderr, "DEBUG: Validating parent %p for object %s\n", 
-                obj->parent, object_name(obj, objname, sizeof(objname)));
+        // fprintf(stderr, "DEBUG: Validating parent %p for object %s\n", 
+                // obj->parent, object_name(obj, objname, sizeof(objname)));
         
         // Check: parent must be in the global object list
         OBJECT *check = object_get_first();
@@ -1919,13 +1934,13 @@ int object_init(OBJECT *obj) /**< the object to initialize */
             if (check == obj->parent)
             {
                 parent_valid = true;
-                fprintf(stderr, "DEBUG: Found valid parent at position %d\n", check_count);
+                // fprintf(stderr, "DEBUG: Found valid parent at position %d\n", check_count);
                 break;
             }
             check = check->next;
         }
         
-        fprintf(stderr, "DEBUG: Checked %d objects, parent_valid = %d\n", check_count, parent_valid);
+        // fprintf(stderr, "DEBUG: Checked %d objects, parent_valid = %d\n", check_count, parent_valid);
         
         if (!parent_valid)
         {

@@ -2249,7 +2249,11 @@ EXPORT int create_windturb_dg(OBJECT **obj, OBJECT *parent)
 		if (*obj != nullptr)
 		{
 			windturb_dg *my = /*OBJECTDATA(*obj,<>)*/ object_data<windturb_dg>(*obj);
-			gl_set_parent(*obj, parent);
+			if (!my) {
+				gl_error("create_windturb_dg: obj->data is null for class 'windturb_dg'");
+				return 0;
+			}
+			// gl_set_parent(*obj, parent);
 			return my->create();
 		}
 		else

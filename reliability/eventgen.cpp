@@ -2450,7 +2450,11 @@ EXPORT int create_eventgen(OBJECT **obj, OBJECT *parent)
 		if (*obj != nullptr)
 		{
 			eventgen *my = object_data<eventgen>(*obj);
-			gl_set_parent(*obj, parent);
+			if (!my) {
+				gl_error("create_eventgen: obj->data is null for class 'eventgen'");
+				return 0;
+			}
+			// gl_set_parent(*obj, parent);
 			return my->create();
 		}
 		else

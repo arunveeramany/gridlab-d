@@ -323,7 +323,11 @@ EXPORT int create_transformer_configuration(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			transformer_configuration *my = object_data<transformer_configuration>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_transformer_configuration: obj->data is null for class 'transformer_configuration'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

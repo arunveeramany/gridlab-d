@@ -1,0 +1,77 @@
+{
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_custom_target",
+			"add_dependencies"
+		],
+		"files" : 
+		[
+			"third_party/SuperLU/EXAMPLE/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 17,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 18,
+				"parent" : 0
+			}
+		]
+	},
+	"dependencies" : 
+	[
+		{
+			"backtrace" : 2,
+			"id" : "sitersol::@a239d68a0100b9e3dd33"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "sitersol1::@a239d68a0100b9e3dd33"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "slinsol::@a239d68a0100b9e3dd33"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "slinsol1::@a239d68a0100b9e3dd33"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "slinsolx::@a239d68a0100b9e3dd33"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "slinsolx1::@a239d68a0100b9e3dd33"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "slinsolx2::@a239d68a0100b9e3dd33"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "slinsolx3::@a239d68a0100b9e3dd33"
+		}
+	],
+	"id" : "examples_float::@a239d68a0100b9e3dd33",
+	"name" : "examples_float",
+	"paths" : 
+	{
+		"build" : "third_party/SuperLU/EXAMPLE",
+		"source" : "third_party/SuperLU/EXAMPLE"
+	},
+	"sources" : [],
+	"type" : "UTILITY"
+}

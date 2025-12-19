@@ -1473,7 +1473,11 @@ EXPORT int create_dishwasher(OBJECT **obj, OBJECT *parent)
 	if (*obj!=nullptr)
 	{
 		dishwasher *my = object_data<dishwasher>(*obj);
-		gl_set_parent(*obj,parent);
+		if (!my) {
+				gl_error("create_dishwasher: obj->data is null for class 'dishwasher'");
+				return 0;
+			}
+		// gl_set_parent(*obj,parent);
 		my->create();
 		return 1;
 	}

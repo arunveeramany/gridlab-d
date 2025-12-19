@@ -83,7 +83,11 @@ EXPORT int create_transformer(OBJECT **obj, OBJECT *parent)
 	if (*obj!=nullptr)
 	{
 		transformer *my = OBJECTDATA(*obj,transformer);
-		gl_set_parent(*obj,parent);
+		if (!my) {
+				gl_error("create_transformer: obj->data is null for class 'transformer'");
+				return 0;
+			}
+		// gl_set_parent(*obj,parent);
 		my->create();
 		return 1;
 	}

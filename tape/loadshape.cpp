@@ -212,7 +212,11 @@ EXPORT int create_loadshape(OBJECT **obj, OBJECT *parent)
 	if (*obj!=nullptr)
 	{
 		loadshape *my = OBJECTDATA(*obj,loadshape);
-		gl_set_parent(*obj,parent);
+		if (!my) {
+				gl_error("create_loadshape: obj->data is null for class 'loadshape'");
+				return 0;
+			}
+		// gl_set_parent(*obj,parent);
 		my->create();
 		return 1;
 	}

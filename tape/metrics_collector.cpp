@@ -1519,7 +1519,11 @@ EXPORT int create_metrics_collector(OBJECT **obj, OBJECT *parent){
 		*obj = gl_create_object(metrics_collector::oclass);
 		if(*obj != nullptr){
 			metrics_collector *my = object_data<metrics_collector>(*obj);
-			gl_set_parent(*obj, parent);
+			if (!my) {
+				gl_error("create_metrics_collector: obj->data is null for class 'metrics_collector' (type mismatch)");
+				return 0;
+			}
+			// gl_set_parent(*obj, parent);
 			rv = my->create();
 		}
 	}

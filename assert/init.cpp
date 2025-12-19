@@ -51,20 +51,20 @@ static_assert(true, "gld_assert.h successfully included.");
 EXPORT CLASS* init(CALLBACKS *fntable, MODULE *mod, int argc, char *argv[])
 {
     callback = fntable;
-	std::cerr << "Received callback table in init_enum_assert at address: " << (void*)callback << std::endl;
+	// std::cerr << "Received callback table in init_enum_assert at address: " << (void*)callback << std::endl;
 
 	if (!callback) {
         std::cerr << "FATAL: init_enum_assert received null callback table" << std::endl;
         return 0;
     }
-    std::cerr << "Callback initialized at address: " << (void*)callback << std::endl;
-	std::cerr << "properties.get_property callback value: " << (void*)callback->properties.get_property << std::endl;
+    // std::cerr << "Callback initialized at address: " << (void*)callback << std::endl;
+	// std::cerr << "properties.get_property callback value: " << (void*)callback->properties.get_property << std::endl;
 
 	if (!callback->properties.get_property) {
         std::cerr << "FATAL: properties.get_property callback is null" << std::endl;
         return 0;
     }
-	std::cerr << "properties.get_property callback initialized at address: " << (void*)callback->properties.get_property << std::endl;
+	// std::cerr << "properties.get_property callback initialized at address: " << (void*)callback->properties.get_property << std::endl;
 
 	new g_assert(mod);
     new enum_assert(mod); // Instantiate the class to trigger registration

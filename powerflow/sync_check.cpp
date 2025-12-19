@@ -1038,7 +1038,11 @@ EXPORT int create_sync_check(OBJECT **obj, OBJECT *parent)
 		if (*obj != nullptr)
 		{
 			sync_check *my = object_data<sync_check>(*obj);
-			gl_set_parent(*obj, parent);
+			if (!my) {
+				gl_error("create_sync_check: obj->data is null for class 'sync_check'");
+				return 0;
+			}
+			// gl_set_parent(*obj, parent);
 			return my->create();
 		}
 		else

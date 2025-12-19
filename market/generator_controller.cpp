@@ -1936,7 +1936,11 @@ EXPORT int create_generator_controller(OBJECT **obj, OBJECT *parent)
 		if (*obj != nullptr)
 		{
 			generator_controller *my = /*OBJECTDATA(obj,<>)*/ object_data<generator_controller>(*obj);
-			gl_set_parent(*obj, parent);
+			if (!my) {
+				gl_error("create_generator_controller: obj->data is null for class 'generator_controller'");
+				return 0;
+			}
+			// gl_set_parent(*obj, parent);
 			return my->create();
 		}
 	}

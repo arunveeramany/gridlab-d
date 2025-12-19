@@ -550,7 +550,7 @@ EXPORT int create_triplex_line(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			triplex_line *my = object_data<triplex_line>(*obj);
-			gl_set_parent(*obj,parent);
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

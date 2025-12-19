@@ -145,6 +145,10 @@ object <class>[:<spec>] { // spec may be <id>, or <startid>..<endid>, or ..<coun
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <string.h>
+#include <ctype.h>
+
+
 #include "stream.h"
 #include "http_client.h"
 #include "link.h"
@@ -223,23 +227,44 @@ static char *format_object(OBJECT *obj)
 	return buffer;
 }
 
+// static char *strip_right_white(char *b)
+// {
+// 	size_t len, i;
+// 	len = strlen(b) - 1;
+// 	for (i = len; i >= 0; --i)
+// 	{
+// 		if (b[i] == '\r' || b[i] == '\n' || b[i] == ' ' || b[i] == '\t')
+// 		{
+// 			b[i] = '\0';
+// 		}
+// 		else
+// 		{
+// 			break;
+// 		}
+// 	}
+// 	return b;
+// }
+
+
+
 static char *strip_right_white(char *b)
 {
-	size_t len, i;
-	len = strlen(b) - 1;
-	for (i = len; i >= 0; --i)
-	{
-		if (b[i] == '\r' || b[i] == '\n' || b[i] == ' ' || b[i] == '\t')
-		{
-			b[i] = '\0';
-		}
-		else
-		{
-			break;
-		}
-	}
-	return b;
+    if (b == NULL) return NULL;               // defensive
+    char *end = b + strlen(b);               // points at the NUL
+
+    // Walk left while previous char is whitespace (space/tab) or CR/LF
+    while (end > b) {
+        unsigned char c = (unsigned char)end[-1];
+        if (isspace(c) || c == '\r' || c == '\n') {
+            --end;
+        } else {
+            break;
+        }
+    }
+    *end = '\0';
+    return b;
 }
+
 
 /* inline source code support */
 char *code_block = nullptr;
@@ -3968,8 +3993,8 @@ static int class_block(PARSER)
 				append_code("/*RESETLINE*/\n");
 				append_code("extern \"C\" int64 create_%s(OBJECT **obj, OBJECT *parent)\n{\n", oclass->name);
 				append_code(
-					"\tif ((*obj=gl_create_object(myclass))==nullptr)\n\t\treturn 0;\n"
-					"\tif ( parent ) gl_set_parent(*obj,parent);\n",
+					"\tif ((*obj=gl_create_object(myclass))==nullptr)\n\t\treturn 0;\n",
+					//"\tif ( parent ) gl_set_parent(*obj,parent);\n",
 					oclass->name, oclass->name);
 				if (functions & FN_CREATE)
 				{
@@ -5101,10 +5126,12 @@ static int object_block(PARSER, OBJECT *parent, OBJECT **subobj)
 		REPEAT;
 		if (oclass->create != nullptr)
 		{
-			    std::cerr << "PARSER_DEBUG: Reached modified create call in object_block" << std::endl;
+			    // std::cerr << "PARSER_DEBUG: Reached modified create call in object_block" << std::endl;
 #ifdef NAMEOBJ
 			obj = &nameobj;
 #endif
+			// Pass nullptr as parent during creation - parent relationships are established
+			// later through object_properties() when the "parent" property is parsed
 			if ((*oclass->create)(&obj, nullptr) == 0)
 			{
 				output_error_raw("%s(%d): create failed for object %s:%d", filename, linenum, classname, id);
@@ -5128,7 +5155,7 @@ static int object_block(PARSER, OBJECT *parent, OBJECT **subobj)
 				output_error_raw("%s(%d): create failed for object %s:%d", filename, linenum, classname, id);
 				REJECT;
 			}
-			object_set_parent(obj, nullptr);
+			// object_set_parent(obj, nullptr);
 		}
 		if (id != -1 && load_set_index(obj, (OBJECTNUM)id) == FAILED)
 		{

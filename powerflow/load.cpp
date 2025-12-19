@@ -3571,7 +3571,11 @@ EXPORT int create_load(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			load *my = object_data<load>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_load: obj->data is null for class 'load'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

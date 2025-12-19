@@ -1663,7 +1663,11 @@ EXPORT int create_solar(OBJECT **obj, OBJECT *parent)
 		if (*obj != nullptr)
 		{
 			solar *my = /*OBJECTDATA(obj,<>)*/ object_data<solar>(*obj);
-			gl_set_parent(*obj, parent);
+			if (!my) {
+				gl_error("create_solar: obj->data is null for class 'solar'");
+				return 0;
+			}
+			// gl_set_parent(*obj, parent);
 			return my->create();
 		}
 		else

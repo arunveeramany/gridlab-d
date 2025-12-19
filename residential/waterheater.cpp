@@ -2080,7 +2080,11 @@ EXPORT int create_waterheater(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			waterheater *my = object_data<waterheater>(*obj);;
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_waterheater: obj->data is null for class 'recloser'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			my->create();
 			return 1;
 		}

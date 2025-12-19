@@ -134,7 +134,11 @@ EXPORT int create_residential_enduse(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			residential_enduse *my = object_data<residential_enduse>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_residential_enduse: obj->data is null for class 'residential_enduse'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

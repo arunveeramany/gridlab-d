@@ -1865,7 +1865,11 @@ EXPORT int create_auction(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			auction *my = /*OBJECTDATA(obj,<>)*/ object_data<auction>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_auction: obj->data is null for class 'auction'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

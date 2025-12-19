@@ -768,7 +768,11 @@ EXPORT int create_clotheswasher(OBJECT **obj, OBJECT *parent)
 	if (*obj!=nullptr)
 	{
 		clotheswasher *my = object_data<clotheswasher>(*obj);
-		gl_set_parent(*obj,parent);
+		if (!my) {
+				gl_error("create_clotheswasher: obj->data is null for class 'clotheswasher'");
+				return 0;
+			}
+		// gl_set_parent(*obj,parent);
 		my->create();
 		return 1;
 	}

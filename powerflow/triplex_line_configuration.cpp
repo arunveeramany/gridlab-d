@@ -88,7 +88,11 @@ EXPORT int create_triplex_line_configuration(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			triplex_line_configuration *my = object_data<triplex_line_configuration>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_triplex_line_configuration: obj->data is null for class 'triplex_line_configuration'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

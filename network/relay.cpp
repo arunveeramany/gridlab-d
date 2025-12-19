@@ -159,7 +159,11 @@ EXPORT int create_relay(OBJECT **obj, OBJECT *parent)
 	if (*obj!=nullptr)
 	{
 		relay *my = OBJECTDATA(*obj,relay);
-		gl_set_parent(*obj,parent);
+		if (!my) {
+				gl_error("create_relay: obj->data is null for class 'relay'");
+				return 0;
+			}
+		// gl_set_parent(*obj,parent);
 		my->create();
 		return 1;
 	}

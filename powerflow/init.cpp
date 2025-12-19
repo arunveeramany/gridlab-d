@@ -108,7 +108,7 @@ void cleanup_tracked_objects() {
 
 EXPORT CLASS *init(CALLBACKS *fntable, MODULE *module, int argc, char *argv[])
 {
-	std::cerr << "Powerflow *init called" << std::endl;
+	// std::cerr << "Powerflow *init called" << std::endl;
 
 	 // Save the callback table pointer
     callback = fntable;
@@ -127,8 +127,8 @@ EXPORT CLASS *init(CALLBACKS *fntable, MODULE *module, int argc, char *argv[])
     }
     
     // Debug output
-    std::cerr << "Powerflow module - callback address: " << (void*)callback << std::endl;
-    std::cerr << "Powerflow module - time.local_datetime: " << (void*)callback->time.local_datetime << std::endl;
+    // std::cerr << "Powerflow module - callback address: " << (void*)callback << std::endl;
+    // std::cerr << "Powerflow module - time.local_datetime: " << (void*)callback->time.local_datetime << std::endl;
 
 
 	// if (!set_callback(fntable)) {

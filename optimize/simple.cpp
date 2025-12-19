@@ -376,7 +376,11 @@ EXPORT int create_simple(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			simple *my = /*OBJECTDATA(obj,<>)*/ object_data<simple>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_simple: obj->data is null for class 'simple'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

@@ -891,7 +891,11 @@ EXPORT int create_emissions(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			emissions *my = /*OBJECTDATA(obj,<>)*/ object_data<emissions>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_emissions: obj->data is null for class 'emissions'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 	}

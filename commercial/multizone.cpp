@@ -148,7 +148,11 @@ EXPORT int create_multizone(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			multizone *my = /*OBJECTDATA(*obj, multizone)*/   object_data<multizone>(*obj)   ;
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_multizone: obj->data is null for class 'multizone'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

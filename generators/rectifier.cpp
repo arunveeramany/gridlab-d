@@ -251,7 +251,11 @@ EXPORT int create_rectifier(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			rectifier *my = /*OBJECTDATA(obj,<>)*/ object_data<rectifier>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_rectifier: obj->data is null for class 'rectifier'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

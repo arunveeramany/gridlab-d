@@ -175,7 +175,11 @@ EXPORT int create_series_reactor(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			series_reactor *my = object_data<series_reactor>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_series_reactor: obj->data is null for class 'series_reactor'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

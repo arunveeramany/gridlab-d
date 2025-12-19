@@ -1588,7 +1588,11 @@ EXPORT int create_series_compensator(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			series_compensator *my = object_data<series_compensator>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_series_compensator: obj->data is null for class 'series_compensator'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

@@ -104,6 +104,10 @@ private:
     TIMESTAMP interval_dt;
     int interval_count;
 
+	gld::complex power_1;
+    gld::complex power_2;
+    gld::complex power_12;
+
 public:
 	static CLASS *oclass;
 	static CLASS *pclass;

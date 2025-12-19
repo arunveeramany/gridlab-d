@@ -256,7 +256,11 @@ EXPORT int create_billdump(OBJECT **obj, OBJECT *parent)
 		if (*obj != nullptr)
 		{
 			billdump *my = /*OBJECTDATA(obj,<>)*/ object_data<billdump>(*obj);
-			gl_set_parent(*obj, parent);
+			if (!my) {
+				gl_error("create_billdump: obj->data is null for class 'billdump'");
+				return 0;
+			}
+			// gl_set_parent(*obj, parent);
 			return my->create();
 		}
 		else

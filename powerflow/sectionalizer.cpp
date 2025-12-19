@@ -99,7 +99,11 @@ EXPORT int create_sectionalizer(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			sectionalizer *my = object_data<sectionalizer>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_sectionalizer: obj->data is null for class 'sectionalizer'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

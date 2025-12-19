@@ -7092,7 +7092,11 @@ EXPORT int create_inverter_dyn(OBJECT **obj, OBJECT *parent)
 		if (*obj != nullptr)
 		{
 			inverter_dyn *my = /*OBJECTDATA(*obj,<>)*/ object_data<inverter_dyn>(*obj);
-			gl_set_parent(*obj, parent);
+			if (!my) {
+				gl_error("create_inverter_dyn: obj->data is null for class 'inverter_dyn'");
+				return 0;
+			}
+			// gl_set_parent(*obj, parent);
 			return my->create();
 		}
 		else

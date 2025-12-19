@@ -2056,7 +2056,12 @@ EXPORT int create_capacitor(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			capacitor *my = /*OBJECTDATA(obj,<>)*/ object_data<capacitor>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_capacitor: obj->data is null for class 'capacitor'");
+					return 0;
+				}
+				
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

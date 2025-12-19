@@ -1030,43 +1030,27 @@ static STATUS init_by_deferral_retry(std::vector<OBJECT *> &def_array)
                 // Should not happen, but good to be safe.
                 continue;
             }
-            
-			            // Validate the parent pointer BEFORE any dereferencing
-            if (obj->parent != nullptr)
-            {
-                // Check if parent's oclass is valid (sanity check for memory corruption)
-                if (obj->parent->oclass == nullptr)
-                {
-                    char obj_name_buf[256];
-                    output_error("init_by_deferral_retry(): object '%s' has a corrupted parent pointer. Aborting.",
-                        object_name(obj, obj_name_buf, sizeof(obj_name_buf)));
-                    /* TROUBLESHOOT
-                        An object's parent pointer was found to be invalid during the deferred initialization retry sequence.
-                        This indicates a critical memory corruption issue in the core's object linking logic.
-                        This is a fatal error.
-                    */
-                    exec_setexitcode(XC_EXCEPTION);
-                    return FAILED;
-                }
-            }
 
-			if (obj->parent)
+			// Before retrying an object, check if its parent is structurally sound.
+            // This replaces the unreliable OF_INIT flag check.
+            if (obj->parent != nullptr &&
+				(obj->parent->oclass == nullptr ||
+				obj->parent->oclass->magic != CLASSVALID))
             {
+                // The parent is structurally invalid. Defer the child without calling its init().
                 char obj_name_buf[256], parent_name_buf[256];
-                // Use output_verbose to get detailed debug info
-                output_verbose("RETRY_DEBUG: Attempting to init '%s'. Parent is '%s' (id:%d). Parent flags are 0x%08x.",
+                output_verbose("RETRY_DEFER: Deferring init of '%s' because parent '%s' is structurally invalid.",
                     object_name(obj, obj_name_buf, sizeof(obj_name_buf)),
-                    object_name(obj->parent, parent_name_buf, sizeof(parent_name_buf)),
-                    obj->parent->id,
-                    obj->parent->flags);
-            }
-
-			if (obj->parent != nullptr && (obj->parent->flags & OF_INIT) == 0)
-            {
-                // Parent is not ready, so this object must also be deferred for the next pass.
+                    object_name(obj->parent, parent_name_buf, sizeof(parent_name_buf)));
+                /* TROUBLESHOOT
+                    This is a normal part of the initialization sequence. An object is being deferred
+                    because its parent object, while created, has not yet been fully initialized
+                    and has an invalid class structure. This will be resolved in a subsequent
+                    initialization pass.
+                */
                 next_deferred_pass.push_back(obj);
-                continue; // Skip to the next object in the current pass.
-            }
+                continue; // Move to the next object in this retry pass.
+			}
 
             int obj_rv = object_init(obj);
             switch (obj_rv)
@@ -1079,9 +1063,9 @@ static STATUS init_by_deferral_retry(std::vector<OBJECT *> &def_array)
                 }
                 case 1: // Success
                 {
-                    // std::unique_lock<std::shared_mutex> write_lock(SharedMutexManager::get_mutex(&obj->lock));
-                    // obj->flags |= OF_INIT;
-					// obj->flags &= ~OF_DEFERRED;
+                    //  std::unique_lock<std::shared_mutex> write_lock(SharedMutexManager::get_mutex(&obj->lock));
+                    //  obj->flags |= OF_INIT;
+					//  obj->flags &= ~OF_DEFERRED;
                     // Do not add it to the next_deferred_pass list.
                     break;
                 }
@@ -1274,18 +1258,23 @@ static int init_by_deferral()
 	obj = object_get_first();
 	while (obj != 0)
 	{
-		        if (obj->parent != nullptr)
-        {
-            // Validate parent pointer before object_init tries to use it
-            if (obj->parent->oclass == nullptr)
-            {
-                char obj_name_buf[256];
-                output_error("init_by_deferral(): object '%s' has corrupted parent pointer. Aborting.",
-                    object_name(obj, obj_name_buf, sizeof(obj_name_buf)));
-                exec_setexitcode(XC_EXCEPTION);
-                return FAILED;
-            }
+
+		// This check must exist on the FIRST pass to prevent a premature
+        // call to object_init() on a child with a corrupted parent.
+        if (obj->parent != nullptr &&
+			(obj->parent->oclass == nullptr ||
+			obj->parent->oclass->magic != CLASSVALID))
+		{
+            // The parent is structurally invalid. Defer the child immediately.
+            def_array[def_ct++] = obj;
+            std::unique_lock<std::shared_mutex> write_lock(SharedMutexManager::get_mutex(&obj->lock));
+            obj->flags |= OF_DEFERRED;
+            write_lock.unlock();
+            
+            obj = obj->next; 
+            continue; // Skip the object_init() call for this object.
         }
+
 		obj_rv = object_init(obj);
 		switch (obj_rv)
 		{
@@ -1298,10 +1287,10 @@ static int init_by_deferral()
 		{
 			// wlock(&obj->lock);
 			// replace the above with SharedMutexManager
-			// std::unique_lock<std::shared_mutex> write_lock(SharedMutexManager::get_mutex(&obj->lock));
-			// obj->flags |= OF_INIT;
+			//  std::unique_lock<std::shared_mutex> write_lock(SharedMutexManager::get_mutex(&obj->lock));
+			//  obj->flags |= OF_INIT;
 			// wunlock(&obj->lock);
-			// write_lock.unlock();
+			//  write_lock.unlock();
 			break;
 		}
 		case 2:

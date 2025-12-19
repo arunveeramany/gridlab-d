@@ -33,10 +33,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #     set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} /INCREMENTAL:NO /fsanitize=address")
 # elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 #     # Clang on Windows or Linux
-#     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fsanitize=address -fno-omit-frame-pointer")
-#     set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -fsanitize=address")
-#     set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} -fsanitize=address")
-# elseif(UNIX)
+
+#     set(CMAKE_CXX_FLAGS_DEBUG
+#         "-g -O0 -fsanitize=address,undefined -fno-omit-frame-pointer"
+#     )
+#     set(CMAKE_EXE_LINKER_FLAGS_DEBUG
+#         "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -fsanitize=address,undefined"
+#     )
+#     set(CMAKE_SHARED_LINKER_FLAGS_DEBUG
+#         "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} -fsanitize=address,undefined"
+#     )
+
+#     elseif(UNIX)
 #     # GCC or Clang on Linux
 #     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fsanitize=address -fno-omit-frame-pointer")
 #     set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -fsanitize=address")

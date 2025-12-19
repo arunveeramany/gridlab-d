@@ -618,7 +618,11 @@ EXPORT int create_evcharger(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			evcharger *my = object_data<evcharger>(*obj);;
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("evcharger: obj->data is null for class 'recloser'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			my->create();
 			return 1;
 		}

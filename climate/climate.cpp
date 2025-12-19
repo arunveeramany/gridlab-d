@@ -45,10 +45,15 @@ EXPORT int create_climate(OBJECT **obj, OBJECT *parent)
 
 
             // Now proceed as before
-            if (parent != nullptr)
-            {
-                gl_set_parent(*obj, parent);
-            }
+            // if (parent != nullptr)
+            // {
+            //     // gl_set_parent(*obj, parent);
+            // }
+
+			if (!my) {
+				gl_error("create_climate: obj->data is null for class 'climate'");
+				return 0;
+			}
 
             // The object's own create() method will set the default values.
             return my->create_instance();
@@ -717,13 +722,13 @@ EXPORT CLASS* init(CALLBACKS *fntable, MODULE *mod, int argc, char *argv[])
 	
 
 
-    std::cerr << "Climate module - callback address: " << (void*)callback << std::endl;
-    std::cerr << "Climate module - time.local_datetime: " << (void*)callback->time.local_datetime << std::endl;
+    // std::cerr << "Climate module - callback address: " << (void*)callback << std::endl;
+    // std::cerr << "Climate module - time.local_datetime: " << (void*)callback->time.local_datetime << std::endl;
     
 
     // instantiate the climate class to trigger registration
     new climate(mod);
-	std::cerr << "Climate class oclass after registration: " << (void*)climate::oclass << std::endl;
+	// std::cerr << "Climate class oclass after registration: " << (void*)climate::oclass << std::endl;
 
     // return 1 on success, 0 on failure
     // return 1;

@@ -93,8 +93,8 @@ complex_assert::complex_assert(MODULE *module) : gld_object()
 		once_value = 0;
 		operation = FULL;
 		strcpy(target, "");
-		printf("DEBUG: complex_assert constructor - target initialized to: '%s'\n", target);
-    	printf("DEBUG: target buffer address: %p\n", &target);
+		// printf("DEBUG: complex_assert constructor - target initialized to: '%s'\n", target);
+    	// printf("DEBUG: target buffer address: %p\n", &target);
 
 		// memcpy(this, defaults, sizeof(complex_assert));
 	}

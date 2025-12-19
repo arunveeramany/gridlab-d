@@ -82,7 +82,11 @@ EXPORT int create_capbank(OBJECT **obj, OBJECT *parent)
 	if (*obj!=nullptr)
 	{
 		capbank *my = OBJECTDATA(*obj,capbank);
-		gl_set_parent(*obj,parent);
+		if (!my) {
+				gl_error("create_capbank: obj->data is null for class 'capbank'");
+				return 0;
+			}
+		// gl_set_parent(*obj,parent);
 		my->create();
 		return 1;
 	}

@@ -193,7 +193,11 @@ EXPORT int create_network_message(OBJECT **obj, OBJECT *parent)
 	if (*obj!=nullptr)
 	{
 		network_message *my = OBJECTDATA(*obj,network_message);
-		gl_set_parent(*obj,parent);
+		if (!my) {
+				gl_error("create_network_message: obj->data is null for class 'network_message'");
+				return 0;
+			}
+		// gl_set_parent(*obj,parent);
 		try {
 			my->create();
 		}

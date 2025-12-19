@@ -905,7 +905,11 @@ EXPORT int create_dryer(OBJECT **obj, OBJECT *parent)
 	if (*obj!=nullptr)
 	{
 		dryer *my = object_data<dryer>(*obj);
-		gl_set_parent(*obj,parent);
+		if (!my) {
+				gl_error("create_dryer: obj->data is null for class 'dryer'");
+				return 0;
+			}
+		// gl_set_parent(*obj,parent);
 		my->create();
 		return 1;
 	}

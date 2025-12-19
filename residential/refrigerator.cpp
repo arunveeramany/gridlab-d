@@ -774,7 +774,11 @@ EXPORT int create_refrigerator(OBJECT **obj, OBJECT *parent)
 	if (*obj!=nullptr)
 	{
 		refrigerator *my = object_data<refrigerator>(*obj);;
-		gl_set_parent(*obj,parent);
+		if (!my) {
+				gl_error("create_refrigerator: obj->data is null for class 'refrigerator'");
+				return 0;
+			}
+		// gl_set_parent(*obj,parent);
 		my->create();
 		return 1;
 	}

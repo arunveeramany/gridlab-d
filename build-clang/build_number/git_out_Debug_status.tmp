@@ -1,0 +1,492 @@
+ M ../../CMakeLists.txt
+ M ../../assert/complex_assert.cpp
+ M ../../assert/enum_assert.cpp
+ M ../../assert/init.cpp
+ M ../../climate/climate.cpp
+ M ../../comm/mpi_network.cpp
+ M ../../comm/network.cpp
+ M ../../comm/network_interface.cpp
+ M ../../comm/network_message.cpp
+ M ../../commercial/hvac.cpp
+ M ../../commercial/multizone.cpp
+ M ../../generators/battery.cpp
+ M ../../generators/central_dg_control.cpp
+ M ../../generators/controller_dg.cpp
+ M ../../generators/diesel_dg.cpp
+ M ../../generators/energy_storage.cpp
+ M ../../generators/inverter.cpp
+ M ../../generators/inverter_dyn.cpp
+ M ../../generators/rectifier.cpp
+ M ../../generators/sec_control.cpp
+ M ../../generators/solar.cpp
+ M ../../generators/sync_ctrl.cpp
+ M ../../generators/windturb_dg.cpp
+ M ../../gldcore/convert.cpp
+ M ../../gldcore/exec.cpp
+ M ../../gldcore/gridlabd.h
+ M ../../gldcore/load.cpp
+ M ../../gldcore/module.cpp
+ M ../../gldcore/object.cpp
+ M ../../market/auction.cpp
+ M ../../market/controller.cpp
+ M ../../market/controller2.cpp
+ M ../../market/double_controller.cpp
+ M ../../market/generator_controller.cpp
+ M ../../market/passive_controller.cpp
+ M ../../market/stub_bidder.cpp
+ M ../../market/stubauction.cpp
+ M ../../market/supervisory_control.cpp
+ M ../../matlab/init.cpp
+ M ../../network/capbank.cpp
+ M ../../network/fuse.cpp
+ M ../../network/link.cpp
+ M ../../network/meter.cpp
+ M ../../network/node.cpp
+ M ../../network/regulator.cpp
+ M ../../network/relay.cpp
+ M ../../network/transformer.cpp
+ M ../../optimize/particle_swarm_optimization.cpp
+ M ../../optimize/simple.cpp
+ M ../../plc/plc.cpp
+ M ../../powerflow/autotest/data_SPIM_triplex_motor_A_speed.csv
+ M ../../powerflow/autotest/data_SPIM_triplex_motor_B_speed.csv
+ M ../../powerflow/autotest/data_SPIM_triplex_motor_C_speed.csv
+ D ../../powerflow/autotest/test_IEEE_34_FBS.glm
+ D ../../powerflow/autotest/test_SPIM_time_step_divider.glm
+ D ../../powerflow/autotest/test_SPIM_triplex.glm
+ D ../../powerflow/autotest/test_TPIM_time_step_divider.glm
+ D ../../powerflow/autotest/test_deltamode_meter_accumulations.glm
+ D ../../powerflow/autotest/test_load_tracker_double_NR.glm
+ D ../../powerflow/autotest/test_multi_island_SWING_PQ_Indep_Islands_sync_check_SEP_DIFF.glm
+ D ../../powerflow/autotest/test_regulator_outputvolt_YY_A_NR.glm
+ M ../../powerflow/billdump.cpp
+ M ../../powerflow/capacitor.cpp
+ M ../../powerflow/currdump.cpp
+ M ../../powerflow/emissions.cpp
+ M ../../powerflow/fault_check.cpp
+ M ../../powerflow/fuse.cpp
+ M ../../powerflow/impedance_dump.cpp
+ M ../../powerflow/init.cpp
+ M ../../powerflow/jsondump.cpp
+ M ../../powerflow/line.cpp
+ M ../../powerflow/line_configuration.cpp
+ M ../../powerflow/line_spacing.cpp
+ M ../../powerflow/link.cpp
+ M ../../powerflow/load.cpp
+ M ../../powerflow/load_tracker.cpp
+ M ../../powerflow/meter.cpp
+ M ../../powerflow/motor.cpp
+ M ../../powerflow/node.cpp
+ M ../../powerflow/overhead_line.cpp
+ M ../../powerflow/overhead_line_conductor.cpp
+ M ../../powerflow/performance_motor.cpp
+ M ../../powerflow/power_metrics.cpp
+ M ../../powerflow/powerflow_library.cpp
+ M ../../powerflow/powerflow_object.cpp
+ M ../../powerflow/pqload.cpp
+ M ../../powerflow/recloser.cpp
+ M ../../powerflow/regulator.cpp
+ M ../../powerflow/regulator_configuration.cpp
+ M ../../powerflow/restoration.cpp
+ M ../../powerflow/sectionalizer.cpp
+ M ../../powerflow/series_compensator.cpp
+ M ../../powerflow/series_reactor.cpp
+ M ../../powerflow/solver_nr.cpp
+ M ../../powerflow/substation.cpp
+ M ../../powerflow/switch_object.cpp
+ M ../../powerflow/sync_check.cpp
+ M ../../powerflow/transformer.cpp
+ M ../../powerflow/transformer_configuration.cpp
+ M ../../powerflow/triplex_line.cpp
+ M ../../powerflow/triplex_line_conductor.cpp
+ M ../../powerflow/triplex_line_configuration.cpp
+ M ../../powerflow/triplex_load.cpp
+ M ../../powerflow/triplex_meter.cpp
+ M ../../powerflow/triplex_meter.h
+ M ../../powerflow/triplex_node.cpp
+ M ../../powerflow/underground_line.cpp
+ M ../../powerflow/underground_line_conductor.cpp
+ M ../../powerflow/vfd.cpp
+ M ../../powerflow/voltdump.cpp
+ M ../../reliability/eventgen.cpp
+ M ../../reliability/metrics.cpp
+ M ../../residential/clotheswasher.cpp
+ M ../../residential/dishwasher.cpp
+ M ../../residential/dryer.cpp
+ M ../../residential/evcharger.cpp
+ M ../../residential/evcharger_det.cpp
+ M ../../residential/freezer.cpp
+ M ../../residential/house_a.cpp
+ M ../../residential/house_e.cpp
+ M ../../residential/lights.cpp
+ M ../../residential/microwave.cpp
+ M ../../residential/occupantload.cpp
+ M ../../residential/plugload.cpp
+ M ../../residential/range.cpp
+ M ../../residential/refrigerator.cpp
+ M ../../residential/residential_enduse.cpp
+ M ../../residential/thermal_storage.cpp
+ M ../../residential/waterheater.cpp
+ M ../../residential/zipload.cpp
+ M ../../tape/collector.cpp
+ M ../../tape/group_recorder.cpp
+ M ../../tape/histogram.cpp
+ M ../../tape/loadshape.cpp
+ M ../../tape/metrics_collector.cpp
+ M ../../tape/metrics_collector_writer.cpp
+ M ../../tape/multi_recorder.cpp
+ M ../../tape/player.cpp
+ M ../../tape/recorder.cpp
+ M ../../tape/schedule.cpp
+ M ../../tape/shaper.cpp
+ M ../../tape/tape.cpp
+ M ../../tape/violation_recorder.cpp
+ M ../../template.cpp
+?? ../../.DS_Store
+?? ../../assert/autotest/test_enum_assert_err.glm.bak
+?? ../../assert/autotest/test_int_assert.glm.bak
+?? ../
+?? ../../build-gcc/
+?? ../../check_abi_compat.log
+?? ../../check_abi_compat.sh
+?? ../../fix_test_glm.sh
+?? ../../glpath.sh
+?? ../../missing_brace.sh
+?? ../../missing_brace_adv.sh
+?? ../../parent_inserter.py
+?? ../../powerflow/.DS_Store
+?? ../../powerflow/autotest/.DS_Store
+?? ../../powerflow/autotest/switch_control.csv
+?? ../../powerflow/autotest/test_GFA_functions_QSTS_fix.glm
+?? ../../powerflow/autotest/test_GFA_functions_deltamode_fix.glm
+?? ../../powerflow/autotest/test_IEEE_34_FBS_fix.glm
+?? ../../powerflow/autotest/test_SPIM_fix.glm
+?? ../../powerflow/autotest/test_SPIM_time_step_divider_fix.glm
+?? ../../powerflow/autotest/test_SPIM_triplex_fix.glm
+?? ../../powerflow/autotest/test_SPIM_under_voltage_contactor_fix.glm
+?? ../../powerflow/autotest/test_SPIM_under_voltage_protection_fix.glm
+?? ../../powerflow/autotest/test_Simple_Switch_Fault_InRush_FPI_fix.glm
+?? ../../powerflow/autotest/test_TPIM_time_step_divider_fix.glm
+?? ../../powerflow/autotest/test_TPIM_under_voltage_contactor_fix.glm
+?? ../../powerflow/autotest/test_TPIM_under_voltage_protection_fix.glm
+?? ../../powerflow/autotest/test_ZIPLoad_Delta_FBS_fix.glm
+?? ../../powerflow/autotest/test_ZIPLoad_Delta_NR_fix.glm
+?? ../../powerflow/autotest/test_ZIPLoad_ZeroBase_FBS_fix.glm
+?? ../../powerflow/autotest/test_ZIPLoad_ZeroBase_NR_fix.glm
+?? ../../powerflow/autotest/test_ami_average_power_features_FBS_fix.glm
+?? ../../powerflow/autotest/test_ami_average_power_features_NR_fix.glm
+?? ../../powerflow/autotest/test_ami_average_voltage_features_NR_fix.glm
+?? ../../powerflow/autotest/test_billing_tiered_tou_fix.glm
+?? ../../powerflow/autotest/test_capacitor_CURRENT_ABC_indiv_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_CURRENT_ABC_indiv_fix.glm
+?? ../../powerflow/autotest/test_capacitor_VAR_ABC_BANK_B_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_VAR_ABC_BANK_B_fix.glm
+?? ../../powerflow/autotest/test_capacitor_VAR_ABC_indiv_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_VAR_ABC_indiv_Y_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_VAR_ABC_indiv_Y_fix.glm
+?? ../../powerflow/autotest/test_capacitor_VAR_ABC_indiv_dwell_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_VAR_ABC_indiv_dwell_fix.glm
+?? ../../powerflow/autotest/test_capacitor_VAR_ABC_indiv_fix.glm
+?? ../../powerflow/autotest/test_capacitor_VAR_VOLT_ABC_indiv_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_VAR_VOLT_ABC_indiv_dwell_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_VAR_VOLT_ABC_indiv_dwell_fix.glm
+?? ../../powerflow/autotest/test_capacitor_VAR_VOLT_ABC_indiv_fix.glm
+?? ../../powerflow/autotest/test_capacitor_counters_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_ABC_bank_time_series_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_ABC_bank_time_series_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_ABC_time_series_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_ABC_time_series_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_ABBCD_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_ABBCD_Y_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_ABBCD_Y_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_ABBCD_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_ABBCD_service_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_ABCAD_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_ABCAD_Y_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_ABCAD_Y_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_ABCAD_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_ABD_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_ABD_Y_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_ABD_Y_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_ABD_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_ABN_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_ABN_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_AN_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_AN_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_All_D_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_All_D_Y_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_All_D_Y_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_All_D_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_All_N_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_All_N_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_BCCAD_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_BCCAD_Y_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_BCCAD_Y_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_BCCAD_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_BCD_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_BCD_Y_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_BCD_Y_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_BCD_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_BCN_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_BCN_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_BN_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_BN_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_CAD_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_CAD_Y_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_CAD_Y_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_CAD_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_CAN_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_CAN_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_CN_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_CN_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_allOff_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_manual_single_allOff_fix.glm
+?? ../../powerflow/autotest/test_capacitor_volt_ABC_BANK_A_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_volt_ABC_BANK_A_fix.glm
+?? ../../powerflow/autotest/test_capacitor_volt_ABC_indiv_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_volt_ABC_indiv_Y_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_volt_ABC_indiv_Y_fix.glm
+?? ../../powerflow/autotest/test_capacitor_volt_ABC_indiv_dwell_NR_fix.glm
+?? ../../powerflow/autotest/test_capacitor_volt_ABC_indiv_dwell_fix.glm
+?? ../../powerflow/autotest/test_capacitor_volt_ABC_indiv_fix.glm
+?? ../../powerflow/autotest/test_capacitor_volt_single_ABBCD_service_fix.glm
+?? ../../powerflow/autotest/test_center_tapped_basic_NR_fix.glm
+?? ../../powerflow/autotest/test_center_tapped_basic_fix.glm
+?? ../../powerflow/autotest/test_center_tapped_complex_NR_fix.glm
+?? ../../powerflow/autotest/test_center_tapped_complex_fix.glm
+?? ../../powerflow/autotest/test_combination_loads_NR_FPI_fix.glm
+?? ../../powerflow/autotest/test_delta_IEEE_123node_cap_service_fix.glm
+?? ../../powerflow/autotest/test_delta_IEEE_123node_test_fix.glm
+?? ../../powerflow/autotest/test_deltamode_capacitor_VAR_VOLT_ABC_indiv_dwell_NR_fix.glm
+?? ../../powerflow/autotest/test_deltamode_meter_accumulations_fix.glm
+?? ../../powerflow/autotest/test_deltamode_regulator_remotesense_YY_A_NR_ts_fix.glm
+?? ../../powerflow/autotest/test_dutycycle_fix.glm
+?? ../../powerflow/autotest/test_fault_inrush_transformer_FPI_fix.glm
+?? ../../powerflow/autotest/test_fuse_fix.glm
+?? ../../powerflow/autotest/test_load_tracker_double_NR_fix.glm
+?? ../../powerflow/autotest/test_meter_delta_fix.glm
+?? ../../powerflow/autotest/test_multi_island_SWING_PQ_Indep_Islands_fix.glm
+?? ../../powerflow/autotest/test_multi_island_SWING_PQ_Indep_Islands_sync_check_SEP_DIFF_fix.glm
+?? ../../powerflow/autotest/test_multi_island_SWING_PQ_Indep_Islands_sync_check_fix.glm
+?? ../../powerflow/autotest/test_multi_island_SWING_PQ_fix.glm
+?? ../../powerflow/autotest/test_multi_island_fix.glm
+?? ../../powerflow/autotest/test_opt_GFA_functions_QSTS.glm
+?? ../../powerflow/autotest/test_opt_GFA_functions_deltamode.glm
+?? ../../powerflow/autotest/test_opt_IEEE_34_FBS.glm
+?? ../../powerflow/autotest/test_opt_SPIM.glm
+?? ../../powerflow/autotest/test_opt_SPIM_time_step_divider.glm
+?? ../../powerflow/autotest/test_opt_SPIM_triplex.glm
+?? ../../powerflow/autotest/test_opt_SPIM_under_voltage_contactor.glm
+?? ../../powerflow/autotest/test_opt_SPIM_under_voltage_protection.glm
+?? ../../powerflow/autotest/test_opt_Simple_Switch_Fault_InRush_FPI.glm
+?? ../../powerflow/autotest/test_opt_TPIM_time_step_divider.glm
+?? ../../powerflow/autotest/test_opt_TPIM_under_voltage_contactor.glm
+?? ../../powerflow/autotest/test_opt_TPIM_under_voltage_protection.glm
+?? ../../powerflow/autotest/test_opt_ZIPLoad_Delta_FBS.glm
+?? ../../powerflow/autotest/test_opt_ZIPLoad_Delta_NR.glm
+?? ../../powerflow/autotest/test_opt_ZIPLoad_ZeroBase_FBS.glm
+?? ../../powerflow/autotest/test_opt_ZIPLoad_ZeroBase_NR.glm
+?? ../../powerflow/autotest/test_opt_ami_average_power_features_FBS.glm
+?? ../../powerflow/autotest/test_opt_ami_average_power_features_NR.glm
+?? ../../powerflow/autotest/test_opt_ami_average_voltage_features_NR.glm
+?? ../../powerflow/autotest/test_opt_billing_tiered_tou.glm
+?? ../../powerflow/autotest/test_opt_capacitor_CURRENT_ABC_indiv.glm
+?? ../../powerflow/autotest/test_opt_capacitor_CURRENT_ABC_indiv_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_VAR_ABC_BANK_B.glm
+?? ../../powerflow/autotest/test_opt_capacitor_VAR_ABC_BANK_B_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_VAR_ABC_indiv.glm
+?? ../../powerflow/autotest/test_opt_capacitor_VAR_ABC_indiv_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_VAR_ABC_indiv_Y.glm
+?? ../../powerflow/autotest/test_opt_capacitor_VAR_ABC_indiv_Y_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_VAR_ABC_indiv_dwell.glm
+?? ../../powerflow/autotest/test_opt_capacitor_VAR_ABC_indiv_dwell_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_VAR_VOLT_ABC_indiv.glm
+?? ../../powerflow/autotest/test_opt_capacitor_VAR_VOLT_ABC_indiv_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_VAR_VOLT_ABC_indiv_dwell.glm
+?? ../../powerflow/autotest/test_opt_capacitor_VAR_VOLT_ABC_indiv_dwell_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_counters.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_ABC_bank_time_series.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_ABC_bank_time_series_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_ABC_time_series.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_ABC_time_series_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_ABBCD.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_ABBCD_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_ABBCD_Y.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_ABBCD_Y_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_ABBCD_service.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_ABCAD.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_ABCAD_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_ABCAD_Y.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_ABCAD_Y_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_ABD.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_ABD_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_ABD_Y.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_ABD_Y_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_ABN.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_ABN_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_AN.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_AN_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_All_D.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_All_D_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_All_D_Y.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_All_D_Y_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_All_N.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_All_N_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_BCCAD.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_BCCAD_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_BCCAD_Y.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_BCCAD_Y_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_BCD.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_BCD_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_BCD_Y.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_BCD_Y_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_BCN.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_BCN_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_BN.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_BN_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_CAD.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_CAD_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_CAD_Y.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_CAD_Y_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_CAN.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_CAN_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_CN.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_CN_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_allOff.glm
+?? ../../powerflow/autotest/test_opt_capacitor_manual_single_allOff_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_volt_ABC_BANK_A.glm
+?? ../../powerflow/autotest/test_opt_capacitor_volt_ABC_BANK_A_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_volt_ABC_indiv.glm
+?? ../../powerflow/autotest/test_opt_capacitor_volt_ABC_indiv_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_volt_ABC_indiv_Y.glm
+?? ../../powerflow/autotest/test_opt_capacitor_volt_ABC_indiv_Y_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_volt_ABC_indiv_dwell.glm
+?? ../../powerflow/autotest/test_opt_capacitor_volt_ABC_indiv_dwell_NR.glm
+?? ../../powerflow/autotest/test_opt_capacitor_volt_single_ABBCD_service.glm
+?? ../../powerflow/autotest/test_opt_center_tapped_basic.glm
+?? ../../powerflow/autotest/test_opt_center_tapped_basic_NR.glm
+?? ../../powerflow/autotest/test_opt_center_tapped_complex.glm
+?? ../../powerflow/autotest/test_opt_center_tapped_complex_NR.glm
+?? ../../powerflow/autotest/test_opt_combination_loads_NR_FPI.glm
+?? ../../powerflow/autotest/test_opt_delta_IEEE_123node_cap_service.glm
+?? ../../powerflow/autotest/test_opt_delta_IEEE_123node_test.glm
+?? ../../powerflow/autotest/test_opt_deltamode_capacitor_VAR_VOLT_ABC_indiv_dwell_NR.glm
+?? ../../powerflow/autotest/test_opt_deltamode_meter_accumulations.glm
+?? ../../powerflow/autotest/test_opt_deltamode_regulator_remotesense_YY_A_NR_ts.glm
+?? ../../powerflow/autotest/test_opt_dutycycle.glm
+?? ../../powerflow/autotest/test_opt_fuse.glm
+?? ../../powerflow/autotest/test_opt_load_tracker_double_NR.glm
+?? ../../powerflow/autotest/test_opt_meter_delta.glm
+?? ../../powerflow/autotest/test_opt_multi_island.glm
+?? ../../powerflow/autotest/test_opt_multi_island_SWING_PQ.glm
+?? ../../powerflow/autotest/test_opt_multi_island_SWING_PQ_Indep_Islands.glm
+?? ../../powerflow/autotest/test_opt_multi_island_SWING_PQ_Indep_Islands_sync_check.glm
+?? ../../powerflow/autotest/test_opt_multi_island_SWING_PQ_Indep_Islands_sync_check_SEP_DIFF.glm
+?? ../../powerflow/autotest/test_opt_powerflow_reg_bank_reverse_flow_control_current_pos.glm
+?? ../../powerflow/autotest/test_opt_powerflow_reg_bank_reverse_flow_control_neutral.glm
+?? ../../powerflow/autotest/test_opt_powerflow_reg_counters.glm
+?? ../../powerflow/autotest/test_opt_powerflow_reg_ind_reverse_flow_control_current_pos.glm
+?? ../../powerflow/autotest/test_opt_powerflow_reg_ind_reverse_flow_control_neutral.glm
+?? ../../powerflow/autotest/test_opt_regulator_linedropcomp2_YY_A_ts.glm
+?? ../../powerflow/autotest/test_opt_regulator_linedropcomp2_YY_B_ts.glm
+?? ../../powerflow/autotest/test_opt_regulator_linedropcomp_YY_A_ts.glm
+?? ../../powerflow/autotest/test_opt_regulator_linedropcomp_YY_B_ts.glm
+?? ../../powerflow/autotest/test_opt_regulator_manual_YY_A.glm
+?? ../../powerflow/autotest/test_opt_regulator_manual_YY_A_1ph.glm
+?? ../../powerflow/autotest/test_opt_regulator_manual_YY_A_1ph_NR.glm
+?? ../../powerflow/autotest/test_opt_regulator_manual_YY_A_2ph.glm
+?? ../../powerflow/autotest/test_opt_regulator_manual_YY_A_2ph_NR.glm
+?? ../../powerflow/autotest/test_opt_regulator_manual_YY_A_NR.glm
+?? ../../powerflow/autotest/test_opt_regulator_manual_YY_B.glm
+?? ../../powerflow/autotest/test_opt_regulator_manual_YY_B_NR.glm
+?? ../../powerflow/autotest/test_opt_regulator_outputvolt_YY_A_NR.glm
+?? ../../powerflow/autotest/test_opt_regulator_outputvolt_YY_A_NR_ts.glm
+?? ../../powerflow/autotest/test_opt_regulator_outputvolt_YY_A_ts.glm
+?? ../../powerflow/autotest/test_opt_regulator_outputvolt_YY_B_NR_ts.glm
+?? ../../powerflow/autotest/test_opt_regulator_outputvolt_YY_B_ts.glm
+?? ../../powerflow/autotest/test_opt_regulator_remotesense_YY_A_NR_ts.glm
+?? ../../powerflow/autotest/test_opt_regulator_remotesense_YY_A_ts.glm
+?? ../../powerflow/autotest/test_opt_regulator_remotesense_YY_B_NR_ts.glm
+?? ../../powerflow/autotest/test_opt_regulator_remotesense_YY_B_ts.glm
+?? ../../powerflow/autotest/test_opt_substation_PSV_driven.glm
+?? ../../powerflow/autotest/test_opt_switch_single_node_hanging.glm
+?? ../../powerflow/autotest/test_opt_triplex_meter_parent_accum_FBS.glm
+?? ../../powerflow/autotest/test_opt_triplex_meter_parent_accum_NR.glm
+?? ../../powerflow/autotest/test_opt_triplex_meter_parent_accum_NR_FPI.glm
+?? ../../powerflow/autotest/test_powerflow_reg_bank_reverse_flow_control_current_pos_fix.glm
+?? ../../powerflow/autotest/test_powerflow_reg_bank_reverse_flow_control_neutral_fix.glm
+?? ../../powerflow/autotest/test_powerflow_reg_counters_fix.glm
+?? ../../powerflow/autotest/test_powerflow_reg_ind_reverse_flow_control_current_pos_fix.glm
+?? ../../powerflow/autotest/test_powerflow_reg_ind_reverse_flow_control_neutral_fix.glm
+?? ../../powerflow/autotest/test_regulator_linedropcomp2_YY_A_ts_fix.glm
+?? ../../powerflow/autotest/test_regulator_linedropcomp2_YY_B_ts_fix.glm
+?? ../../powerflow/autotest/test_regulator_linedropcomp_YY_A_ts_fix.glm
+?? ../../powerflow/autotest/test_regulator_linedropcomp_YY_B_ts_fix.glm
+?? ../../powerflow/autotest/test_regulator_manual_YY_A_1ph_NR_fix.glm
+?? ../../powerflow/autotest/test_regulator_manual_YY_A_1ph_fix.glm
+?? ../../powerflow/autotest/test_regulator_manual_YY_A_2ph_NR_fix.glm
+?? ../../powerflow/autotest/test_regulator_manual_YY_A_2ph_fix.glm
+?? ../../powerflow/autotest/test_regulator_manual_YY_A_NR_fix.glm
+?? ../../powerflow/autotest/test_regulator_manual_YY_A_fix.glm
+?? ../../powerflow/autotest/test_regulator_manual_YY_B_NR_fix.glm
+?? ../../powerflow/autotest/test_regulator_manual_YY_B_fix.glm
+?? ../../powerflow/autotest/test_regulator_outputvolt_YY_A_NR_fix.glm
+?? ../../powerflow/autotest/test_regulator_outputvolt_YY_A_NR_ts_fix.glm
+?? ../../powerflow/autotest/test_regulator_outputvolt_YY_A_ts_fix.glm
+?? ../../powerflow/autotest/test_regulator_outputvolt_YY_B_NR_ts_fix.glm
+?? ../../powerflow/autotest/test_regulator_outputvolt_YY_B_ts_fix.glm
+?? ../../powerflow/autotest/test_regulator_remotesense_YY_A_NR_ts_fix.glm
+?? ../../powerflow/autotest/test_regulator_remotesense_YY_A_ts_fix.glm
+?? ../../powerflow/autotest/test_regulator_remotesense_YY_B_NR_ts_fix.glm
+?? ../../powerflow/autotest/test_regulator_remotesense_YY_B_ts_fix.glm
+?? ../../powerflow/autotest/test_substation_PSV_driven_fix.glm
+?? ../../powerflow/autotest/test_switch_single_node_hanging_fix.glm
+?? ../../powerflow/autotest/test_triplex_meter_parent_accum_FBS_fix.glm
+?? ../../powerflow/autotest/test_triplex_meter_parent_accum_NR_FPI_fix.glm
+?? ../../powerflow/autotest/test_triplex_meter_parent_accum_NR_fix.glm
+?? ../../reliability/autotest/test_deltamode_deterministic_fix.glm
+?? ../../reliability/autotest/test_deltamode_random_fix.glm
+?? ../../reliability/autotest/test_deterministic_fix.glm
+?? ../../reliability/autotest/test_deterministic_minTS_fix.glm
+?? ../../reliability/autotest/test_eventgen_random_fix.glm
+?? ../../reliability/autotest/test_eventgen_random_minTS_fix.glm
+?? ../../reliability/autotest/test_fault_current_4_node_fix.glm
+?? ../../reliability/autotest/test_opt_deltamode_deterministic.glm
+?? ../../reliability/autotest/test_opt_deltamode_random.glm
+?? ../../reliability/autotest/test_opt_deterministic.glm
+?? ../../reliability/autotest/test_opt_deterministic_minTS.glm
+?? ../../reliability/autotest/test_opt_eventgen_random.glm
+?? ../../reliability/autotest/test_opt_eventgen_random_minTS.glm
+?? ../../reliability/autotest/test_opt_fault_current_4_node.glm
+?? ../../residential/.DS_Store
+?? ../../residential/autotest/.DS_Store
+?? ../../residential/autotest/test_HVAC_balance_fix.glm
+?? ../../residential/autotest/test_clotheswasher_implicit_fix.glm
+?? ../../residential/autotest/test_dishwasher_implicit_fix.glm
+?? ../../residential/autotest/test_lights_exp_fix.glm
+?? ../../residential/autotest/test_lights_explicit_power1_fix.glm
+?? ../../residential/autotest/test_lights_explicit_power2_fix.glm
+?? ../../residential/autotest/test_lights_explicit_power3_fix.glm
+?? ../../residential/autotest/test_lights_explicit_power4_fix.glm
+?? ../../residential/autotest/test_lights_imp_fix.glm
+?? ../../residential/autotest/test_lights_implicit_power1_fix.glm
+?? ../../residential/autotest/test_lights_implicit_power2_fix.glm
+?? ../../residential/autotest/test_lights_implicit_power3_fix.glm
+?? ../../residential/autotest/test_lights_implicit_power4_fix.glm
+?? ../../residential/autotest/test_microwave_implicit_fix.glm
+?? ../../residential/autotest/test_opt_clotheswasher_implicit.glm
+?? ../../residential/autotest/test_opt_dishwasher_implicit.glm
+?? ../../residential/autotest/test_opt_lights_exp.glm
+?? ../../residential/autotest/test_opt_lights_explicit_power1.glm
+?? ../../residential/autotest/test_opt_lights_explicit_power2.glm
+?? ../../residential/autotest/test_opt_lights_explicit_power3.glm
+?? ../../residential/autotest/test_opt_lights_explicit_power4.glm
+?? ../../residential/autotest/test_opt_lights_imp.glm
+?? ../../residential/autotest/test_opt_lights_implicit_power1.glm
+?? ../../residential/autotest/test_opt_lights_implicit_power2.glm
+?? ../../residential/autotest/test_opt_lights_implicit_power3.glm
+?? ../../residential/autotest/test_opt_lights_implicit_power4.glm
+?? ../../residential/autotest/test_opt_microwave_implicit.glm
+?? ../../residential/autotest/test_opt_waterheater_implicit.glm
+?? ../../residential/autotest/test_waterheater_implicit_fix.glm
+?? ../../third_party/jsoncpp_lib/

@@ -108,7 +108,11 @@ EXPORT int create_overhead_line_conductor(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			overhead_line_conductor *my = object_data<overhead_line_conductor>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_overhead_line_conductor: obj->data is null for class 'overhead_line_conductor'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

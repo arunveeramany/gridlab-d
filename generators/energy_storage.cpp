@@ -447,7 +447,11 @@ EXPORT int create_energy_storage(OBJECT **obj, OBJECT *parent)
 		if (*obj != nullptr)
 		{
 			energy_storage *my = /*OBJECTDATA(*obj, energy_storage)*/ object_data<energy_storage>(*obj);
-			gl_set_parent(*obj, parent);
+			if (!my) {
+				gl_error("create_energy_storage: obj->data is null for class 'energy_storage'");
+				return 0;
+			}
+			// gl_set_parent(*obj, parent);
 			return my->create();
 		}
 		else

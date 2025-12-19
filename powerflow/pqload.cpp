@@ -398,7 +398,11 @@ EXPORT int create_pqload(OBJECT **obj, OBJECT *parent)
 		if (*obj != nullptr)
 		{
 			pqload *my = object_data<pqload>(*obj);
-			gl_set_parent(*obj, parent);
+			if (!my) {
+				gl_error("create_pqload: obj->data is null for class 'pqload'");
+				return 0;
+			}
+			// gl_set_parent(*obj, parent);
 			return my->create();
 		}
 		else

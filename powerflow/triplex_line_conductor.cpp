@@ -103,7 +103,11 @@ EXPORT int create_triplex_line_conductor(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			triplex_line_conductor *my = object_data<triplex_line_conductor>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_triplex_line_conductor: obj->data is null for class 'triplex_line_conductor'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

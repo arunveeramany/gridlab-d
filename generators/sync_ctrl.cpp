@@ -395,7 +395,11 @@ EXPORT int create_sync_ctrl(OBJECT **obj, OBJECT *parent)
         if (*obj != nullptr)
         {
             sync_ctrl *my = object_data<sync_ctrl>(*obj);
-            gl_set_parent(*obj, parent);
+            if (!my) {
+				gl_error("create_sync_ctrl: obj->data is null for class 'sync_ctrl'");
+				return 0;
+			}
+            // gl_set_parent(*obj, parent);
             return my->create();
         }
         else

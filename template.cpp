@@ -50,7 +50,13 @@ EXPORT int create_classtemplate(OBJECT **obj, OBJECT *parent){
 	*obj = gl_create_object(classtemplate::oclass);
 	if(*obj != 0){
 		classtemplate *my = OBJECTDATA(*obj, classtemplate);
-		gl_set_parent(*obj, parent);
+		// gl_set_parent(*obj, parent);
+
+		if (!my) {
+				gl_error("create_classtemplate: obj->data is null for class 'classtemplate'");
+				return 0;
+		}
+
 		my->create();
 		return 1;
 	}

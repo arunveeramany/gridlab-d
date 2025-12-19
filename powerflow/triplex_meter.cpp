@@ -217,6 +217,10 @@ triplex_meter::triplex_meter(MODULE *mod) : triplex_node(mod)
 			PT_double, "second_tier_energy[kWh]", PADDR(tier_energy[1]),PT_DESCRIPTION,"price of energy on tier above first tier",
 			PT_double, "third_tier_price[$/kWh]", PADDR(tier_price[2]),PT_DESCRIPTION,"first tier price of energy greater than third tier energy",
 			PT_double, "third_tier_energy[kWh]", PADDR(tier_energy[2]),PT_DESCRIPTION,"price of energy on tier above second tier",
+			// PT_complex, "power_1[VA]", PADDR(power_1),PT_DESCRIPTION,"constant power load on phase 1",
+            // PT_complex, "power_2[VA]", PADDR(power_2),PT_DESCRIPTION,"constant power load on phase 2",
+            // PT_complex, "power_12[VA]", PADDR(power_12),PT_DESCRIPTION,"constant power load on split phase 1-2",
+
 
 			nullptr)<1) GL_THROW("unable to publish properties in %s",__FILE__);
 
@@ -237,6 +241,7 @@ triplex_meter::triplex_meter(MODULE *mod) : triplex_node(mod)
 				GL_THROW("Unable to publish triplex_meter shunt update function");
 			if (gl_publish_function(oclass, "pwr_object_kmldata", (FUNCTIONADDR)triplex_meter_kmldata) == nullptr)
 				GL_THROW("Unable to publish triplex_meter kmldata function");
+			
 		}
 }
 
@@ -515,6 +520,11 @@ TIMESTAMP triplex_meter::sync(TIMESTAMP t0)
 		power[1] += tpmeter_power_consumption/2;
 	}
 
+	power[0] += this->power_1;
+    power[1] += this->power_2;
+    power[0] += this->power_12 / 2.0;
+    power[1] += this->power_12 / 2.0;
+
 	return triplex_node::sync(t0);
 
 }
@@ -570,6 +580,9 @@ TIMESTAMP triplex_meter::postsync(TIMESTAMP t0, TIMESTAMP t1)
 						+ (indiv_measured_power[1]).Re()
 						+ (indiv_measured_power[2]).Re();
 
+	// measured_power += power_1 + power_2 + power_12;
+    // measured_real_power += power_1.Re() + power_2.Re() + power_12.Re();
+
 	gl_verbose("triplex_meter:postsync: measured_voltage[0]=%f+%fj, measured_current[0]=%f+%fj",
            measured_voltage[0].Re(), measured_voltage[0].Im(),
            measured_current[0].Re(), measured_current[0].Im());
@@ -580,6 +593,8 @@ TIMESTAMP triplex_meter::postsync(TIMESTAMP t0, TIMESTAMP t1)
 	measured_reactive_power = (indiv_measured_power[0]).Im()
 							+ (indiv_measured_power[1]).Im()
 							+ (indiv_measured_power[2]).Im();
+	
+	// measured_reactive_power += power_1.Im() + power_2.Im() + power_12.Im();
 
 	//		if (dt > 0 && last_t != dt)
 	if (dt > 0)
@@ -1164,13 +1179,13 @@ EXPORT int create_triplex_meter(OBJECT** obj, OBJECT* parent) {
 		}
 
 		// Step 3: Set parent relationship if applicable
-		gl_set_parent(*obj, parent); // Link to parent object
-		if (parent != nullptr) {
-			//std::cout << "Parent set for triplex_meter object. Parent address: " << parent << std::endl;
-		}
-		else {
-			//std::cout << "No parent provided for triplex_meter object." << std::endl;
-		}
+		// gl_set_parent(*obj, parent); // Link to parent object
+		// if (parent != nullptr) {
+		// 	//std::cout << "Parent set for triplex_meter object. Parent address: " << parent << std::endl;
+		// }
+		// else {
+		// 	//std::cout << "No parent provided for triplex_meter object." << std::endl;
+		// }
 
 		// Step 4: Call the triplex_meter create method for initialization
 		int result = my->create();

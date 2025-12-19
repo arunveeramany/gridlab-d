@@ -1,0 +1,12 @@
+prefix=/usr/local
+libdir=/usr/local/lib
+includedir=/usr/local/include
+
+Name: GridLAB-D
+Description: Direct solution of large, sparse systems of linear equations
+Version: 6.0.1
+URL: https://portal.nersc.gov/project/sparse/superlu/
+
+Libs: -L${libdir} -lsuperlu
+Libs.private: blas -lm
+Cflags: -I${includedir}

@@ -205,7 +205,11 @@ EXPORT int create_link(OBJECT **obj, OBJECT *parent)
 	{
 		last_link = *obj;
 		link *my = OBJECTDATA(*obj,link);
-		gl_set_parent(*obj,parent);
+		if (!my) {
+				gl_error("create_link: obj->data is null for class 'link'");
+				return 0;
+			}
+		// gl_set_parent(*obj,parent);
 		my->create();
 		return 1;
 	}

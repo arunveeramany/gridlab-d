@@ -1214,7 +1214,11 @@ EXPORT int create_sec_control(OBJECT **obj, OBJECT *parent)
 		if (*obj != NULL)
 		{
 			sec_control *my = /*OBJECTDATA(obj,<>)*/ object_data<sec_control>(*obj);
-			gl_set_parent(*obj, parent);
+			if (!my) {
+				gl_error("create_sec_control: obj->data is null for class 'sec_control'");
+				return 0;
+			}
+			// gl_set_parent(*obj, parent);
 			return my->create();
 		}
 		else

@@ -1,0 +1,1 @@
+/usr/bin/clang -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Wl,-no_pie CMakeFiles/zitersol1.dir/zitersol1.c.o CMakeFiles/zitersol1.dir/zfgmr.c.o -o ../../../bin/zitersol1  ../../../lib/static/libsuperlu.a ../../../lib/static/libblas.a -lm

@@ -147,7 +147,13 @@ EXPORT int create_mpi_network(OBJECT **obj, OBJECT *parent)
 	if (*obj!=nullptr)
 	{
 		mpi_network *my = OBJECTDATA(*obj,mpi_network);
-		gl_set_parent(*obj,parent);
+
+		if (!my) {
+				gl_error("create_mpi_network: obj->data is null for class 'mpi_network'");
+				return 0;
+			}
+
+		// gl_set_parent(*obj,parent);
 		try {
 			my->create();
 		}

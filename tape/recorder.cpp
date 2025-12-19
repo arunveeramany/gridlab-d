@@ -44,8 +44,15 @@ EXPORT int create_recorder(OBJECT **obj, OBJECT *parent)
 	if (*obj != nullptr)
 	{
 		struct recorder *my = object_data<recorder>(*obj);
+		if (!my) {
+				gl_error("create_recorder: obj->data is null for class 'recorder'");
+				return 0;
+			}
 		last_recorder = *obj;
-		gl_set_parent(*obj, parent);
+		// if (parent != nullptr) 
+		// {
+		// 	gl_set_parent(*obj, parent);
+		// }
 		strcpy(my->file, "");
 		strcpy(my->multifile, "");
 		strcpy(my->filetype, "txt");
@@ -86,7 +93,12 @@ static int recorder_open(OBJECT *obj)
 
 	error_encountered = false;
 
+	gl_debug("recorder:%d init - dInterval=%f, TS_SECOND=%lld", obj->id, my->dInterval, TS_SECOND);
+
 	my->interval = (int64)(my->dInterval / TS_SECOND);
+
+	gl_debug("recorder:%d init - computed interval=%lld", obj->id, my->interval);
+
 	if (my->interval < -1)
 	{
 		gl_error("invalid interval value (%d)", my->interval);
@@ -421,7 +433,12 @@ static int recorder_open(OBJECT *obj)
 		}
 	}
 
-	return my->ops->open(my, fname, flags);
+	//return my->ops->open(my, fname, flags);
+
+	int result = my->ops->open(my, fname, flags);
+    
+    
+    return result;
 }
 
 static int write_recorder(struct recorder *my, char *ts, char *value)
@@ -485,11 +502,13 @@ static TIMESTAMP recorder_write(OBJECT *obj)
 	{
 		close_recorder(my);
 		my->status = TS_DONE;
+		return TS_NEVER; // This recorder is done, do not sync again.
 	}
 	else
 		my->samples++;
 
 	/* at this point we've written the sample to the normal recorder output */
+	
 
 	// if file based
 	if (my->multifp != nullptr)
@@ -552,7 +571,8 @@ static TIMESTAMP recorder_write(OBJECT *obj)
 		// fprintf
 		fprintf(my->multifp, "%s,%s\n", ts, outbuffer.get_string());
 	}
-	return TS_NEVER;
+	// return TS_NEVER;
+	return my->last.ts + my->interval;
 }
 
 PROPERTY *link_properties(struct recorder *rec, OBJECT *obj, char *property_list)
@@ -665,6 +685,7 @@ EXPORT int init_recorder(OBJECT *obj)
 	// will have been evaluated by the time the global init pass runs.
 	// my->target = link_properties(my, obj->parent, my->property);
 	my->target = nullptr;
+	my->target_obj = nullptr;
 
 	// Check for failure
 	// if (my->target == nullptr)
@@ -672,6 +693,15 @@ EXPORT int init_recorder(OBJECT *obj)
 	// 	gl_error("recorder %s: failed to link properties '%s'", obj->name ? (const char *)obj->name : "anonymous", (const char *)my->property);
 	// 	return 0; // FAILED
 	// }
+
+
+	// Open the recorder file during init
+    // This ensures interval conversion happens before any sync calls
+    if (!recorder_open(obj))
+    {
+        gl_error("recorder:%d: failed to open during initialization", obj->id);
+        return 0; // FAILED
+    }
 
 	return 1; // SUCCESS
 }
@@ -766,9 +796,12 @@ extern "C" TIMESTAMP sync_recorder(void *object, ...)
 
     OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
 
+	gl_debug("sync_recorder called: obj=%s, t0=%lld, pass=%d, interval=%lld", 
+             obj->name, t0, pass, object_data<struct recorder>(obj)->interval);
+
 	if (!callback) {
         gl_error("callback is null in sync_recorder");
-        return 0;  // Fail module load
+        return TS_INVALID;  // Fail module load
     }
 
 	// Add structure validation
@@ -780,7 +813,7 @@ extern "C" TIMESTAMP sync_recorder(void *object, ...)
 
 	if (!callback->time.local_datetime) {
         gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
-        return FAILED;
+        return TS_INVALID;
     }
 
 
@@ -816,8 +849,26 @@ extern "C" TIMESTAMP sync_recorder(void *object, ...)
 			while (isspace(*item))
 				item++;
 
-			// Find the original property definition on the target object.
-			original_prop = gl_get_property(target_obj, item, nullptr);
+			// Create a working copy of the item to parse
+			char base_prop_name[256];
+			strncpy(base_prop_name, item, sizeof(base_prop_name)-1);
+			base_prop_name[sizeof(base_prop_name)-1] = '\0'; // Ensure null termination
+
+			// Trim trailing whitespace
+			char *end = base_prop_name + strlen(base_prop_name) - 1;
+			while (end > base_prop_name && isspace((unsigned char)*end))
+				*end-- = '\0';
+			
+			// Find if there's a sub-property accessor like .real or .imag
+			char *part = strchr(base_prop_name, '.');
+			if (part != nullptr)
+			{
+				// Terminate the string at the dot to get the base property name.
+				*part = '\0'; 
+			}
+
+			// Now, find the original property using the corrected base name.
+			original_prop = gl_get_property(target_obj, base_prop_name, nullptr);
 			if (original_prop == nullptr)
 			{
 				// gl_get_property already prints a "not found" error.
@@ -828,10 +879,12 @@ extern "C" TIMESTAMP sync_recorder(void *object, ...)
 					first = first->next;
 					free(prop_copy);
 				}
+				gl_debug("Returning TS_INVALID: property lookup failed for base property of '%s'", item);
 				return TS_INVALID;
 			}
 
 			// Create a copy of the property to build our own clean linked list.
+			// The recorder's internal logic will use the full name (item) later to get the correct part.
 			prop_copy = (PROPERTY *)malloc(sizeof(PROPERTY));
 			if (prop_copy == nullptr)
 			{
@@ -840,6 +893,12 @@ extern "C" TIMESTAMP sync_recorder(void *object, ...)
 				return TS_INVALID;
 			}
 			memcpy(prop_copy, original_prop, sizeof(PROPERTY));
+
+			// Store the full, original name (e.g., "measured_power_A.real") in the copied property's name field.
+			// This is what the recorder uses later to extract the data.
+			strncpy(prop_copy->name, item, sizeof(prop_copy->name)-1);
+			prop_copy->name[sizeof(prop_copy->name)-1] = '\0';
+
 			prop_copy->next = nullptr; // Explicitly terminate this new node.
 
 			// Append the new property copy to our list.
@@ -849,7 +908,7 @@ extern "C" TIMESTAMP sync_recorder(void *object, ...)
 				last->next = prop_copy; // Link the previous item to this one.
 			last = prop_copy; // This is now the last item.
 		}
-
+		
 		// Linking is complete. Store the head of our new property list and the target object.
 		my->target = first;
 		my->target_obj = target_obj;
@@ -892,7 +951,7 @@ extern "C" TIMESTAMP sync_recorder(void *object, ...)
 	// 	return sync_recorder_error(&obj, &my, buffer);
 	// }
 
-	if (my->last.ts < 1 && my->interval != -1)
+	if (my->last.ts < 1 ) //&& my->interval != -1)
 	{
 		my->last.ts = t0;
 		my->last.ns = 0;
@@ -945,6 +1004,7 @@ extern "C" TIMESTAMP sync_recorder(void *object, ...)
 					obj->parent->oclass->name, obj->parent->id);
 			close_recorder(my);
 			my->status = TS_ERROR;
+			return TS_INVALID;
 		}
 	}
 	if ((my->target != nullptr) && (my->interval > 0))
@@ -957,6 +1017,7 @@ extern "C" TIMESTAMP sync_recorder(void *object, ...)
 						obj->parent->oclass->name, obj->parent->id);
 				close_recorder(my);
 				my->status = TS_ERROR;
+				return TS_INVALID;
 			}
 			my->last.ts = t0;
 			my->last.ns = 0;
@@ -983,7 +1044,7 @@ extern "C" TIMESTAMP sync_recorder(void *object, ...)
 		return TS_INVALID;
 	}
 
-	if (my->last.ts < 1 && my->interval != -1)
+	if (my->last.ts < 1) // && my->interval != -1)
 	{
 		my->last.ts = t0;
 		my->last.ns = 0;
@@ -1016,6 +1077,8 @@ extern "C" TIMESTAMP sync_recorder(void *object, ...)
 			strncpy(my->last.value, buffer, sizeof(my->last.value));
 		}
 	}
+
+	gl_debug("About to call sync_recorder_error for %s", obj->name);
 	return sync_recorder_error(&obj, &my, buffer);
 }
 
@@ -1029,12 +1092,19 @@ TIMESTAMP sync_recorder_error(OBJECT **obj, struct recorder **my, char2048 buffe
 		return TS_INVALID;
 	}
 
+	TIMESTAMP result = TS_INVALID;
 	if ((*my)->interval == 0 || (*my)->interval == -1)
 	{
-		return TS_NEVER;
+		result = TS_NEVER;
 	}
-	else
-		return (*my)->last.ts + (*my)->interval;
+	else{
+		// return (*my)->last.ts + (*my)->interval;
+		result = (*my)->last.ts + (*my)->interval;
+	}
+
+	gl_debug("recorder %d: last.ts=%lld, interval=%lld, returning=%lld", 
+				(*obj)->id, (*my)->last.ts, (*my)->interval, result);
+	return result;
 }
 
 /**@}*/

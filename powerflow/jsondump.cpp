@@ -4052,7 +4052,11 @@ EXPORT int create_jsondump(OBJECT **obj, OBJECT *parent)
 		if (*obj != nullptr)
 		{
 			jsondump *my = /*OBJECTDATA(obj,<>)*/ object_data<jsondump>(*obj);
-			gl_set_parent(*obj, parent);
+			if (!my) {
+				gl_error("create_jsondump: obj->data is null for class 'jsondump'");
+				return 0;
+			}
+			// gl_set_parent(*obj, parent);
 			return my->create();
 		}
 	}

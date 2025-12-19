@@ -142,7 +142,11 @@ EXPORT int create_meter(OBJECT **obj, OBJECT *parent)
 	if (*obj!=nullptr)
 	{
 		meter *my = OBJECTDATA(*obj,meter);
-		gl_set_parent(*obj,parent);
+		if (!my) {
+				gl_error("create_meter: obj->data is null for class 'meter'");
+				return 0;
+			}
+		// gl_set_parent(*obj,parent);
 		my->create();
 		return 1;
 	}

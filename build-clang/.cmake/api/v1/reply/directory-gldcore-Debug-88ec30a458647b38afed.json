@@ -1,0 +1,45 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"gldcore/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 201,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Runtime",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"bin/gridlabd"
+			],
+			"targetId" : "gridlabd::@4bf5ca48242ef1e71568",
+			"targetIndex" : 58,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "gldcore",
+		"source" : "gldcore"
+	}
+}

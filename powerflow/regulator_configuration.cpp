@@ -206,7 +206,11 @@ EXPORT int create_regulator_configuration(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			regulator_configuration *my = object_data<regulator_configuration>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_regulator_configuration: obj->data is null for class 'regulator_configuration'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

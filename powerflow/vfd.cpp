@@ -1014,7 +1014,11 @@ EXPORT int create_vfd(OBJECT **obj, OBJECT *parent)
 		if (*obj != nullptr)
 		{
 			vfd *my = object_data<vfd>(*obj);
-			gl_set_parent(*obj, parent);
+			if (!my) {
+				gl_error("create_vfd: obj->data is null for class 'vfd'");
+				return 0;
+			}
+			// gl_set_parent(*obj, parent);
 			return my->create();
 		}
 		else

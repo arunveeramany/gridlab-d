@@ -272,8 +272,14 @@ EXPORT int create_player(OBJECT **obj, OBJECT *parent) {
 	{
         //struct player *my = OBJECTDATA(*obj, struct player);
         class player* my = object_data<player>(*obj);
+        //null check
+        if (!my) {
+				gl_error("create_player: obj->data is null for class 'player'");
+				return 0;
+			}
+        
         last_player = *obj;
-        gl_set_parent(*obj, parent);
+        // gl_set_parent(*obj, parent);
         // strcpy(my->file, "");
         my->file[0] = '\0';
         // strcpy(my->filetype, "txt");
@@ -307,6 +313,9 @@ static int player_open(OBJECT *obj) {
     char32 flags = "r";
     //struct player* my = OBJECTDATA(obj, struct player);
     class player* my = object_data< player>(obj);
+    //null check
+    if(my == nullptr)
+        return 0;
     TAPEFUNCS *tf = 0;
     int retvalue;
 
@@ -391,6 +400,9 @@ TIMESTAMP player_read(OBJECT *obj) {
     double S = 0;
     //struct player* my = OBJECTDATA(obj, struct player);
     class player* my = object_data< player>(obj);
+    //null check
+    if(my == nullptr)
+        return TS_INVALID;
     char unit[2];
     TIMESTAMP t1;
     char *result = nullptr;
@@ -655,6 +667,10 @@ extern "C" TIMESTAMP sync_player(void *object, ...)
 
 	int return_val;
     class player *my = object_data< player>(obj);
+    if (!my) {
+        gl_error("sync_player: player object is null");
+        return TS_INVALID;
+    }
     TIMESTAMP t1 = (TS_OPEN == my->status) ? my->next.ts : TS_NEVER;
     TIMESTAMP temp_t = TS_INVALID; // FIXME: make sure this makes sense.
 

@@ -118,7 +118,7 @@ TIMESTAMP enum_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
     
 	
 
-	std::cerr << "Commit for enum_assert, parent: " << (void*)get_parent() << ", target: " << get_target().c_str() << std::endl;
+	// std::cerr << "Commit for enum_assert, parent: " << (void*)get_parent() << ", target: " << get_target().c_str() << std::endl;
 	if (!callback) {
         gl_error("FATAL: callback structure is null in enum_assert::commit");
         return TS_INVALID;
@@ -215,7 +215,14 @@ EXPORT int create_enum_assert(OBJECT **obj, OBJECT *parent)
         if (*obj != NULL)
         {
             enum_assert *my = object_data<enum_assert>(*obj);
-            gl_set_parent(*obj, parent);
+
+			if (!my) {
+				gl_error("create_enum_assert: obj->data is null for class 'enum_assert'");
+				return 0;
+			}
+
+
+            // gl_set_parent(*obj, parent);
             return my->create();
         }	
         else

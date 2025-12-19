@@ -1,0 +1,112 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"third_party/SuperLU/SRC/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 254,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 262,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 274,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 284,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"lib/static/libsuperlu.a"
+			],
+			"targetId" : "superlu::@a8eaf087c42f87d13365",
+			"targetIndex" : 73,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 2,
+			"component" : "Unspecified",
+			"destination" : "include",
+			"paths" : 
+			[
+				"third_party/SuperLU/SRC/supermatrix.h",
+				"third_party/SuperLU/SRC/slu_Cnames.h",
+				"third_party/SuperLU/SRC/slu_dcomplex.h",
+				"third_party/SuperLU/SRC/slu_scomplex.h",
+				"third_party/SuperLU/SRC/slu_util.h",
+				"third_party/SuperLU/SRC/superlu_enum_consts.h",
+				"build-gcc/third_party/SuperLU/SRC/superlu_config.h",
+				"third_party/SuperLU/SRC/slu_sdefs.h",
+				"third_party/SuperLU/SRC/slu_ddefs.h",
+				"third_party/SuperLU/SRC/slu_cdefs.h",
+				"third_party/SuperLU/SRC/slu_zdefs.h"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 3,
+			"component" : "Unspecified",
+			"destination" : "lib/cmake/superlu",
+			"exportName" : "superluTargets",
+			"exportTargets" : 
+			[
+				{
+					"id" : "superlu::@a8eaf087c42f87d13365",
+					"index" : 73
+				}
+			],
+			"paths" : 
+			[
+				"third_party/SuperLU/SRC/CMakeFiles/Export/29844f99febfd7af969da705a88a5078/superluTargets.cmake"
+			],
+			"type" : "export"
+		},
+		{
+			"backtrace" : 4,
+			"component" : "Unspecified",
+			"destination" : "lib/cmake/superlu",
+			"paths" : 
+			[
+				"build-gcc/third_party/SuperLU/SRC/superluConfig.cmake",
+				"build-gcc/third_party/SuperLU/SRC/superluConfigVersion.cmake"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "third_party/SuperLU/SRC",
+		"source" : "third_party/SuperLU/SRC"
+	}
+}

@@ -361,7 +361,11 @@ EXPORT int create_particle_swarm_optimization(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			particle_swarm_optimization *my = OBJECTDATA(*obj,particle_swarm_optimization);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_particle_swarm_optimization: obj->data is null for class 'particle_swarm_optimization'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

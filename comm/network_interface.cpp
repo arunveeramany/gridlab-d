@@ -297,7 +297,12 @@ EXPORT int create_network_interface(OBJECT **obj, OBJECT *parent)
 	if (*obj!=nullptr)
 	{
 		network_interface *my = OBJECTDATA(*obj,network_interface);
-		gl_set_parent(*obj,parent);
+
+		if (!my) {
+				gl_error("create_network_interface: obj->data is null for class 'network_interface'");
+				return 0;
+			}
+		// gl_set_parent(*obj,parent);
 		try {
 			my->create();
 		}

@@ -48,9 +48,14 @@ EXPORT int create_collector(OBJECT **obj, OBJECT *parent)
 	{
 		//struct collector *my = object_data<struct collector>(*obj);
 		struct collector* my = object_data< collector>(*obj);
-
+		//null check
+		
+		if (!my) {
+				gl_error("create_collector: obj->data is null for class 'collector'");
+				return 0;
+			}
 		last_collector = *obj;
-		gl_set_parent(*obj,parent);
+		// gl_set_parent(*obj,parent);
 		strcpy(my->file,"");
 		strcpy(my->filetype,"txt");
 		strcpy(my->delim,",");
@@ -79,6 +84,10 @@ static int collector_open(OBJECT *obj)
 	TAPEFUNCS *tf = 0;
 	//struct collector* my = object_data<struct collector>(obj);
 	struct collector* my = object_data< collector>(obj);
+	if(my == nullptr){
+		gl_error("collector_open: unable to allocate memory for collector");
+		return 0;
+	}
 
 	my->interval = (int64)(my->dInterval/TS_SECOND);
 
@@ -133,6 +142,11 @@ static TIMESTAMP collector_write(OBJECT *obj)
 {
 	//struct collector* my = object_data<struct collector>(obj);
 	struct collector* my = object_data< collector>(obj);
+	//null check
+	if(my == nullptr){
+		gl_error("collector_write: unable to get collector data");
+		return TS_INVALID;
+	}
 	char ts[64];
 	if (my->format==0)
 	{
@@ -255,6 +269,11 @@ extern "C" TIMESTAMP sync_collector(void *object, ...)
     OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
 
 	struct collector *my = object_data<struct collector>(obj);
+	//null check
+	if(my == nullptr){
+		gl_error("sync_collector: unable to get collector data");
+		return TS_INVALID;
+	}
 	typedef enum {NONE='\0', LT='<', EQ='=', GT='>'} COMPAREOP;
 	COMPAREOP comparison;
 	char2048 buffer = "";

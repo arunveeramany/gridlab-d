@@ -899,7 +899,11 @@ EXPORT int create_triplex_load(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			triplex_load *my = object_data<triplex_load>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_triplex_load: obj->data is null for class 'triplex_load'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

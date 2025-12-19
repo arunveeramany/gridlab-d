@@ -416,7 +416,11 @@ EXPORT int create_line(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			line *my = /*OBJECTDATA(obj,<>)*/ object_data<line>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_line: obj->data is null for class 'line'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

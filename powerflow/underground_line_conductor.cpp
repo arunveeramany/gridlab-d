@@ -177,7 +177,11 @@ EXPORT int create_underground_line_conductor(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			underground_line_conductor *my = object_data<underground_line_conductor>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_underground_line_conductor: obj->data is null for class 'underground_line_conductor'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

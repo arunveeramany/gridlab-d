@@ -1,0 +1,77 @@
+{
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_custom_target",
+			"add_dependencies"
+		],
+		"files" : 
+		[
+			"third_party/SuperLU/EXAMPLE/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 21,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 22,
+				"parent" : 0
+			}
+		]
+	},
+	"dependencies" : 
+	[
+		{
+			"backtrace" : 2,
+			"id" : "zitersol::@a239d68a0100b9e3dd33"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "zitersol1::@a239d68a0100b9e3dd33"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "zlinsol::@a239d68a0100b9e3dd33"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "zlinsol1::@a239d68a0100b9e3dd33"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "zlinsolx::@a239d68a0100b9e3dd33"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "zlinsolx1::@a239d68a0100b9e3dd33"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "zlinsolx2::@a239d68a0100b9e3dd33"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "zlinsolx3::@a239d68a0100b9e3dd33"
+		}
+	],
+	"id" : "examples_doublecomplex::@a239d68a0100b9e3dd33",
+	"name" : "examples_doublecomplex",
+	"paths" : 
+	{
+		"build" : "third_party/SuperLU/EXAMPLE",
+		"source" : "third_party/SuperLU/EXAMPLE"
+	},
+	"sources" : [],
+	"type" : "UTILITY"
+}

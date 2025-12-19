@@ -3770,7 +3770,11 @@ EXPORT int create_link(OBJECT **obj, OBJECT *parent)
 		if (*obj != nullptr)
 		{
 			link_object *my = object_data<link_object>(*obj);
-			gl_set_parent(*obj, parent);
+			if (!my) {
+				gl_error("create_link: obj->data is null for class 'link'");
+				return 0;
+			}
+			// gl_set_parent(*obj, parent);
 			return my->create();
 		}
 		else

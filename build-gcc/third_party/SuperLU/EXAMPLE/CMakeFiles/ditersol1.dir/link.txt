@@ -1,0 +1,1 @@
+/opt/homebrew/bin/gcc-15 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Wl,-no_pie CMakeFiles/ditersol1.dir/ditersol1.c.o CMakeFiles/ditersol1.dir/dfgmr.c.o -o ../../../bin/ditersol1  ../../../lib/static/libsuperlu.a ../../../lib/static/libblas.a -lm

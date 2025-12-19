@@ -149,7 +149,11 @@ EXPORT int create_recloser(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			recloser *my = object_data<recloser>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_recloser: obj->data is null for class 'recloser'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

@@ -127,7 +127,11 @@ EXPORT int create_plc(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			plc *my = OBJECTDATA(*obj,plc);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_plc: obj->data is null for class 'plc'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			my->create();
 			return 1;
 		}

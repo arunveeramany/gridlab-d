@@ -601,7 +601,11 @@ EXPORT int create_ZIPload(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			ZIPload *my = object_data<ZIPload>(*obj);;
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_zipload: obj->data is null for class 'recloser'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			my->create();
 			return 1;
 		}

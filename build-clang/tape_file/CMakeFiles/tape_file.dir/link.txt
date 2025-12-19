@@ -1,0 +1,1 @@
+/usr/bin/clang++ -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -dynamiclib -Wl,-headerpad_max_install_names -o ../lib/tape_file.dylib -install_name /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/lib/tape_file.dylib CMakeFiles/tape_file.dir/tape_file.cpp.o

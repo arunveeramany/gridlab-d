@@ -600,7 +600,11 @@ EXPORT int create_central_dg_control(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			central_dg_control *my = /*OBJECTDATA(*obj, central_dg_control)*/  object_data<central_dg_control>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_central_dg_control: obj->data is null for class 'central_dg_control'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

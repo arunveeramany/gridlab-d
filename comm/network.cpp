@@ -437,7 +437,13 @@ EXPORT int create_network(OBJECT **obj, OBJECT *parent)
 	if (*obj!=nullptr)
 	{
 		network *my = OBJECTDATA(*obj,network);
-		gl_set_parent(*obj,parent);
+
+		if (!my) {
+				gl_error("create_network: obj->data is null for class 'network'");
+				return 0;
+			}
+
+		// gl_set_parent(*obj,parent);
 		try {
 			my->create();
 		}

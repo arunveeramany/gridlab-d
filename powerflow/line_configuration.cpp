@@ -109,7 +109,11 @@ EXPORT int create_line_configuration(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			line_configuration *my = /*OBJECTDATA(obj,<>)*/ object_data<line_configuration>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_line_configuration: obj->data is null for class 'line_configuration'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

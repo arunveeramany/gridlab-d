@@ -375,7 +375,7 @@ diesel_dg::diesel_dg(MODULE *module)
 
 		defaults = this;
 
-		memset(this, 0, sizeof(diesel_dg));
+		// memset(this, 0, sizeof(diesel_dg));
 
 		if (gl_publish_function(oclass, "interupdate_gen_object", (FUNCTIONADDR)interupdate_diesel_dg) == nullptr)
 			GL_THROW("Unable to publish diesel_dg deltamode function");
@@ -714,287 +714,333 @@ int diesel_dg::init(OBJECT *parent)
 	// Initialize the time tracking flag
 	diesel_start_time = gl_globalclock;
 
-	// find parent meter, if not defined, use a default meter (using static variable 'default_meter')
-	if (parent != nullptr)
+	if(parent != nullptr)
 	{
-		if (gl_object_isa(parent, "meter", "powerflow") || gl_object_isa(parent, "node", "powerflow") || gl_object_isa(parent, "load", "powerflow"))
+		if (parent->oclass == nullptr) 
+		{			
+			return 2; // defer; do not touch parent further
+		}
+
+		if(parent->oclass->magic != CLASSVALID)
 		{
-			// Check to make sure the parent is initalized - otherwise some things may not exist
-			if ((parent->flags & OF_INIT) != OF_INIT)
+			return 2; // defer; do not touch parent further
+		}
+	
+			
+		// find parent meter, if not defined, use a default meter (using static variable 'default_meter')
+		if (parent != nullptr && obj->oclass->magic == CLASSVALID)
+		{
+			// Check class name directly instead of gl_object_isa *****
+			bool is_valid_parent_type = false;
+			
+			gld_property *pNominal_Voltage = new gld_property(parent, "nominal_voltage");
+			if (!pNominal_Voltage->is_valid() || !pNominal_Voltage->is_double())
 			{
-				gl_verbose("diesel_dg::init(): diesel_dg:%d - %s - deferring initialization on parent node(s)", obj->id, (obj->name ? obj->name : "Unnamed"));
+				gl_verbose("diesel_dg::init(): diesel_dg:%d - %s - deferring, parent missing nominal_voltage",
+						obj->id, (obj->name ? obj->name : "Unnamed"));
+				delete pNominal_Voltage;
 				return 2; // defer
 			}
+			double nominal_voltage_value = pNominal_Voltage->get_double();
+			delete pNominal_Voltage;
 
-			// Flag us as a proper child
-			parent_is_powerflow = true;
-
-			// See which mode we are - if QSTS only, use standard parent issues
-			if (Gen_type == DYNAMIC)
+			// If you also need phases:
+			gld_property *pPhases = new gld_property(parent, "phases");
+			if (!pPhases->is_valid() || !pPhases->is_set())
 			{
-				// See if this attached node is a child or not
-				if (parent->parent != nullptr)
+				gl_verbose("diesel_dg::init(): diesel_dg:%d - %s - deferring, parent missing phases",
+						obj->id, (obj->name ? obj->name : "Unnamed"));
+				delete pPhases;
+				return 2;
+			}
+			gld::set temp_phases = pPhases->get_set();
+			delete pPhases;
+
+			// Now consider the parent "valid" for our purposes
+			// parent_is_powerflow = true;
+			// OBJECT *tmp_obj = parent;
+			
+			is_valid_parent_type = true;
+
+			if (is_valid_parent_type)
+			{
+				
+				// Flag us as a proper child
+				parent_is_powerflow = true;
+
+				// See which mode we are - if QSTS only, use standard parent issues
+				if (Gen_type == DYNAMIC)
 				{
-					// Map parent - wherever it may be
-					temp_property_pointer = new gld_property(parent, "NR_powerflow_parent");
-
-					// Make sure it worked
-					if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_objectref())
+					// See if this attached node is a child or not
+					if (parent->parent != nullptr)
 					{
-						GL_THROW("diesel_dg:%s failed to map Norton-equivalence deltamode variable from %s", obj->name ? obj->name : "unnamed", parent->name ? parent->name : "unnamed");
-						// Defined elsewhere
+						// Map parent - wherever it may be
+						temp_property_pointer = new gld_property(parent, "NR_powerflow_parent");
+
+						// Make sure it worked
+						if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_objectref())
+						{
+							GL_THROW("diesel_dg:%s failed to map Norton-equivalence deltamode variable from %s", obj->name ? obj->name : "unnamed", parent->name ? parent->name : "unnamed");
+							// Defined elsewhere
+						}
+
+						// Pull the mapping - gld_object
+						tmp_gld_obj = temp_property_pointer->get_objectref();
+
+						// Pull the proper object reference
+						tmp_obj = tmp_gld_obj->my();
+
+						// free the property
+						delete temp_property_pointer;
+
+						// See what it is
+						if (
+							!gl_object_isa(tmp_obj, "meter", "powerflow") &&
+							!gl_object_isa(tmp_obj, "node", "powerflow") &&
+							!gl_object_isa(tmp_obj, "load", "powerflow"))
+						{
+							// Not a wierd map, just use normal parent
+							tmp_obj = parent;
+						}
+						else // Implies it is a powerflow parent
+						{
+							// Set the flag for later
+							childed_connection = true;
+
+							// See if we are deltamode-enabled -- if so, flag our parent while we're here
+							if (deltamode_inclusive)
+							{
+								// Map our deltamode flag and set it (parent will be done below)
+								temp_property_pointer = new gld_property(parent, "Norton_dynamic");
+
+								// Make sure it worked
+								if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_bool())
+								{
+									GL_THROW("diesel_dg:%s failed to map Norton-equivalence deltamode variable from %s", obj->name ? obj->name : "unnamed", parent->name ? parent->name : "unnamed");
+									// Defined elsewhere
+								}
+
+								// Flag it to true
+								temp_bool_value = true;
+								temp_property_pointer->setp<bool>(temp_bool_value, test_rlock);
+
+								// Remove it
+								delete temp_property_pointer;
+
+								// Set the child accumulator flag too
+								temp_property_pointer = new gld_property(tmp_obj, "Norton_dynamic_child");
+
+								// Make sure it worked
+								if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_bool())
+								{
+									GL_THROW("diesel_dg:%s failed to map Norton-equivalence deltamode variable from %s", obj->name ? obj->name : "unnamed", parent->name ? parent->name : "unnamed");
+									// Defined elsewhere
+								}
+
+								// Flag it to true
+								temp_bool_value = true;
+								temp_property_pointer->setp<bool>(temp_bool_value, test_rlock);
+
+								// Remove it
+								delete temp_property_pointer;
+							}
+							// Default else -- it is one of those, but not deltamode, so nothing extra to do
+						} // End we were a powerflow child
 					}
-
-					// Pull the mapping - gld_object
-					tmp_gld_obj = temp_property_pointer->get_objectref();
-
-					// Pull the proper object reference
-					tmp_obj = tmp_gld_obj->my();
-
-					// free the property
-					delete temp_property_pointer;
-
-					// See what it is
-					if (
-						!gl_object_isa(tmp_obj, "meter", "powerflow") &&
-						!gl_object_isa(tmp_obj, "node", "powerflow") &&
-						!gl_object_isa(tmp_obj, "load", "powerflow"))
+					else // It is null
 					{
-						// Not a wierd map, just use normal parent
+						// Just point it to the normal parent
 						tmp_obj = parent;
 					}
-					else // Implies it is a powerflow parent
-					{
-						// Set the flag for later
-						childed_connection = true;
-
-						// See if we are deltamode-enabled -- if so, flag our parent while we're here
-						if (deltamode_inclusive)
-						{
-							// Map our deltamode flag and set it (parent will be done below)
-							temp_property_pointer = new gld_property(parent, "Norton_dynamic");
-
-							// Make sure it worked
-							if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_bool())
-							{
-								GL_THROW("diesel_dg:%s failed to map Norton-equivalence deltamode variable from %s", obj->name ? obj->name : "unnamed", parent->name ? parent->name : "unnamed");
-								// Defined elsewhere
-							}
-
-							// Flag it to true
-							temp_bool_value = true;
-							temp_property_pointer->setp<bool>(temp_bool_value, test_rlock);
-
-							// Remove it
-							delete temp_property_pointer;
-
-							// Set the child accumulator flag too
-							temp_property_pointer = new gld_property(tmp_obj, "Norton_dynamic_child");
-
-							// Make sure it worked
-							if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_bool())
-							{
-								GL_THROW("diesel_dg:%s failed to map Norton-equivalence deltamode variable from %s", obj->name ? obj->name : "unnamed", parent->name ? parent->name : "unnamed");
-								// Defined elsewhere
-							}
-
-							// Flag it to true
-							temp_bool_value = true;
-							temp_property_pointer->setp<bool>(temp_bool_value, test_rlock);
-
-							// Remove it
-							delete temp_property_pointer;
-						}
-						// Default else -- it is one of those, but not deltamode, so nothing extra to do
-					} // End we were a powerflow child
 				}
-				else // It is null
+				else // Not deltamode, so just map normally
 				{
 					// Just point it to the normal parent
 					tmp_obj = parent;
 				}
-			}
-			else // Not deltamode, so just map normally
-			{
-				// Just point it to the normal parent
-				tmp_obj = parent;
-			}
 
-			// Now do the standard mapping
+				// Now do the standard mapping
 
-			// Map the voltage
-			pCircuit_V[0] = map_complex_value(tmp_obj, "voltage_A");
-			pCircuit_V[1] = map_complex_value(tmp_obj, "voltage_B");
-			pCircuit_V[2] = map_complex_value(tmp_obj, "voltage_C");
+				// Map the voltage
+				pCircuit_V[0] = map_complex_value(tmp_obj, "voltage_A");
+				pCircuit_V[1] = map_complex_value(tmp_obj, "voltage_B");
+				pCircuit_V[2] = map_complex_value(tmp_obj, "voltage_C");
 
-			// Current gets mapped this way too right now, but that may not be right
-			pLine_I[0] = map_complex_value(tmp_obj, "current_A");
-			pLine_I[1] = map_complex_value(tmp_obj, "current_B");
-			pLine_I[2] = map_complex_value(tmp_obj, "current_C");
+				// Current gets mapped this way too right now, but that may not be right
+				pLine_I[0] = map_complex_value(tmp_obj, "current_A");
+				pLine_I[1] = map_complex_value(tmp_obj, "current_B");
+				pLine_I[2] = map_complex_value(tmp_obj, "current_C");
 
-			// Map power -- not used by all, but just for the sake of populating
-			pPower[0] = map_complex_value(tmp_obj, "power_A");
-			pPower[1] = map_complex_value(tmp_obj, "power_B");
-			pPower[2] = map_complex_value(tmp_obj, "power_C");
+				// Map power -- not used by all, but just for the sake of populating
+				pPower[0] = map_complex_value(tmp_obj, "power_A");
+				pPower[1] = map_complex_value(tmp_obj, "power_B");
+				pPower[2] = map_complex_value(tmp_obj, "power_C");
 
-			// Map nominal voltage for populating variables
-			// Pull the nominal voltage
-			pNominal_Voltage = new gld_property(parent, "nominal_voltage");
-
-			// Make sure it worked
-			if (!pNominal_Voltage->is_valid() || !pNominal_Voltage->is_double())
-			{
-				GL_THROW("diesel_dg:%d %s - Unable to map nominal_voltage from object:%d %s", obj->id, (obj->name ? obj->name : "Unnamed"), parent->id, (parent->name ? parent->name : "Unnamed"));
-				/*  TROUBLESHOOT
-				While attempting to map the nominal_voltage from a parent object, an error occurred.  Please try again.
-				If the error persists, please submit your system and a bug report via the ticketing system.
-				*/
-			}
-
-			// Pull the voltage base value
-			nominal_voltage_value = pNominal_Voltage->get_double();
-
-			// Now get rid of the item
-			delete pNominal_Voltage;
-
-			// Compute the line-neutral value
-			Rated_V_LN = Rated_V_LL / sqrt(3.0);
-
-			// See if Rated_V is set
-			if (Rated_V_LL > 0.0) // It is
-			{
-				// Normalize it by the nominal voltage, for testing - also convert from appropriately
-				nom_test_val = Rated_V_LN / nominal_voltage_value;
-
-				// Make sure it matches
-				if ((nom_test_val > 1.01) || (nom_test_val < 0.99))
-				{
-					GL_THROW("diesel_dg:%d %s - Rated_V does not match the nominal voltage!", obj->id, (obj->name ? obj->name : "Unnamed"));
-					/*  TROUBLESHOOT
-					The value specified in Rated_V does not match the nominal_voltage of the parented node.  Please fix this
-					discrepancy.
-					*/
-				}
-			}
-			else // Nope, use the nominal voltage
-			{
-				// Nominal voltage should be in LN, so convert it to LL
-				Rated_V_LL = nominal_voltage_value * sqrt(3.0);
-
-				// Get the LN value too
-				Rated_V_LN = nominal_voltage_value;
-			}
-
-			// Pull frequency values - really only deltamode, but put in here too
-			temp_property_pointer = new gld_property("powerflow::nominal_frequency");
-
-			// Make sure it worked
-			if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_double())
-			{
-				GL_THROW("diesel_dg:%d %s failed to map the nominal_frequency property", obj->id, (obj->name ? obj->name : "Unnamed"));
-				/*  TROUBLESHOOT
-				While attempting to map the nominal_frequency property, an error occurred.  Please try again.
-				If the error persists, please submit your GLM and a bug report to the ticketing system.
-				*/
-			}
-
-			// Must be valid, read it
-			f_nominal = temp_property_pointer->get_double();
-
-			// Remove it
-			delete temp_property_pointer;
-
-			// Update omega_ref to match
-			omega_ref = f_nominal * 2.0 * PI;
-
-			// If we were deltamode requesting, set the flag on the other side
-			if (deltamode_inclusive)
-			{
-				// Map the current injection variables
-				pIGenerated[0] = map_complex_value(tmp_obj, "deltamode_generator_current_A");
-				pIGenerated[1] = map_complex_value(tmp_obj, "deltamode_generator_current_B");
-				pIGenerated[2] = map_complex_value(tmp_obj, "deltamode_generator_current_C");
-
-				// Map the PGenerated value
-				pPGenerated = map_complex_value(tmp_obj, "deltamode_PGenTotal");
-
-				// Map the flag
-				temp_property_pointer = new gld_property(tmp_obj, "Norton_dynamic");
+				// Map nominal voltage for populating variables
+				// Pull the nominal voltage
+				pNominal_Voltage = new gld_property(parent, "nominal_voltage");
 
 				// Make sure it worked
-				if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_bool())
+				if (!pNominal_Voltage->is_valid() || !pNominal_Voltage->is_double())
 				{
-					GL_THROW("diesel_dg:%s failed to map Norton-equivalence deltamode variable from %s", obj->name ? obj->name : "unnamed", tmp_obj->name ? tmp_obj->name : "unnamed");
+					GL_THROW("diesel_dg:%d %s - Unable to map nominal_voltage from object:%d %s", obj->id, (obj->name ? obj->name : "Unnamed"), parent->id, (parent->name ? parent->name : "Unnamed"));
 					/*  TROUBLESHOOT
-					While attempting to set up the deltamode interfaces and calculations with powerflow, the required interface could not be mapped.
-					Please check your GLM and try again.  If the error persists, please submit a trac ticket with your code.
+					While attempting to map the nominal_voltage from a parent object, an error occurred.  Please try again.
+					If the error persists, please submit your system and a bug report via the ticketing system.
 					*/
 				}
 
-				// Flag it to true
-				temp_bool_value = true;
-				temp_property_pointer->setp<bool>(temp_bool_value, test_rlock);
+				// Pull the voltage base value
+				nominal_voltage_value = pNominal_Voltage->get_double();
+
+				// Now get rid of the item
+				delete pNominal_Voltage;
+
+				// Compute the line-neutral value
+				Rated_V_LN = Rated_V_LL / sqrt(3.0);
+
+				// See if Rated_V is set
+				if (Rated_V_LL > 0.0) // It is
+				{
+					// Normalize it by the nominal voltage, for testing - also convert from appropriately
+					nom_test_val = Rated_V_LN / nominal_voltage_value;
+
+					// Make sure it matches
+					if ((nom_test_val > 1.01) || (nom_test_val < 0.99))
+					{
+						GL_THROW("diesel_dg:%d %s - Rated_V does not match the nominal voltage!", obj->id, (obj->name ? obj->name : "Unnamed"));
+						/*  TROUBLESHOOT
+						The value specified in Rated_V does not match the nominal_voltage of the parented node.  Please fix this
+						discrepancy.
+						*/
+					}
+				}
+				else // Nope, use the nominal voltage
+				{
+					// Nominal voltage should be in LN, so convert it to LL
+					Rated_V_LL = nominal_voltage_value * sqrt(3.0);
+
+					// Get the LN value too
+					Rated_V_LN = nominal_voltage_value;
+				}
+
+				// Pull frequency values - really only deltamode, but put in here too
+				temp_property_pointer = new gld_property("powerflow::nominal_frequency");
+
+				// Make sure it worked
+				if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_double())
+				{
+					GL_THROW("diesel_dg:%d %s failed to map the nominal_frequency property", obj->id, (obj->name ? obj->name : "Unnamed"));
+					/*  TROUBLESHOOT
+					While attempting to map the nominal_frequency property, an error occurred.  Please try again.
+					If the error persists, please submit your GLM and a bug report to the ticketing system.
+					*/
+				}
+
+				// Must be valid, read it
+				f_nominal = temp_property_pointer->get_double();
 
 				// Remove it
 				delete temp_property_pointer;
+
+				// Update omega_ref to match
+				omega_ref = f_nominal * 2.0 * PI;
+
+				// If we were deltamode requesting, set the flag on the other side
+				if (deltamode_inclusive)
+				{
+					// Map the current injection variables
+					pIGenerated[0] = map_complex_value(tmp_obj, "deltamode_generator_current_A");
+					pIGenerated[1] = map_complex_value(tmp_obj, "deltamode_generator_current_B");
+					pIGenerated[2] = map_complex_value(tmp_obj, "deltamode_generator_current_C");
+
+					// Map the PGenerated value
+					pPGenerated = map_complex_value(tmp_obj, "deltamode_PGenTotal");
+
+					// Map the flag
+					temp_property_pointer = new gld_property(tmp_obj, "Norton_dynamic");
+
+					// Make sure it worked
+					if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_bool())
+					{
+						GL_THROW("diesel_dg:%s failed to map Norton-equivalence deltamode variable from %s", obj->name ? obj->name : "unnamed", tmp_obj->name ? tmp_obj->name : "unnamed");
+						/*  TROUBLESHOOT
+						While attempting to set up the deltamode interfaces and calculations with powerflow, the required interface could not be mapped.
+						Please check your GLM and try again.  If the error persists, please submit a trac ticket with your code.
+						*/
+					}
+
+					// Flag it to true
+					temp_bool_value = true;
+					temp_property_pointer->setp<bool>(temp_bool_value, test_rlock);
+
+					// Remove it
+					delete temp_property_pointer;
+				}
 			}
+			else // Only three-phase node objects supported right now
+			{
+				// Instead of throwing a fatal error, assume the parent is not
+				// fully ready and defer. This gives the core another chance
+				// to initialize the parent object correctly.
+				gl_verbose("diesel_dg::init(): parent type '%s' not valid or not ready, deferring.", (parent->oclass->name ? parent->oclass->name : "UNKNOWN"));
+				return 2; // <-- DEFER, DO NOT THROW AN ERROR
+
+					//GL_THROW("diesel_dg:%s only supports a powerflow node/load/meter or no object as its parent at this time", obj->name ? obj->name : "unnamed");
+					/*  TROUBLESHOOT
+					The diesel_dg object has a parent that is not a powerflow node/load/meter object.  At this time, the diesel_dg object can only be parented
+					to a powerflow node, load, or meter or not have a parent.
+					*/
+				}
+
+			// Map and pull the phases
+			temp_property_pointer = new gld_property(parent, "phases");
+
+			// Make sure ti worked
+			if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_set())
+			{
+				GL_THROW("Unable to map phases property - ensure the parent is a meter or a node or a load");
+				/*  TROUBLESHOOT
+				While attempting to map the phases property from the parent object, an error was encountered.
+				Please check and make sure your parent object is a meter or triplex_meter inside the powerflow module and try
+				again.  If the error persists, please submit your code and a bug report via the Trac website.
+				*/
+			}
+
+			// Pull the phase information
+			temp_phases = temp_property_pointer->get_set();
+
+			// Clear the temporary pointer
+			delete temp_property_pointer;
+
+			if ((temp_phases & 0x0007) != 0x0007)
+			{ // parent does not have all three phases
+				GL_THROW("The diesel_dg object must be connected to all three phases. Please make sure the parent object has all three phases.");
+				/* TROUBLESHOOT
+				The diesel_dg object is a three-phase generator. This message occured because the parent object does not have all three phases.
+				Please check and make sure your parent object has all three phases and try again. if the error persists, please submit your code and a bug report via the Trac website.
+				*/
+			}
+
+			// Pull the bus type
+			temp_property_pointer = new gld_property(tmp_obj, "bustype");
+
+			// Make sure it worked
+			if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_enumeration())
+			{
+				GL_THROW("diesel_dg:%s failed to map bustype variable from %s", obj->name ? obj->name : "unnamed", obj->parent->name ? obj->parent->name : "unnamed");
+				/*  TROUBLESHOOT
+				While attempting to map the bustype variable from the parent node, an error was encountered.  Please try again.  If the error
+				persists, please report it with your GLM via the issues tracking system.
+				*/
+			}
+
+			// Pull the value of the bus
+			attached_bus_type = temp_property_pointer->get_enumeration();
+
+			// Remove it
+			delete temp_property_pointer;
 		}
-		else // Only three-phase node objects supported right now
-		{
-			GL_THROW("diesel_dg:%s only supports a powerflow node/load/meter or no object as its parent at this time", obj->name ? obj->name : "unnamed");
-			/*  TROUBLESHOOT
-			The diesel_dg object has a parent that is not a powerflow node/load/meter object.  At this time, the diesel_dg object can only be parented
-			to a powerflow node, load, or meter or not have a parent.
-			*/
-		}
-
-		// Map and pull the phases
-		temp_property_pointer = new gld_property(parent, "phases");
-
-		// Make sure ti worked
-		if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_set())
-		{
-			GL_THROW("Unable to map phases property - ensure the parent is a meter or a node or a load");
-			/*  TROUBLESHOOT
-			While attempting to map the phases property from the parent object, an error was encountered.
-			Please check and make sure your parent object is a meter or triplex_meter inside the powerflow module and try
-			again.  If the error persists, please submit your code and a bug report via the Trac website.
-			*/
-		}
-
-		// Pull the phase information
-		temp_phases = temp_property_pointer->get_set();
-
-		// Clear the temporary pointer
-		delete temp_property_pointer;
-
-		if ((temp_phases & 0x0007) != 0x0007)
-		{ // parent does not have all three phases
-			GL_THROW("The diesel_dg object must be connected to all three phases. Please make sure the parent object has all three phases.");
-			/* TROUBLESHOOT
-			The diesel_dg object is a three-phase generator. This message occured because the parent object does not have all three phases.
-			Please check and make sure your parent object has all three phases and try again. if the error persists, please submit your code and a bug report via the Trac website.
-			*/
-		}
-
-		// Pull the bus type
-		temp_property_pointer = new gld_property(tmp_obj, "bustype");
-
-		// Make sure it worked
-		if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_enumeration())
-		{
-			GL_THROW("diesel_dg:%s failed to map bustype variable from %s", obj->name ? obj->name : "unnamed", obj->parent->name ? obj->parent->name : "unnamed");
-			/*  TROUBLESHOOT
-			While attempting to map the bustype variable from the parent node, an error was encountered.  Please try again.  If the error
-			persists, please report it with your GLM via the issues tracking system.
-			*/
-		}
-
-		// Pull the value of the bus
-		attached_bus_type = temp_property_pointer->get_enumeration();
-
-		// Remove it
-		delete temp_property_pointer;
 	}
 	else // No parent
 	{
@@ -1010,6 +1056,8 @@ int diesel_dg::init(OBJECT *parent)
 		value_Circuit_V[0].SetPolar(Rated_V_LN, 0.0);
 		value_Circuit_V[1].SetPolar(Rated_V_LN, -2.0 / 3.0 * PI);
 		value_Circuit_V[2].SetPolar(Rated_V_LN, 2.0 / 3.0 * PI);
+
+		return 1;
 	}
 
 	// Preliminary check on modes
@@ -1748,8 +1796,11 @@ TIMESTAMP diesel_dg::sync(TIMESTAMP t0, TIMESTAMP t1)
 					// Accumulate and pass our starting power
 					temp_complex_value_power = power_val[0] + power_val[1] + power_val[2];
 
-					// Push it up
-					pPGenerated->setp<gld::complex>(temp_complex_value_power, test_rlock);
+					if (pPGenerated != nullptr)
+					{
+						// Push it up
+						pPGenerated->setp<gld::complex>(temp_complex_value_power, test_rlock);
+					}
 
 					// Map the current injection function
 					test_fxn = (FUNCTIONADDR)(gl_get_function(obj->parent, "pwr_current_injection_update_map"));
@@ -2092,28 +2143,32 @@ TIMESTAMP diesel_dg::postsync(TIMESTAMP t0, TIMESTAMP t1)
 			aval = gld::complex(cos(2.0 * PI / 3.0), sin(2.0 * PI / 3.0));
 			avalsq = aval * aval;
 
-			// Pull in the current version of full_Y_all
-			pbus_full_Y_all_mat->getp<Eigen::MatrixXcd>(temp_complex_array, test_rlock);
-
-			// Make sure it is the right size -- if so, pull it
-			if ((temp_complex_array.rows() == 3) && (temp_complex_array.cols() == 3))
+			// Check if the pointer is valid before using it
+            if (pbus_full_Y_all_mat != nullptr)
 			{
-				// Push it into the matrix for "ease of access"
-				for (index_x = 0; index_x < 3; index_x++)
+				// Pull in the current version of full_Y_all
+				pbus_full_Y_all_mat->getp<Eigen::MatrixXcd>(temp_complex_array, test_rlock);
+
+				// Make sure it is the right size -- if so, pull it
+				if ((temp_complex_array.rows() == 3) && (temp_complex_array.cols() == 3))
 				{
-					for (index_y = 0; index_y < 3; index_y++)
+					// Push it into the matrix for "ease of access"
+					for (index_x = 0; index_x < 3; index_x++)
 					{
-						full_bus_admittance_mat[index_x][index_y] = temp_complex_array(index_x, index_y);
+						for (index_y = 0; index_y < 3; index_y++)
+						{
+							full_bus_admittance_mat[index_x][index_y] = temp_complex_array(index_x, index_y);
+						}
 					}
 				}
-			}
-			// Default else -- it's not the right size, so leave the existing matrix (even if it is zero)
+				// Default else -- it's not the right size, so leave the existing matrix (even if it is zero)
 
-			// Perform the conversion
-			YS1_Full = full_bus_admittance_mat[0][0] + aval * full_bus_admittance_mat[1][0] + avalsq * full_bus_admittance_mat[2][0];
-			YS1_Full += avalsq * full_bus_admittance_mat[0][1] + full_bus_admittance_mat[1][1] + aval * full_bus_admittance_mat[2][1];
-			YS1_Full += aval * full_bus_admittance_mat[0][2] + avalsq * full_bus_admittance_mat[1][2] + full_bus_admittance_mat[2][2];
-			YS1_Full /= 3.0;
+				// Perform the conversion
+				YS1_Full = full_bus_admittance_mat[0][0] + aval * full_bus_admittance_mat[1][0] + avalsq * full_bus_admittance_mat[2][0];
+				YS1_Full += avalsq * full_bus_admittance_mat[0][1] + full_bus_admittance_mat[1][1] + aval * full_bus_admittance_mat[2][1];
+				YS1_Full += aval * full_bus_admittance_mat[0][2] + avalsq * full_bus_admittance_mat[1][2] + full_bus_admittance_mat[2][2];
+				YS1_Full /= 3.0;
+			}
 
 		} // End "first run" paired
 		// Default else - not dynamics-oriented, deflag
@@ -5112,7 +5167,12 @@ EXPORT int create_diesel_dg(OBJECT **obj, OBJECT *parent)
 		if (*obj != nullptr)
 		{
 			diesel_dg *my = /*OBJECTDATA(*obj, diesel_dg)*/ object_data<diesel_dg>(*obj);
-			gl_set_parent(*obj, parent);
+			if (!my) {
+				gl_error("create_diesel_dg: obj->data is null for class 'diesel_dg'");
+				return 0;
+			}
+			
+			// gl_set_parent(*obj, parent);
 			return my->create();
 		}
 		else
@@ -5133,10 +5193,37 @@ EXPORT int init_diesel_dg(OBJECT *obj, OBJECT *parent)
 	INIT_CATCHALL(diesel_dg);
 }
 
-EXPORT TIMESTAMP sync_diesel_dg(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+//EXPORT TIMESTAMP sync_diesel_dg(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+//{
+extern "C" TIMESTAMP sync_diesel_dg(void *object, ...)
 {
+// Add early validation of callback
+    if (!callback) {
+        gl_error("sync_player: callback is null");
+        return TS_INVALID;
+    }
+
+    // Add structure validation
+    // std::cerr << "Callback structure size check:" << std::endl;
+    // std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
+    // std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
+    // std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
+    
+    if (!callback->time.local_datetime) {
+        gl_error("sync_player: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
+
 	TIMESTAMP t1 = TS_INVALID;
-	diesel_dg *my = /*OBJECTDATA(obj, diesel_dg)*/ object_data<diesel_dg>(obj);
+	diesel_dg *my = object_data<diesel_dg>(obj);
 	try
 	{
 		switch (pass)

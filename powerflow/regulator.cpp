@@ -1568,7 +1568,11 @@ EXPORT int create_regulator(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			regulator *my = object_data<regulator>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_regulator: obj->data is null for class 'regulator'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

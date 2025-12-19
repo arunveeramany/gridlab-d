@@ -1,0 +1,1 @@
+/opt/homebrew/bin/g++-15 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -dynamiclib -Wl,-headerpad_max_install_names -o ../lib/tape_plot.dylib -install_name @rpath/tape_plot.dylib CMakeFiles/tape_plot.dir/tape_plot.cpp.o

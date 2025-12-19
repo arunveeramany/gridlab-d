@@ -68,8 +68,12 @@ EXPORT int create_multi_recorder(OBJECT **obj, OBJECT *parent)
 	{
 		//struct recorder *my = object_data<struct recorder>(*obj);
 		struct recorder* my = object_data< recorder>(*obj);
+		if (!my) {
+				gl_error("create_multi_recorder: obj->data is null for class 'multi_recorder'");
+				return 0;
+			}
 		last_recorder = *obj;
-		gl_set_parent(*obj,parent);
+		// gl_set_parent(*obj,parent);
 		strcpy(my->file,"");
 		strcpy(my->multifile,"");
 		strcpy(my->filetype,"txt");

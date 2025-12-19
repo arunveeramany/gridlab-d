@@ -263,7 +263,11 @@ EXPORT int create_lights(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			lights *my = object_data<lights>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_lights: obj->data is null for class 'lights'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

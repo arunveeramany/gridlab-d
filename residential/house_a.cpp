@@ -940,7 +940,11 @@ EXPORT int create_house_a(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			house *my = OBJECTDATA(*obj,house);;
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_house_a: obj->data is null for class 'recloser'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			my->create();
 			return 1;
 		}

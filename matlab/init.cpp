@@ -269,9 +269,13 @@ EXPORT int create_matlab(OBJECT **obj, OBJECT *parent)
 	try 
 	{
 		*obj = gl_create_object(oclass,sizeof(mxArray*));
+		if (!obj) {
+				gl_error("create_matlab: obj->data is null for class 'matlab'");
+				return 0;
+			}
 		if (*obj!=nullptr)
 		{
-			gl_set_parent(*obj,parent);
+			// gl_set_parent(*obj,parent);
 			char createcall[1024];
 
 			if (engPutVariable(engine,"object",defaults))

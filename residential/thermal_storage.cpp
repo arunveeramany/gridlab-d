@@ -515,7 +515,11 @@ EXPORT int create_thermal_storage(OBJECT **obj, OBJECT *parent)
 	if (*obj!=nullptr)
 	{
 		thermal_storage *my = object_data<thermal_storage>(*obj);
-		gl_set_parent(*obj,parent);
+		if (!my) {
+				gl_error("create_thermal_storage: obj->data is null for class 'thermal_storage'");
+				return 0;
+			}
+		// gl_set_parent(*obj,parent);
 		try {
 			my->create();
 		}

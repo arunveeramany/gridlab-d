@@ -1,0 +1,69 @@
+{
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_custom_target",
+			"add_dependencies"
+		],
+		"files" : 
+		[
+			"third_party/SuperLU/CMakeLists.txt",
+			"third_party/SuperLU/EXAMPLE/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 223,
+				"parent" : 0
+			},
+			{
+				"file" : 1
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 25,
+				"parent" : 2
+			}
+		]
+	},
+	"dependencies" : 
+	[
+		{
+			"backtrace" : 3,
+			"id" : "examples_complex::@a239d68a0100b9e3dd33"
+		},
+		{
+			"backtrace" : 3,
+			"id" : "examples_double::@a239d68a0100b9e3dd33"
+		},
+		{
+			"backtrace" : 3,
+			"id" : "examples_float::@a239d68a0100b9e3dd33"
+		},
+		{
+			"backtrace" : 3,
+			"id" : "examples_doublecomplex::@a239d68a0100b9e3dd33"
+		},
+		{
+			"backtrace" : 3,
+			"id" : "superlu_example::@a239d68a0100b9e3dd33"
+		}
+	],
+	"id" : "examples::@8ecc665ff34a7fd9df79",
+	"name" : "examples",
+	"paths" : 
+	{
+		"build" : "third_party/SuperLU",
+		"source" : "third_party/SuperLU"
+	},
+	"sources" : [],
+	"type" : "UTILITY"
+}

@@ -291,7 +291,11 @@ EXPORT int create_load_tracker(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			load_tracker *my = object_data<load_tracker>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_load_tracker: obj->data is null for class 'load_tracker'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else
@@ -310,8 +314,31 @@ EXPORT int init_load_tracker(OBJECT *obj)
 	INIT_CATCHALL(load_tracker);
 }
 
-EXPORT TIMESTAMP sync_load_tracker(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+//EXPORT TIMESTAMP sync_load_tracker(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+//{
+extern "C" TIMESTAMP sync_load_tracker(void *object, ...)
 {
+
+	// Add early validation of callback
+    if (!callback) {
+        gl_error("sync_load_tracker: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_load_tracker: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
+
+
 	load_tracker *pObj = object_data<load_tracker>(obj);
 	try {
 		TIMESTAMP t1;

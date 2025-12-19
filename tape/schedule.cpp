@@ -571,7 +571,11 @@ EXPORT int create_schedule(OBJECT **obj, OBJECT *parent)
 	if (*obj != nullptr)
 	{
 		schedule *my = OBJECTDATA(*obj, schedule);
-		gl_set_parent(*obj, parent);
+		if (!my) {
+				gl_error("create_schedule: obj->data is null for class 'schedule'");
+				return 0;
+			}
+		// gl_set_parent(*obj, parent);
 		my->create();
 		return 1;
 	}

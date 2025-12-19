@@ -56,8 +56,12 @@ EXPORT int create_shaper(OBJECT **obj, OBJECT *parent)
 	if (*obj!=nullptr)
 	{
 		struct shaper *my = object_data<struct shaper>(*obj);
+		if (!my) {
+				gl_error("create_shaper: obj->data is null for class 'shaper'");
+				return 0;
+			}
 		last_shaper = *obj;
-		gl_set_parent(*obj,parent);
+		// gl_set_parent(*obj,parent);
 		strcpy(my->file,"");
 		strcpy(my->filetype,"txt");
 		strcpy(my->property,"");

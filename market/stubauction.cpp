@@ -235,7 +235,11 @@ EXPORT int create_stubauction(OBJECT **obj, OBJECT *parent)
 		if (*obj != nullptr)
 		{
 			stubauction *my = /*OBJECTDATA(obj,<>)*/ object_data<stubauction>(*obj);
-			gl_set_parent(*obj, parent);
+			if (!my) {
+				gl_error("create_stubauction: obj->data is null for class 'stubauction'");
+				return 0;
+			}
+			// gl_set_parent(*obj, parent);
 			return my->create();
 		}
 		else

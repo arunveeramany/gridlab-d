@@ -48,7 +48,11 @@ EXPORT int create_hvac(OBJECT **obj, OBJECT *parent)
 	{
 		last_hvac = *obj;
 		hvac *my = /*OBJECTDATA(*obj, hvac)*/   object_data<hvac>(*obj) ;
-		gl_set_parent(*obj,parent);
+		if (!my) {
+				gl_error("create_hvac: obj->data is null for class 'hvac'");
+				return 0;
+			}
+		// gl_set_parent(*obj,parent);
 		my->create();
 		return 1;
 	}

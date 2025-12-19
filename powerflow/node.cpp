@@ -3578,7 +3578,11 @@ EXPORT int create_node(OBJECT **obj, OBJECT *parent)
 		if (*obj != nullptr)
 		{
 			node *my = object_data<node>(*obj);
-			gl_set_parent(*obj, parent);
+			if (!my) {
+				gl_error("create_node: obj->data is null for class 'node'");
+				return 0;
+			}
+			// gl_set_parent(*obj, parent);
 			return my->create();
 		}
 		else

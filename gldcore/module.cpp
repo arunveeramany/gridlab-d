@@ -234,7 +234,7 @@ s_callbacks::s_callbacks() throw()
 	object.set_parent = object_set_parent;
 	object.set_rank = object_set_rank;
 	properties.get_property = object_get_property;
-	std::cerr << "Set properties.get_property to: " << (void*)properties.get_property << std::endl;
+	// std::cerr << "Set properties.get_property to: " << (void*)properties.get_property << std::endl;
 
 	properties.set_value_by_addr = object_set_value_by_addr;
 	properties.get_value_by_addr = object_get_value_by_addr;
@@ -290,8 +290,8 @@ s_callbacks::s_callbacks() throw()
 	// time.local_datetime = local_datetime;
 
 
-        std::cerr << "s_callbacks constructor - this address: " << (void*)this << std::endl;
-    std::cerr << "local_datetime function pointer: " << (void*)local_datetime << std::endl;
+        // std::cerr << "s_callbacks constructor - this address: " << (void*)this << std::endl;
+    // std::cerr << "local_datetime function pointer: " << (void*)local_datetime << std::endl;
 	time.local_datetime = local_datetime;
     
 	
@@ -400,7 +400,7 @@ s_callbacks::s_callbacks() throw()
 
 CALLBACKS *module_callbacks(void) { 
 	static CALLBACKS *callbacks = new s_callbacks;
-    std::cerr << "Accessing module_callbacks, properties.get_property at: " << (void*)callbacks->properties.get_property << std::endl;
+    // std::cerr << "Accessing module_callbacks, properties.get_property at: " << (void*)callbacks->properties.get_property << std::endl;
 	return callbacks; 
 }
 
@@ -431,10 +431,10 @@ MODULE *module_load(const char *file, /**< module filename, searches \p PATH */
 					int argc,		  /**< count of arguments in \p argv */
 					char *argv[])	  /**< arguments passed from the command line */
 {
-	std::cerr << "Entering module_load for module: " << file << std::endl;
+	// std::cerr << "Entering module_load for module: " << file << std::endl;
 	CALLBACKS *callbacks = module_callbacks();
-	std::cerr << "Calling init for module " << file << " with callbacks at: " << (void*)callbacks << std::endl;
-    std::cerr << "properties.get_property in callbacks: " << (void*)callbacks->properties.get_property << std::endl;
+	// std::cerr << "Calling init for module " << file << " with callbacks at: " << (void*)callbacks << std::endl;
+    // std::cerr << "properties.get_property in callbacks: " << (void*)callbacks->properties.get_property << std::endl;
 	
 	/* check for already loaded */
 	MODULE *mod = module_find((char *)file);
@@ -561,7 +561,7 @@ MODULE *module_load(const char *file, /**< module filename, searches \p PATH */
 				last_module->next = mod;
 				last_module = mod;
 				mod->oclass = previous ? previous->next : class_get_first_class();
-				std::cerr << "Passed callback table to module " << file << " with properties.get_property at: " << (void*)callbacks->properties.get_property << std::endl;
+				// std::cerr << "Passed callback table to module " << file << " with properties.get_property at: " << (void*)callbacks->properties.get_property << std::endl;
 			}
 			return release_and_return(last_module); // Release and return
 		}
@@ -679,7 +679,7 @@ MODULE *module_load(const char *file, /**< module filename, searches \p PATH */
 		output_verbose("%s(%d): module '%s' loaded ok", __FILE__, __LINE__, file);
 	}
 
-	std::cerr << "Entering module_load for module: " << file << std::endl;
+	// std::cerr << "Entering module_load for module: " << file << std::endl;
 
 	/* get the initialization function */
 	init = (LIBINIT)DLSYM(hLib, "init");
@@ -695,7 +695,7 @@ MODULE *module_load(const char *file, /**< module filename, searches \p PATH */
 	else
 	{
 		output_verbose("%s(%d): module '%s' exports init()", __FILE__, __LINE__, file);
-		std::cerr << "Init function found for module: " << file << std::endl;
+		// std::cerr << "Init function found for module: " << file << std::endl;
 	}
 
 	/* connect the module's exported data & functions */
@@ -737,13 +737,13 @@ MODULE *module_load(const char *file, /**< module filename, searches \p PATH */
 	/* call the initialization function */
 	errno = 0;
 	CALLBACKS *global_callbacks = module_callbacks();
-	std::cerr << "Calling init for module " << file << " with callbacks at: " << (void*)callbacks << std::endl;
-    std::cerr << "properties.get_property in callbacks: " << (void*)callbacks->properties.get_property << std::endl;
+	// std::cerr << "Calling init for module " << file << " with callbacks at: " << (void*)callbacks << std::endl;
+    // std::cerr << "properties.get_property in callbacks: " << (void*)callbacks->properties.get_property << std::endl;
 
 	mod->oclass = (*init)(callbacks, (void *)mod, argc, argv);
-	std::cout << "Module " << mod->name << " initialized, oclass address: " <<  mod->oclass << std::endl;
-	std::cerr << "After init for module " << file << ", properties.get_property still at: " << (void*)callbacks->properties.get_property << std::endl;
-	std::cerr << "Passed callback table to module " << file << " with properties.get_property at: " << (void*)callbacks->properties.get_property << std::endl;
+	// std::cout << "Module " << mod->name << " initialized, oclass address: " <<  mod->oclass << std::endl;
+	// std::cerr << "After init for module " << file << ", properties.get_property still at: " << (void*)callbacks->properties.get_property << std::endl;
+	// std::cerr << "Passed callback table to module " << file << " with properties.get_property at: " << (void*)callbacks->properties.get_property << std::endl;
 
 	if (mod->oclass == nullptr && errno != 0)
 		return release_and_return(nullptr); // Release and retur

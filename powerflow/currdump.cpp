@@ -211,7 +211,11 @@ EXPORT int create_currdump(OBJECT **obj, OBJECT *parent)
 		if (*obj != nullptr)
 		{
 			currdump *my = /*OBJECTDATA(obj,<>)*/ object_data<currdump>(*obj);
-			gl_set_parent(*obj, parent);
+			if (!my) {
+				gl_error("create_currdump: obj->data is null for class 'currdump'");
+				return 0;
+			}
+			// gl_set_parent(*obj, parent);
 			return my->create();
 		}
 	}

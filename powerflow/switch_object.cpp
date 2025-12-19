@@ -2047,7 +2047,11 @@ EXPORT int create_switch(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			switch_object *my = object_data<switch_object>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_switch: obj->data is null for class 'switch_object	'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

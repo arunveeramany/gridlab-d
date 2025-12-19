@@ -1,0 +1,21 @@
+ M ../../CMakeLists.txt
+ M ../../assert/autotest/test_enum_assert_err.glm
+ M ../../assert/double_assert.cpp
+ M ../../assert/enum_assert.cpp
+ M ../../assert/gld_assert.cpp
+ M ../../assert/int_assert.cpp
+ M ../../climate/climate.cpp
+ M ../../climate/climate.h
+ M ../../gldcore/CMakeLists.txt
+ M ../../gldcore/gldapi.cpp
+ M ../../gldcore/load.cpp
+ M ../../residential/house_e.cpp
+?? ../../assert/autotest/test_enum_assert_err.glm.bak
+?? ../../build-clang/
+?? ../
+?? ../../check_abi_compat.log
+?? ../../check_abi_compat.sh
+?? ../../glpath.sh
+?? ../../missing_brace.sh
+?? ../../missing_brace_adv.sh
+?? ../../third_party/jsoncpp_lib/

@@ -1,0 +1,1 @@
+/usr/bin/clang -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Wl,-no_pie CMakeFiles/dlinsol1.dir/dlinsol1.c.o -o ../../../bin/dlinsol1  ../../../lib/static/libsuperlu.a ../../../lib/static/libblas.a -lm

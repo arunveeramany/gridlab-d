@@ -1,0 +1,33 @@
+// $Id: test_dishwasher_implicit.glm 4738 2014-07-03 00:55:39Z dchassin $
+// Test implicit dishwasher
+//
+
+#set suppress_repeat_messages=0
+
+#define stylesheet="C:\Project Files\Gridlabd\gridlab-d\trunk\VS2005\gridlabd-2_0.xsl"
+
+clock {
+	timezone PST+8PDT;
+	starttime '2001-07-07 00:00:00 PST';
+	stoptime '2002-07-07 00:00:00 PST';
+}
+
+module residential {
+	implicit_enduses DISHWASHER;
+}
+
+module assert;
+module tape;
+
+object house{
+  name "autogen_house_0";
+
+	object recorder{
+	  parent "autogen_house_0";
+	  name "autogen_house_0_recorder_0";
+		property panel.power,panel.energy;
+		file "test_dishwasher_energy.csv";
+		interval 3600;
+		limit 100;
+	};	
+}

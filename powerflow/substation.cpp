@@ -477,7 +477,11 @@ EXPORT int create_substation(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			substation *my = object_data<substation>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_substation: obj->data is null for class 'substation'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

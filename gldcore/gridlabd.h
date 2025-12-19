@@ -56,6 +56,8 @@
 #include <mutex>
 #include <shared_mutex>
 #include <string>
+#include <cstddef>
+
 
 /* permanently disable use of CPPUNIT */
 #ifndef _NO_CPPUNIT
@@ -229,12 +231,30 @@ CDECL EXTERN CALLBACKS *callback INIT(NULL);
  **/
 /** The PUBLISH_STRUCT macro is used to publish a member of a structure.
  **/
-#define PUBLISH_STRUCT(C, T, N)                                                                  \
-	{                                                                                            \
-		struct C *_t = NULL;                                                                     \
-		if (gl_publish_variable(C##_class, PT_##T, #N, (char *)&(_t->N) - (char *)_t, NULL) < 1) \
-			return NULL;                                                                         \
-	}
+// #define PUBLISH_STRUCT(C, T, N)                                                                  \
+// 	{                                                                                            \
+// 		struct C *_t = NULL;                                                                     \
+// 		if (gl_publish_variable(C##_class, PT_##T, #N, (char *)&(_t->N) - (char *)_t, NULL) < 1) \
+// 			return NULL;                                                                         \
+// 	}
+
+
+
+
+#include <cstddef>   // size_t
+#include <new>       // placement new
+#include <type_traits>
+
+
+
+
+#define PUBLISH_STRUCT(C, T, N)                                                         \
+do {                                                                                    \
+    size_t off = offsetof(struct C, N);                                                 \
+    if (gl_publish_variable(C##_class, PT_##T, #N, off, NULL) < 1)                      \
+        return NULL;                                                                    \
+} while (0)
+
 /** The PUBLISH_CLASS macro is used to publish a member of a class (C++ only).
  **/
 #define PUBLISH_CLASS(C, T, N)                                                                   \
@@ -3420,7 +3440,6 @@ CDECL int dllkill() { return do_kill(NULL); }
 			if (*obj != NULL)                           \
 			{                                           \
 				C *my = object_data<C>(*obj);           \
-				gl_set_parent(*obj, parent);            \
 				return my->create();                    \
 			}                                           \
 			else                                        \

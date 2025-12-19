@@ -1626,7 +1626,11 @@ EXPORT int create_passive_controller(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			passive_controller *my = /*OBJECTDATA(obj,<>)*/ object_data<passive_controller>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_passive_controller: obj->data is null for class 'passive_controller'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

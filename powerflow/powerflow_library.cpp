@@ -74,7 +74,11 @@ EXPORT int create_powerflow_library(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			powerflow_library *my = object_data<powerflow_library>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_powerflow_library: obj->data is null for class 'powerflow_library'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

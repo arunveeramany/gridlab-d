@@ -190,7 +190,7 @@ int convert_from_complex(char *buffer, /**< pointer to the string buffer */
 		/* only do conversion if the target unit differs from the class's unit for that property */
 		PROPERTY *ptmp = (prop->oclass==nullptr ? prop : class_find_property(prop->oclass, prop->name));
 	
-		if(prop->unit != ptmp->unit){
+		if(ptmp != nullptr && prop->unit != ptmp->unit){
 			if(0 == unit_convert_ex(ptmp->unit, prop->unit, &scale)){
 				output_error("convert_from_complex(): unable to convert unit '%s' to '%s' for property '%s' (tape experiment error)", ptmp->unit->name, prop->unit->name, prop->name);
 				/*	TROUBLESHOOT
@@ -738,7 +738,7 @@ int convert_from_char32(char *buffer, /**< pointer to the string buffer */
 	Converts a string to a \e char32 property.  
 	@return 1 on success, 0 on failure, -1 if conversion was incomplete
  **/
- // I’ve changed the signature so that `buffer` is a C-string
+ // Iï¿½ve changed the signature so that `buffer` is a C-string
  // and `data` is a char array of exactly 32 bytes.
 
 // signature unchanged
@@ -746,7 +746,7 @@ int convert_to_char32(const char* buffer,
 	void* data,
 	PROPERTY* prop)  
 {
-	// silence “unused” warning for prop
+	// silence ï¿½unusedï¿½ warning for prop
 	(void)prop;
 
 	// out is our 32-byte destination
@@ -903,7 +903,7 @@ int convert_to_char256(const char* buffer,
 	std::memcpy(out, token.data(), len);
 	out[len] = '\0';
 
-	// mimic sscanf’s return value: 1 if we actually stored something, else 0
+	// mimic sscanfï¿½s return value: 1 if we actually stored something, else 0
 	return (len > 0) ? 1 : 0;
 }
 

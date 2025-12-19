@@ -1245,7 +1245,11 @@ EXPORT int create_range(OBJECT **obj, OBJECT *parent)
 	if (*obj!=nullptr)
 	{
 		range *my = object_data<range>(*obj);;
-		gl_set_parent(*obj,parent);
+		if (!my) {
+				gl_error("create_range: obj->data is null for class 'range'");
+				return 0;
+			}
+		// gl_set_parent(*obj,parent);
 		my->create();
 		return 1;
 	}

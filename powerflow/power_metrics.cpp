@@ -507,7 +507,11 @@ EXPORT int create_power_metrics(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			power_metrics *my = object_data<power_metrics>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_power_metrics: obj->data is null for class 'power_metrics'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

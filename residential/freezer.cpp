@@ -298,7 +298,11 @@ EXPORT int create_freezer(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			freezer *my = object_data<freezer>(*obj);;
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_freezer: obj->data is null for class 'recloser'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			my->create();
 			return 1;
 		}

@@ -19,7 +19,8 @@ fault_check::fault_check(MODULE *mod) : powerflow_object(mod)
 {
 	// Correct syntax
 	// GETOBJECT(this)->parent = nullptr;
-	object_header(this)->parent = nullptr;
+	// object_header(this)->parent = nullptr;
+
 	if(oclass == nullptr)
 	{
 		pclass = powerflow_object::oclass;
@@ -2451,7 +2452,11 @@ EXPORT int create_fault_check(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			fault_check *my = /*OBJECTDATA(obj,<>)*/ object_data<fault_check>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_fault_check: obj->data is null for class 'fault_check'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

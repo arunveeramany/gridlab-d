@@ -559,7 +559,11 @@ EXPORT int create_histogram(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			histogram *my = object_data<histogram>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_histogram: obj->data is null for class 'histogram'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 	} 

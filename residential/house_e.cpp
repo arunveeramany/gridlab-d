@@ -4156,6 +4156,10 @@ EXPORT int create_house(OBJECT **obj, OBJECT *parent)
 		{
 			house_e *my = object_data<house_e>(*obj);
 
+			if (!my) {
+				gl_error("create_house: obj->data is null for class 'house'");
+				return 0;
+			}
 			// if (parent != nullptr)
 			// {
 			// 	gl_set_parent(*obj, parent);
@@ -4165,7 +4169,7 @@ EXPORT int create_house(OBJECT **obj, OBJECT *parent)
 			// 	gl_warning("create_house: parent is null — skipping gl_set_parent");
 			// }
 
-			gl_set_parent(*obj,parent);
+			// gl_set_parent(*obj,parent);
 			my->create();
 			return 1;
 		}

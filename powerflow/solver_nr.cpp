@@ -165,6 +165,43 @@ void sparse_reset(SPARSE *sm, int ncols)
 // Add in new elements to the sparse notation
 inline void sparse_add(SPARSE *sm, int row, int col, double value, BUSDATA *bus_values, unsigned int bus_values_count, NR_SOLVER_STRUCT *powerflow_information, int island_number_curr)
 {
+
+
+		// Check sm pointer first
+	if (sm == nullptr)
+	{
+		gl_error("sparse_add: sm is NULL for island %d", island_number_curr);
+		return;
+	}
+
+	// Now safe to check sm members
+	if (sm->cols == nullptr || sm->llheap == nullptr)
+	{
+		gl_error("sparse_add: NULL internal pointers for island %d (cols=%p, llheap=%p)", 
+				island_number_curr, sm->cols, sm->llheap);
+		return;
+	}
+
+	// Check llptr is valid (just non-negative)
+	if (sm->llptr < 0)
+	{
+		gl_error("sparse_add: llptr %d is negative for island %d", 
+				sm->llptr, island_number_curr);
+		return;
+	}
+
+	if (col < 0)
+	{
+		gl_error("sparse_add: negative col index %d for island %d", col, island_number_curr);
+		return;
+	}
+
+	if (row < 0)
+	{
+		gl_error("sparse_add: negative row index %d for island %d", row, island_number_curr);
+		return;
+	}
+
 	unsigned int bus_index_val, bus_start_val, bus_end_val;
 	bool found_proper_bus_val;
 
@@ -2278,6 +2315,15 @@ int64 solver_nr(unsigned int bus_count, BUSDATA *bus, unsigned int branch_count,
 			// Just clear it out
 			sparse_reset(powerflow_values->island_matrix_values[island_loop_index].Y_Amatrix, 6 * powerflow_values->island_matrix_values[island_loop_index].bus_count);
 		}
+
+
+		if (powerflow_values->island_matrix_values[island_loop_index].Y_Amatrix->cols == nullptr ||
+			powerflow_values->island_matrix_values[island_loop_index].Y_Amatrix->llheap == nullptr)
+		{
+			GL_THROW("NR: Island %d sparse matrix not properly initialized - cols or llheap is NULL", island_loop_index);
+		}
+
+
 
 		// integrate off diagonal components
 		for (indexer = 0; indexer < powerflow_values->island_matrix_values[island_loop_index].size_offdiag_PQ * 2; indexer++)

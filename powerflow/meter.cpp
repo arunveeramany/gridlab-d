@@ -67,9 +67,10 @@ meter::meter(MODULE *mod) : node(mod)
             PT_double, "measured_reactive_energy_delta[VAh]",PADDR(measured_reactive_energy_delta),PT_DESCRIPTION,"delta in metered reactive energy consumption from last specified measured_energy_delta_timestep",
             PT_double, "measured_energy_delta_timestep[s]",PADDR(measured_energy_delta_timestep),PT_DESCRIPTION,"Period of timestep for real and reactive delta energy calculation",
 			PT_complex, "measured_power[VA]", PADDR(measured_power),PT_DESCRIPTION,"metered complex power",
-			PT_complex, "measured_power_A[VA]", PADDR(indiv_measured_power[0]),PT_DESCRIPTION,"metered complex power on phase A",
-			PT_complex, "measured_power_B[VA]", PADDR(indiv_measured_power[1]),PT_DESCRIPTION,"metered complex power on phase B",
-			PT_complex, "measured_power_C[VA]", PADDR(indiv_measured_power[2]),PT_DESCRIPTION,"metered complex power on phase C",
+            PT_complex, "measured_power_A", PADDR(indiv_measured_power[0]), PT_UNITS, "VA", PT_DESCRIPTION,"metered complex power on phase A",
+            PT_complex, "measured_power_B", PADDR(indiv_measured_power[1]), PT_UNITS, "VA", PT_DESCRIPTION,"metered complex power on phase B",
+            PT_complex, "measured_power_C", PADDR(indiv_measured_power[2]), PT_UNITS, "VA", PT_DESCRIPTION,"metered complex power on phase C",
+
 			PT_double, "measured_demand[W]", PADDR(measured_demand),PT_DESCRIPTION,"greatest metered real power during simulation",
 			PT_double, "measured_real_power[W]", PADDR(measured_real_power),PT_DESCRIPTION,"metered real power",
 			PT_double, "measured_reactive_power[VAr]", PADDR(measured_reactive_power),PT_DESCRIPTION,"metered reactive power",
@@ -187,6 +188,7 @@ meter::meter(MODULE *mod) : node(mod)
 
 			//PT_double, "measured_reactive[kVar]", PADDR(measured_reactive), has not implemented yet
 			nullptr)<1) GL_THROW("unable to publish properties in %s",__FILE__);
+		
 
 		// publish meter reset function
 		if (gl_publish_function(oclass,"reset",(FUNCTIONADDR)meter_reset)==nullptr)
@@ -1439,10 +1441,25 @@ EXPORT int create_meter(OBJECT **obj, OBJECT *parent)
 	{
 
 		*obj = gl_create_object(meter::oclass);
+		if (!*obj) return 0;
+
 		if (*obj!=nullptr)
 		{
 			meter *my = object_data<meter>(*obj);
-			gl_set_parent(*obj,parent);
+
+			if (!my) {
+				gl_error("create_meter: obj->data is null for class 'meter'");
+				return 0;
+			}
+			// #ifdef __cpp_rtti
+			// if (typeid(*my) != typeid(meter)) {
+			// 	gl_error("create_meter: obj->data is not 'meter' (type mismatch)");
+			// 	return 0;
+			// }
+			// #endif
+			
+			
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

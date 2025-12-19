@@ -1427,7 +1427,11 @@ EXPORT int create_underground_line(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			underground_line *my = object_data<underground_line>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_underground_line: obj->data is null for class 'underground_line'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}	
 		else

@@ -2556,7 +2556,11 @@ EXPORT int create_battery(OBJECT **obj, OBJECT *parent)
 		if (*obj != nullptr)
 		{
 			battery *my = /*OBJECTDATA(*obj, battery)*/ object_data<battery>(*obj);
-			gl_set_parent(*obj, parent);
+			if (!my) {
+				gl_error("create_battery: obj->data is null for class 'battery'");
+				return 0;
+			}
+			// gl_set_parent(*obj, parent);
 			return my->create();
 		}
 		else

@@ -1,0 +1,1791 @@
+diff --git a/generators/diesel_dg.cpp b/generators/diesel_dg.cpp
+index 0e32c829..3834f037 100644
+--- a/generators/diesel_dg.cpp
++++ b/generators/diesel_dg.cpp
+@@ -375,7 +375,7 @@ diesel_dg::diesel_dg(MODULE *module)
+ 
+ 		defaults = this;
+ 
+-		memset(this, 0, sizeof(diesel_dg));
++		// memset(this, 0, sizeof(diesel_dg));
+ 
+ 		if (gl_publish_function(oclass, "interupdate_gen_object", (FUNCTIONADDR)interupdate_diesel_dg) == nullptr)
+ 			GL_THROW("Unable to publish diesel_dg deltamode function");
+@@ -714,287 +714,333 @@ int diesel_dg::init(OBJECT *parent)
+ 	// Initialize the time tracking flag
+ 	diesel_start_time = gl_globalclock;
+ 
+-	// find parent meter, if not defined, use a default meter (using static variable 'default_meter')
+-	if (parent != nullptr)
++	if(parent != nullptr)
+ 	{
+-		if (gl_object_isa(parent, "meter", "powerflow") || gl_object_isa(parent, "node", "powerflow") || gl_object_isa(parent, "load", "powerflow"))
++		if (parent->oclass == nullptr) 
++		{			
++			return 2; // defer; do not touch parent further
++		}
++
++		if(parent->oclass->magic != CLASSVALID)
+ 		{
+-			// Check to make sure the parent is initalized - otherwise some things may not exist
+-			if ((parent->flags & OF_INIT) != OF_INIT)
++			return 2; // defer; do not touch parent further
++		}
++	
++			
++		// find parent meter, if not defined, use a default meter (using static variable 'default_meter')
++		if (parent != nullptr && obj->oclass->magic == CLASSVALID)
++		{
++			// Check class name directly instead of gl_object_isa *****
++			bool is_valid_parent_type = false;
++			
++			gld_property *pNominal_Voltage = new gld_property(parent, "nominal_voltage");
++			if (!pNominal_Voltage->is_valid() || !pNominal_Voltage->is_double())
+ 			{
+-				gl_verbose("diesel_dg::init(): diesel_dg:%d - %s - deferring initialization on parent node(s)", obj->id, (obj->name ? obj->name : "Unnamed"));
++				gl_verbose("diesel_dg::init(): diesel_dg:%d - %s - deferring, parent missing nominal_voltage",
++						obj->id, (obj->name ? obj->name : "Unnamed"));
++				delete pNominal_Voltage;
+ 				return 2; // defer
+ 			}
++			double nominal_voltage_value = pNominal_Voltage->get_double();
++			delete pNominal_Voltage;
+ 
+-			// Flag us as a proper child
+-			parent_is_powerflow = true;
+-
+-			// See which mode we are - if QSTS only, use standard parent issues
+-			if (Gen_type == DYNAMIC)
++			// If you also need phases:
++			gld_property *pPhases = new gld_property(parent, "phases");
++			if (!pPhases->is_valid() || !pPhases->is_set())
+ 			{
+-				// See if this attached node is a child or not
+-				if (parent->parent != nullptr)
+-				{
+-					// Map parent - wherever it may be
+-					temp_property_pointer = new gld_property(parent, "NR_powerflow_parent");
+-
+-					// Make sure it worked
+-					if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_objectref())
+-					{
+-						GL_THROW("diesel_dg:%s failed to map Norton-equivalence deltamode variable from %s", obj->name ? obj->name : "unnamed", parent->name ? parent->name : "unnamed");
+-						// Defined elsewhere
+-					}
+-
+-					// Pull the mapping - gld_object
+-					tmp_gld_obj = temp_property_pointer->get_objectref();
++				gl_verbose("diesel_dg::init(): diesel_dg:%d - %s - deferring, parent missing phases",
++						obj->id, (obj->name ? obj->name : "Unnamed"));
++				delete pPhases;
++				return 2;
++			}
++			gld::set temp_phases = pPhases->get_set();
++			delete pPhases;
+ 
+-					// Pull the proper object reference
+-					tmp_obj = tmp_gld_obj->my();
++			// Now consider the parent "valid" for our purposes
++			// parent_is_powerflow = true;
++			// OBJECT *tmp_obj = parent;
++			
++			is_valid_parent_type = true;
+ 
+-					// free the property
+-					delete temp_property_pointer;
++			if (is_valid_parent_type)
++			{
++				
++				// Flag us as a proper child
++				parent_is_powerflow = true;
+ 
+-					// See what it is
+-					if (
+-						!gl_object_isa(tmp_obj, "meter", "powerflow") &&
+-						!gl_object_isa(tmp_obj, "node", "powerflow") &&
+-						!gl_object_isa(tmp_obj, "load", "powerflow"))
+-					{
+-						// Not a wierd map, just use normal parent
+-						tmp_obj = parent;
+-					}
+-					else // Implies it is a powerflow parent
++				// See which mode we are - if QSTS only, use standard parent issues
++				if (Gen_type == DYNAMIC)
++				{
++					// See if this attached node is a child or not
++					if (parent->parent != nullptr)
+ 					{
+-						// Set the flag for later
+-						childed_connection = true;
++						// Map parent - wherever it may be
++						temp_property_pointer = new gld_property(parent, "NR_powerflow_parent");
+ 
+-						// See if we are deltamode-enabled -- if so, flag our parent while we're here
+-						if (deltamode_inclusive)
++						// Make sure it worked
++						if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_objectref())
+ 						{
+-							// Map our deltamode flag and set it (parent will be done below)
+-							temp_property_pointer = new gld_property(parent, "Norton_dynamic");
++							GL_THROW("diesel_dg:%s failed to map Norton-equivalence deltamode variable from %s", obj->name ? obj->name : "unnamed", parent->name ? parent->name : "unnamed");
++							// Defined elsewhere
++						}
+ 
+-							// Make sure it worked
+-							if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_bool())
+-							{
+-								GL_THROW("diesel_dg:%s failed to map Norton-equivalence deltamode variable from %s", obj->name ? obj->name : "unnamed", parent->name ? parent->name : "unnamed");
+-								// Defined elsewhere
+-							}
++						// Pull the mapping - gld_object
++						tmp_gld_obj = temp_property_pointer->get_objectref();
+ 
+-							// Flag it to true
+-							temp_bool_value = true;
+-							temp_property_pointer->setp<bool>(temp_bool_value, test_rlock);
++						// Pull the proper object reference
++						tmp_obj = tmp_gld_obj->my();
+ 
+-							// Remove it
+-							delete temp_property_pointer;
++						// free the property
++						delete temp_property_pointer;
+ 
+-							// Set the child accumulator flag too
+-							temp_property_pointer = new gld_property(tmp_obj, "Norton_dynamic_child");
++						// See what it is
++						if (
++							!gl_object_isa(tmp_obj, "meter", "powerflow") &&
++							!gl_object_isa(tmp_obj, "node", "powerflow") &&
++							!gl_object_isa(tmp_obj, "load", "powerflow"))
++						{
++							// Not a wierd map, just use normal parent
++							tmp_obj = parent;
++						}
++						else // Implies it is a powerflow parent
++						{
++							// Set the flag for later
++							childed_connection = true;
+ 
+-							// Make sure it worked
+-							if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_bool())
++							// See if we are deltamode-enabled -- if so, flag our parent while we're here
++							if (deltamode_inclusive)
+ 							{
+-								GL_THROW("diesel_dg:%s failed to map Norton-equivalence deltamode variable from %s", obj->name ? obj->name : "unnamed", parent->name ? parent->name : "unnamed");
+-								// Defined elsewhere
++								// Map our deltamode flag and set it (parent will be done below)
++								temp_property_pointer = new gld_property(parent, "Norton_dynamic");
++
++								// Make sure it worked
++								if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_bool())
++								{
++									GL_THROW("diesel_dg:%s failed to map Norton-equivalence deltamode variable from %s", obj->name ? obj->name : "unnamed", parent->name ? parent->name : "unnamed");
++									// Defined elsewhere
++								}
++
++								// Flag it to true
++								temp_bool_value = true;
++								temp_property_pointer->setp<bool>(temp_bool_value, test_rlock);
++
++								// Remove it
++								delete temp_property_pointer;
++
++								// Set the child accumulator flag too
++								temp_property_pointer = new gld_property(tmp_obj, "Norton_dynamic_child");
++
++								// Make sure it worked
++								if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_bool())
++								{
++									GL_THROW("diesel_dg:%s failed to map Norton-equivalence deltamode variable from %s", obj->name ? obj->name : "unnamed", parent->name ? parent->name : "unnamed");
++									// Defined elsewhere
++								}
++
++								// Flag it to true
++								temp_bool_value = true;
++								temp_property_pointer->setp<bool>(temp_bool_value, test_rlock);
++
++								// Remove it
++								delete temp_property_pointer;
+ 							}
+-
+-							// Flag it to true
+-							temp_bool_value = true;
+-							temp_property_pointer->setp<bool>(temp_bool_value, test_rlock);
+-
+-							// Remove it
+-							delete temp_property_pointer;
+-						}
+-						// Default else -- it is one of those, but not deltamode, so nothing extra to do
+-					} // End we were a powerflow child
++							// Default else -- it is one of those, but not deltamode, so nothing extra to do
++						} // End we were a powerflow child
++					}
++					else // It is null
++					{
++						// Just point it to the normal parent
++						tmp_obj = parent;
++					}
+ 				}
+-				else // It is null
++				else // Not deltamode, so just map normally
+ 				{
+ 					// Just point it to the normal parent
+ 					tmp_obj = parent;
+ 				}
+-			}
+-			else // Not deltamode, so just map normally
+-			{
+-				// Just point it to the normal parent
+-				tmp_obj = parent;
+-			}
+ 
+-			// Now do the standard mapping
++				// Now do the standard mapping
+ 
+-			// Map the voltage
+-			pCircuit_V[0] = map_complex_value(tmp_obj, "voltage_A");
+-			pCircuit_V[1] = map_complex_value(tmp_obj, "voltage_B");
+-			pCircuit_V[2] = map_complex_value(tmp_obj, "voltage_C");
++				// Map the voltage
++				pCircuit_V[0] = map_complex_value(tmp_obj, "voltage_A");
++				pCircuit_V[1] = map_complex_value(tmp_obj, "voltage_B");
++				pCircuit_V[2] = map_complex_value(tmp_obj, "voltage_C");
+ 
+-			// Current gets mapped this way too right now, but that may not be right
+-			pLine_I[0] = map_complex_value(tmp_obj, "current_A");
+-			pLine_I[1] = map_complex_value(tmp_obj, "current_B");
+-			pLine_I[2] = map_complex_value(tmp_obj, "current_C");
++				// Current gets mapped this way too right now, but that may not be right
++				pLine_I[0] = map_complex_value(tmp_obj, "current_A");
++				pLine_I[1] = map_complex_value(tmp_obj, "current_B");
++				pLine_I[2] = map_complex_value(tmp_obj, "current_C");
+ 
+-			// Map power -- not used by all, but just for the sake of populating
+-			pPower[0] = map_complex_value(tmp_obj, "power_A");
+-			pPower[1] = map_complex_value(tmp_obj, "power_B");
+-			pPower[2] = map_complex_value(tmp_obj, "power_C");
++				// Map power -- not used by all, but just for the sake of populating
++				pPower[0] = map_complex_value(tmp_obj, "power_A");
++				pPower[1] = map_complex_value(tmp_obj, "power_B");
++				pPower[2] = map_complex_value(tmp_obj, "power_C");
+ 
+-			// Map nominal voltage for populating variables
+-			// Pull the nominal voltage
+-			pNominal_Voltage = new gld_property(parent, "nominal_voltage");
++				// Map nominal voltage for populating variables
++				// Pull the nominal voltage
++				pNominal_Voltage = new gld_property(parent, "nominal_voltage");
+ 
+-			// Make sure it worked
+-			if (!pNominal_Voltage->is_valid() || !pNominal_Voltage->is_double())
+-			{
+-				GL_THROW("diesel_dg:%d %s - Unable to map nominal_voltage from object:%d %s", obj->id, (obj->name ? obj->name : "Unnamed"), parent->id, (parent->name ? parent->name : "Unnamed"));
+-				/*  TROUBLESHOOT
+-				While attempting to map the nominal_voltage from a parent object, an error occurred.  Please try again.
+-				If the error persists, please submit your system and a bug report via the ticketing system.
+-				*/
+-			}
++				// Make sure it worked
++				if (!pNominal_Voltage->is_valid() || !pNominal_Voltage->is_double())
++				{
++					GL_THROW("diesel_dg:%d %s - Unable to map nominal_voltage from object:%d %s", obj->id, (obj->name ? obj->name : "Unnamed"), parent->id, (parent->name ? parent->name : "Unnamed"));
++					/*  TROUBLESHOOT
++					While attempting to map the nominal_voltage from a parent object, an error occurred.  Please try again.
++					If the error persists, please submit your system and a bug report via the ticketing system.
++					*/
++				}
+ 
+-			// Pull the voltage base value
+-			nominal_voltage_value = pNominal_Voltage->get_double();
++				// Pull the voltage base value
++				nominal_voltage_value = pNominal_Voltage->get_double();
+ 
+-			// Now get rid of the item
+-			delete pNominal_Voltage;
++				// Now get rid of the item
++				delete pNominal_Voltage;
+ 
+-			// Compute the line-neutral value
+-			Rated_V_LN = Rated_V_LL / sqrt(3.0);
++				// Compute the line-neutral value
++				Rated_V_LN = Rated_V_LL / sqrt(3.0);
+ 
+-			// See if Rated_V is set
+-			if (Rated_V_LL > 0.0) // It is
+-			{
+-				// Normalize it by the nominal voltage, for testing - also convert from appropriately
+-				nom_test_val = Rated_V_LN / nominal_voltage_value;
++				// See if Rated_V is set
++				if (Rated_V_LL > 0.0) // It is
++				{
++					// Normalize it by the nominal voltage, for testing - also convert from appropriately
++					nom_test_val = Rated_V_LN / nominal_voltage_value;
+ 
+-				// Make sure it matches
+-				if ((nom_test_val > 1.01) || (nom_test_val < 0.99))
++					// Make sure it matches
++					if ((nom_test_val > 1.01) || (nom_test_val < 0.99))
++					{
++						GL_THROW("diesel_dg:%d %s - Rated_V does not match the nominal voltage!", obj->id, (obj->name ? obj->name : "Unnamed"));
++						/*  TROUBLESHOOT
++						The value specified in Rated_V does not match the nominal_voltage of the parented node.  Please fix this
++						discrepancy.
++						*/
++					}
++				}
++				else // Nope, use the nominal voltage
++				{
++					// Nominal voltage should be in LN, so convert it to LL
++					Rated_V_LL = nominal_voltage_value * sqrt(3.0);
++
++					// Get the LN value too
++					Rated_V_LN = nominal_voltage_value;
++				}
++
++				// Pull frequency values - really only deltamode, but put in here too
++				temp_property_pointer = new gld_property("powerflow::nominal_frequency");
++
++				// Make sure it worked
++				if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_double())
+ 				{
+-					GL_THROW("diesel_dg:%d %s - Rated_V does not match the nominal voltage!", obj->id, (obj->name ? obj->name : "Unnamed"));
++					GL_THROW("diesel_dg:%d %s failed to map the nominal_frequency property", obj->id, (obj->name ? obj->name : "Unnamed"));
+ 					/*  TROUBLESHOOT
+-					The value specified in Rated_V does not match the nominal_voltage of the parented node.  Please fix this
+-					discrepancy.
++					While attempting to map the nominal_frequency property, an error occurred.  Please try again.
++					If the error persists, please submit your GLM and a bug report to the ticketing system.
+ 					*/
+ 				}
+-			}
+-			else // Nope, use the nominal voltage
+-			{
+-				// Nominal voltage should be in LN, so convert it to LL
+-				Rated_V_LL = nominal_voltage_value * sqrt(3.0);
+ 
+-				// Get the LN value too
+-				Rated_V_LN = nominal_voltage_value;
+-			}
++				// Must be valid, read it
++				f_nominal = temp_property_pointer->get_double();
+ 
+-			// Pull frequency values - really only deltamode, but put in here too
+-			temp_property_pointer = new gld_property("powerflow::nominal_frequency");
++				// Remove it
++				delete temp_property_pointer;
+ 
+-			// Make sure it worked
+-			if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_double())
+-			{
+-				GL_THROW("diesel_dg:%d %s failed to map the nominal_frequency property", obj->id, (obj->name ? obj->name : "Unnamed"));
+-				/*  TROUBLESHOOT
+-				While attempting to map the nominal_frequency property, an error occurred.  Please try again.
+-				If the error persists, please submit your GLM and a bug report to the ticketing system.
+-				*/
+-			}
++				// Update omega_ref to match
++				omega_ref = f_nominal * 2.0 * PI;
+ 
+-			// Must be valid, read it
+-			f_nominal = temp_property_pointer->get_double();
++				// If we were deltamode requesting, set the flag on the other side
++				if (deltamode_inclusive)
++				{
++					// Map the current injection variables
++					pIGenerated[0] = map_complex_value(tmp_obj, "deltamode_generator_current_A");
++					pIGenerated[1] = map_complex_value(tmp_obj, "deltamode_generator_current_B");
++					pIGenerated[2] = map_complex_value(tmp_obj, "deltamode_generator_current_C");
+ 
+-			// Remove it
+-			delete temp_property_pointer;
++					// Map the PGenerated value
++					pPGenerated = map_complex_value(tmp_obj, "deltamode_PGenTotal");
+ 
+-			// Update omega_ref to match
+-			omega_ref = f_nominal * 2.0 * PI;
++					// Map the flag
++					temp_property_pointer = new gld_property(tmp_obj, "Norton_dynamic");
+ 
+-			// If we were deltamode requesting, set the flag on the other side
+-			if (deltamode_inclusive)
+-			{
+-				// Map the current injection variables
+-				pIGenerated[0] = map_complex_value(tmp_obj, "deltamode_generator_current_A");
+-				pIGenerated[1] = map_complex_value(tmp_obj, "deltamode_generator_current_B");
+-				pIGenerated[2] = map_complex_value(tmp_obj, "deltamode_generator_current_C");
++					// Make sure it worked
++					if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_bool())
++					{
++						GL_THROW("diesel_dg:%s failed to map Norton-equivalence deltamode variable from %s", obj->name ? obj->name : "unnamed", tmp_obj->name ? tmp_obj->name : "unnamed");
++						/*  TROUBLESHOOT
++						While attempting to set up the deltamode interfaces and calculations with powerflow, the required interface could not be mapped.
++						Please check your GLM and try again.  If the error persists, please submit a trac ticket with your code.
++						*/
++					}
+ 
+-				// Map the PGenerated value
+-				pPGenerated = map_complex_value(tmp_obj, "deltamode_PGenTotal");
++					// Flag it to true
++					temp_bool_value = true;
++					temp_property_pointer->setp<bool>(temp_bool_value, test_rlock);
+ 
+-				// Map the flag
+-				temp_property_pointer = new gld_property(tmp_obj, "Norton_dynamic");
++					// Remove it
++					delete temp_property_pointer;
++				}
++			}
++			else // Only three-phase node objects supported right now
++			{
++				// Instead of throwing a fatal error, assume the parent is not
++				// fully ready and defer. This gives the core another chance
++				// to initialize the parent object correctly.
++				gl_verbose("diesel_dg::init(): parent type '%s' not valid or not ready, deferring.", (parent->oclass->name ? parent->oclass->name : "UNKNOWN"));
++				return 2; // <-- DEFER, DO NOT THROW AN ERROR
+ 
+-				// Make sure it worked
+-				if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_bool())
+-				{
+-					GL_THROW("diesel_dg:%s failed to map Norton-equivalence deltamode variable from %s", obj->name ? obj->name : "unnamed", tmp_obj->name ? tmp_obj->name : "unnamed");
++					//GL_THROW("diesel_dg:%s only supports a powerflow node/load/meter or no object as its parent at this time", obj->name ? obj->name : "unnamed");
+ 					/*  TROUBLESHOOT
+-					While attempting to set up the deltamode interfaces and calculations with powerflow, the required interface could not be mapped.
+-					Please check your GLM and try again.  If the error persists, please submit a trac ticket with your code.
++					The diesel_dg object has a parent that is not a powerflow node/load/meter object.  At this time, the diesel_dg object can only be parented
++					to a powerflow node, load, or meter or not have a parent.
+ 					*/
+ 				}
+ 
+-				// Flag it to true
+-				temp_bool_value = true;
+-				temp_property_pointer->setp<bool>(temp_bool_value, test_rlock);
++			// Map and pull the phases
++			temp_property_pointer = new gld_property(parent, "phases");
+ 
+-				// Remove it
+-				delete temp_property_pointer;
++			// Make sure ti worked
++			if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_set())
++			{
++				GL_THROW("Unable to map phases property - ensure the parent is a meter or a node or a load");
++				/*  TROUBLESHOOT
++				While attempting to map the phases property from the parent object, an error was encountered.
++				Please check and make sure your parent object is a meter or triplex_meter inside the powerflow module and try
++				again.  If the error persists, please submit your code and a bug report via the Trac website.
++				*/
+ 			}
+-		}
+-		else // Only three-phase node objects supported right now
+-		{
+-			GL_THROW("diesel_dg:%s only supports a powerflow node/load/meter or no object as its parent at this time", obj->name ? obj->name : "unnamed");
+-			/*  TROUBLESHOOT
+-			The diesel_dg object has a parent that is not a powerflow node/load/meter object.  At this time, the diesel_dg object can only be parented
+-			to a powerflow node, load, or meter or not have a parent.
+-			*/
+-		}
+ 
+-		// Map and pull the phases
+-		temp_property_pointer = new gld_property(parent, "phases");
++			// Pull the phase information
++			temp_phases = temp_property_pointer->get_set();
+ 
+-		// Make sure ti worked
+-		if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_set())
+-		{
+-			GL_THROW("Unable to map phases property - ensure the parent is a meter or a node or a load");
+-			/*  TROUBLESHOOT
+-			While attempting to map the phases property from the parent object, an error was encountered.
+-			Please check and make sure your parent object is a meter or triplex_meter inside the powerflow module and try
+-			again.  If the error persists, please submit your code and a bug report via the Trac website.
+-			*/
+-		}
++			// Clear the temporary pointer
++			delete temp_property_pointer;
+ 
+-		// Pull the phase information
+-		temp_phases = temp_property_pointer->get_set();
++			if ((temp_phases & 0x0007) != 0x0007)
++			{ // parent does not have all three phases
++				GL_THROW("The diesel_dg object must be connected to all three phases. Please make sure the parent object has all three phases.");
++				/* TROUBLESHOOT
++				The diesel_dg object is a three-phase generator. This message occured because the parent object does not have all three phases.
++				Please check and make sure your parent object has all three phases and try again. if the error persists, please submit your code and a bug report via the Trac website.
++				*/
++			}
+ 
+-		// Clear the temporary pointer
+-		delete temp_property_pointer;
++			// Pull the bus type
++			temp_property_pointer = new gld_property(tmp_obj, "bustype");
+ 
+-		if ((temp_phases & 0x0007) != 0x0007)
+-		{ // parent does not have all three phases
+-			GL_THROW("The diesel_dg object must be connected to all three phases. Please make sure the parent object has all three phases.");
+-			/* TROUBLESHOOT
+-			The diesel_dg object is a three-phase generator. This message occured because the parent object does not have all three phases.
+-			Please check and make sure your parent object has all three phases and try again. if the error persists, please submit your code and a bug report via the Trac website.
+-			*/
+-		}
++			// Make sure it worked
++			if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_enumeration())
++			{
++				GL_THROW("diesel_dg:%s failed to map bustype variable from %s", obj->name ? obj->name : "unnamed", obj->parent->name ? obj->parent->name : "unnamed");
++				/*  TROUBLESHOOT
++				While attempting to map the bustype variable from the parent node, an error was encountered.  Please try again.  If the error
++				persists, please report it with your GLM via the issues tracking system.
++				*/
++			}
+ 
+-		// Pull the bus type
+-		temp_property_pointer = new gld_property(tmp_obj, "bustype");
++			// Pull the value of the bus
++			attached_bus_type = temp_property_pointer->get_enumeration();
+ 
+-		// Make sure it worked
+-		if (!temp_property_pointer->is_valid() || !temp_property_pointer->is_enumeration())
+-		{
+-			GL_THROW("diesel_dg:%s failed to map bustype variable from %s", obj->name ? obj->name : "unnamed", obj->parent->name ? obj->parent->name : "unnamed");
+-			/*  TROUBLESHOOT
+-			While attempting to map the bustype variable from the parent node, an error was encountered.  Please try again.  If the error
+-			persists, please report it with your GLM via the issues tracking system.
+-			*/
++			// Remove it
++			delete temp_property_pointer;
+ 		}
+-
+-		// Pull the value of the bus
+-		attached_bus_type = temp_property_pointer->get_enumeration();
+-
+-		// Remove it
+-		delete temp_property_pointer;
+ 	}
+ 	else // No parent
+ 	{
+@@ -1010,6 +1056,8 @@ int diesel_dg::init(OBJECT *parent)
+ 		value_Circuit_V[0].SetPolar(Rated_V_LN, 0.0);
+ 		value_Circuit_V[1].SetPolar(Rated_V_LN, -2.0 / 3.0 * PI);
+ 		value_Circuit_V[2].SetPolar(Rated_V_LN, 2.0 / 3.0 * PI);
++
++		return 1;
+ 	}
+ 
+ 	// Preliminary check on modes
+@@ -1748,8 +1796,11 @@ TIMESTAMP diesel_dg::sync(TIMESTAMP t0, TIMESTAMP t1)
+ 					// Accumulate and pass our starting power
+ 					temp_complex_value_power = power_val[0] + power_val[1] + power_val[2];
+ 
+-					// Push it up
+-					pPGenerated->setp<gld::complex>(temp_complex_value_power, test_rlock);
++					if (pPGenerated != nullptr)
++					{
++						// Push it up
++						pPGenerated->setp<gld::complex>(temp_complex_value_power, test_rlock);
++					}
+ 
+ 					// Map the current injection function
+ 					test_fxn = (FUNCTIONADDR)(gl_get_function(obj->parent, "pwr_current_injection_update_map"));
+@@ -2092,28 +2143,32 @@ TIMESTAMP diesel_dg::postsync(TIMESTAMP t0, TIMESTAMP t1)
+ 			aval = gld::complex(cos(2.0 * PI / 3.0), sin(2.0 * PI / 3.0));
+ 			avalsq = aval * aval;
+ 
+-			// Pull in the current version of full_Y_all
+-			pbus_full_Y_all_mat->getp<Eigen::MatrixXcd>(temp_complex_array, test_rlock);
+-
+-			// Make sure it is the right size -- if so, pull it
+-			if ((temp_complex_array.rows() == 3) && (temp_complex_array.cols() == 3))
++			// Check if the pointer is valid before using it
++            if (pbus_full_Y_all_mat != nullptr)
+ 			{
+-				// Push it into the matrix for "ease of access"
+-				for (index_x = 0; index_x < 3; index_x++)
++				// Pull in the current version of full_Y_all
++				pbus_full_Y_all_mat->getp<Eigen::MatrixXcd>(temp_complex_array, test_rlock);
++
++				// Make sure it is the right size -- if so, pull it
++				if ((temp_complex_array.rows() == 3) && (temp_complex_array.cols() == 3))
+ 				{
+-					for (index_y = 0; index_y < 3; index_y++)
++					// Push it into the matrix for "ease of access"
++					for (index_x = 0; index_x < 3; index_x++)
+ 					{
+-						full_bus_admittance_mat[index_x][index_y] = temp_complex_array(index_x, index_y);
++						for (index_y = 0; index_y < 3; index_y++)
++						{
++							full_bus_admittance_mat[index_x][index_y] = temp_complex_array(index_x, index_y);
++						}
+ 					}
+ 				}
+-			}
+-			// Default else -- it's not the right size, so leave the existing matrix (even if it is zero)
++				// Default else -- it's not the right size, so leave the existing matrix (even if it is zero)
+ 
+-			// Perform the conversion
+-			YS1_Full = full_bus_admittance_mat[0][0] + aval * full_bus_admittance_mat[1][0] + avalsq * full_bus_admittance_mat[2][0];
+-			YS1_Full += avalsq * full_bus_admittance_mat[0][1] + full_bus_admittance_mat[1][1] + aval * full_bus_admittance_mat[2][1];
+-			YS1_Full += aval * full_bus_admittance_mat[0][2] + avalsq * full_bus_admittance_mat[1][2] + full_bus_admittance_mat[2][2];
+-			YS1_Full /= 3.0;
++				// Perform the conversion
++				YS1_Full = full_bus_admittance_mat[0][0] + aval * full_bus_admittance_mat[1][0] + avalsq * full_bus_admittance_mat[2][0];
++				YS1_Full += avalsq * full_bus_admittance_mat[0][1] + full_bus_admittance_mat[1][1] + aval * full_bus_admittance_mat[2][1];
++				YS1_Full += aval * full_bus_admittance_mat[0][2] + avalsq * full_bus_admittance_mat[1][2] + full_bus_admittance_mat[2][2];
++				YS1_Full /= 3.0;
++			}
+ 
+ 		} // End "first run" paired
+ 		// Default else - not dynamics-oriented, deflag
+@@ -5112,7 +5167,12 @@ EXPORT int create_diesel_dg(OBJECT **obj, OBJECT *parent)
+ 		if (*obj != nullptr)
+ 		{
+ 			diesel_dg *my = /*OBJECTDATA(*obj, diesel_dg)*/ object_data<diesel_dg>(*obj);
+-			gl_set_parent(*obj, parent);
++			if (!my) {
++				gl_error("create_diesel_dg: obj->data is null for class 'diesel_dg'");
++				return 0;
++			}
++			
++			// gl_set_parent(*obj, parent);
+ 			return my->create();
+ 		}
+ 		else
+@@ -5133,10 +5193,37 @@ EXPORT int init_diesel_dg(OBJECT *obj, OBJECT *parent)
+ 	INIT_CATCHALL(diesel_dg);
+ }
+ 
+-EXPORT TIMESTAMP sync_diesel_dg(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
++//EXPORT TIMESTAMP sync_diesel_dg(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
++//{
++extern "C" TIMESTAMP sync_diesel_dg(void *object, ...)
+ {
++// Add early validation of callback
++    if (!callback) {
++        gl_error("sync_player: callback is null");
++        return TS_INVALID;
++    }
++
++    // Add structure validation
++    // std::cerr << "Callback structure size check:" << std::endl;
++    // std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
++    // std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
++    // std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
++    
++    if (!callback->time.local_datetime) {
++        gl_error("sync_player: local_datetime function is null");
++        return TS_INVALID;
++    }
++
++    va_list args;
++    va_start(args, object);
++    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
++    PASSCONFIG pass = va_arg(args, PASSCONFIG);
++    va_end(args);
++
++    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
++
+ 	TIMESTAMP t1 = TS_INVALID;
+-	diesel_dg *my = /*OBJECTDATA(obj, diesel_dg)*/ object_data<diesel_dg>(obj);
++	diesel_dg *my = object_data<diesel_dg>(obj);
+ 	try
+ 	{
+ 		switch (pass)
+diff --git a/gldcore/exec.cpp b/gldcore/exec.cpp
+index d15bb782..95346d2c 100644
+--- a/gldcore/exec.cpp
++++ b/gldcore/exec.cpp
+@@ -94,7 +94,6 @@
+ #include <vector>
+ #include <iostream>
+ #include <algorithm>
+-#include <set>
+ 
+ #ifdef _WIN32
+ #include <winsock2.h>
+@@ -983,137 +982,265 @@ static STATUS init_by_creation()
+ 			by a more detailed message that explains why it failed.  Follow
+ 			the guidance for that message and try again.
+ 		 */
++		exec_setexitcode(XC_EXCEPTION); // XC_RUNERR is appropriate for a simulation failure.
++
+ 		rv = FAILED;
+ 	}
+ 	ENDCATCH;
+ 	return rv;
+ }
+ 
+-static int init_by_deferral_retry(std::vector<OBJECT *> &def_array, int def_ct)
+-{
+-	OBJECT *obj;
+-	int ct = 0, i = 0, obj_rv = 0;
+-	// OBJECT **next_arr, **tarray;
+-	std::vector<OBJECT *> next_arr(def_ct, nullptr);
+-	std::vector<OBJECT *> tarray = {};
+-	int rv = SUCCESS;
+-	char b[64];
+-	int retry = 1, tries = 0, exit_check = 0;
+-	// tarray = nullptr;
+ 
+-	// Split out the malloc so it can be checked
+-	// next_arr = (OBJECT **)malloc(def_ct * sizeof(OBJECT *));
++/**
++ * Retries the initialization of deferred objects until all are initialized or a deadlock is detected.
++ *
++ * @param def_array A vector of objects that were deferred during the initial pass.
++ * @return SUCCESS if all objects are initialized, FAILED otherwise.
++ */
++static STATUS init_by_deferral_retry(std::vector<OBJECT *> &def_array)
++{
++    int tries = 0;
++
++    // Loop until the deferred list is empty or we detect a deadlock.
++    while (!def_array.empty())
++    {
++        if (tries++ >= global_init_max_defer)
++        {
++            output_error("init_by_deferral_retry(): exhausted maximum initialization attempts (%d)", global_init_max_defer);
++            for (const auto& obj : def_array)
++            {
++                char obj_name_buf[256];
++                output_error("  - object '%s' (id %d) is still uninitialized.", object_name(obj, obj_name_buf, sizeof(obj_name_buf)), obj->id);
++            }
++            exec_setexitcode(XC_EXCEPTION);
++            return FAILED;
++        }
++
++        // Keep track of how many objects were deferred before this pass.
++        size_t last_deferred_count = def_array.size();
++        
++        // This vector will hold objects that are still deferred after this pass.
++        std::vector<OBJECT *> next_deferred_pass;
++
++        // Attempt to initialize each object in the current deferred list.
++        for (OBJECT *obj : def_array)
++        {
++            if (obj == nullptr || (obj->flags & OF_INIT))
++            {
++                // Should not happen, but good to be safe.
++                continue;
++            }
++
++			// Before retrying an object, check if its parent is structurally sound.
++            // This replaces the unreliable OF_INIT flag check.
++            if (obj->parent != nullptr &&
++				(obj->parent->oclass == nullptr ||
++				obj->parent->oclass->magic != CLASSVALID))
++            {
++                // The parent is structurally invalid. Defer the child without calling its init().
++                char obj_name_buf[256], parent_name_buf[256];
++                output_verbose("RETRY_DEFER: Deferring init of '%s' because parent '%s' is structurally invalid.",
++                    object_name(obj, obj_name_buf, sizeof(obj_name_buf)),
++                    object_name(obj->parent, parent_name_buf, sizeof(parent_name_buf)));
++                /* TROUBLESHOOT
++                    This is a normal part of the initialization sequence. An object is being deferred
++                    because its parent object, while created, has not yet been fully initialized
++                    and has an invalid class structure. This will be resolved in a subsequent
++                    initialization pass.
++                */
++                next_deferred_pass.push_back(obj);
++                continue; // Move to the next object in this retry pass.
++			}
+ 
+-	if (global_init_max_defer < 1)
+-	{
+-		output_warning("init_max_defer is less than 1, disabling deferred initialization");
+-	}
+-	while (retry)
+-	{
+-		if (global_init_max_defer <= tries)
+-		{
+-			output_error("init_by_deferral_retry(): exhausted initialization attempts");
+-			rv = FAILED;
+-			break;
+-		}
++            int obj_rv = object_init(obj);
++            switch (obj_rv)
++            {
++                case 0: // Hard failure
++                {
++                    char b[64];
++                    output_error("init_by_deferral_retry(): object %s initialization failed", object_name(obj, b, 63));
++                    return FAILED;
++                }
++                case 1: // Success
++                {
++                    // std::unique_lock<std::shared_mutex> write_lock(SharedMutexManager::get_mutex(&obj->lock));
++                    // obj->flags |= OF_INIT;
++					// obj->flags &= ~OF_DEFERRED;
++                    // Do not add it to the next_deferred_pass list.
++                    break;
++                }
++                case 2: // Still deferred
++                {
++                    // Add it to the list for the next retry pass.
++                    next_deferred_pass.push_back(obj);
++                    break;
++                }
++            }
++        }
++
++        // After the pass, update the main deferred list.
++        def_array = next_deferred_pass;
++
++        // DEADLOCK DETECTION: If the number of deferred objects has not decreased, we're stuck.
++        if (!def_array.empty() && def_array.size() == last_deferred_count)
++        {
++            output_error("init_by_deferral_retry(): all uninitialized objects deferred, model is unable to initialize");
++            /* TROUBLESHOOT
++                This error indicates an initialization deadlock. All remaining uninitialized objects
++                are waiting for other objects that are also waiting, creating a circular dependency
++                that cannot be resolved. Check the model for logical errors in object parenting
++                or dependencies.
++            */
++            for (const auto& obj : def_array)
++            {
++                char obj_name_buf[256];
++                char parent_name_buf[256];
++                output_error("  - object '%s' is waiting for parent '%s' (id %d) which is also deferred.",
++                    object_name(obj, obj_name_buf, sizeof(obj_name_buf)),
++                    (obj->parent ? object_name(obj->parent, parent_name_buf, sizeof(parent_name_buf)) : "none"),
++                    (obj->parent ? obj->parent->id : -1));
++            }
++            // exec_setexitcode(XC_INIT);
++			exec_setexitcode(XC_EXCEPTION);
+ 
+-		// Zero the temp array AND its tracking variable
+-		// memset(next_arr, 0, def_ct * sizeof(OBJECT *));
+-		// std::ranges::fill(next_arr, nullptr);  // Fill with nullptr
+-		// std::fill(next_arr, next_arr + size, nullptr);
+-		ct = 0;
++			return FAILED;
++        }
++    }
+ 
+-		// initialize each object in def_array
+-		for (i = 0; i < def_ct; ++i)
+-		{
+-			obj = def_array[i];
+-			obj_rv = object_init(obj);
+-			switch (obj_rv)
+-			{
+-			case 0:
+-				rv = FAILED;
+-				memset(b, 0, 64);
+-				output_error("init_by_deferral_retry(): object %s initialization failed", object_name(obj, b, 63));
+-				break;
+-			case 1:
+-			{
+-				// wlock(&obj->lock);
+-				// replace the above with SharedMutexManager
+-				std::unique_lock<std::shared_mutex> write_lock(SharedMutexManager::get_mutex(&obj->lock));
+-
+-				obj->flags |= OF_INIT;
+-				obj->flags -= OF_DEFERRED;
+-				// wunlock(&obj->lock);
+-				write_lock.unlock();
+-				break;
+-			}
+-			case 2:
+-				next_arr[ct] = obj;
+-				++ct;
+-				break;
+-				// no default
+-			}
+-			if (rv == FAILED)
+-			{
+-				// free(next_arr);
+-				next_arr = {}; // nullptr;
+-				return rv;
+-			}
+-		}
++    // If we get here, the deferred list is empty, meaning everything was initialized.
++    return SUCCESS;
++}
+ 
+-		if (ct == def_ct)
+-		{
+-			output_error("init_by_deferral_retry(): all uninitialized objects deferred, model is unable to initialize");
+-			rv = FAILED;
+-			retry = 0;
+ 
+-			// See which iteration we exited on - multi-swap messes up pointers alternatingly
+-			exit_check = tries % 2;
++// static int init_by_deferral_retry(std::vector<OBJECT *> &def_array, int def_ct)
++// {
++// 	OBJECT *obj;
++// 	int ct = 0, i = 0, obj_rv = 0;
++// 	// OBJECT **next_arr, **tarray;
++// 	std::vector<OBJECT *> next_arr(def_ct, nullptr);
++// 	std::vector<OBJECT *> tarray = {};
++// 	int rv = SUCCESS;
++// 	char b[64];
++// 	int retry = 1, tries = 0, exit_check = 0;
++// 	// tarray = nullptr;
++
++// 	// Split out the malloc so it can be checked
++// 	// next_arr = (OBJECT **)malloc(def_ct * sizeof(OBJECT *));
++
++// 	if (global_init_max_defer < 1)
++// 	{
++// 		output_warning("init_max_defer is less than 1, disabling deferred initialization");
++// 	}
++// 	while (retry)
++// 	{
++// 		if (global_init_max_defer <= tries)
++// 		{
++// 			output_error("init_by_deferral_retry(): exhausted initialization attempts");
++// 			exec_setexitcode(XC_EXCEPTION);
++// 			rv = FAILED;
++// 			break;
++// 		}
+ 
+-			// Determine how to handle that iteration
+-			if (exit_check == 1)
+-			{
+-				// Yes - fix the pointers before leaving, otherwise we'll double-free things!
+-				tarray = def_array;
+-				def_array = next_arr;
+-				next_arr = tarray;
+-			}
+-			// Default else - we failed first try, so pointer swap-around below didn't occur
+-		}
+-		else if (0 == ct)
+-		{
+-			rv = SUCCESS;
+-			retry = 0;
++// 		// Zero the temp array AND its tracking variable
++// 		// memset(next_arr, 0, def_ct * sizeof(OBJECT *));
++// 		// std::ranges::fill(next_arr, nullptr);  // Fill with nullptr
++// 		// std::fill(next_arr, next_arr + size, nullptr);
++// 		ct = 0;
++
++// 		// initialize each object in def_array
++// 		for (i = 0; i < def_ct; ++i)
++// 		{
++// 			obj = def_array[i];
++// 			obj_rv = object_init(obj);
++// 			switch (obj_rv)
++// 			{
++// 			case 0:
++// 				rv = FAILED;
++// 				memset(b, 0, 64);
++// 				output_error("init_by_deferral_retry(): object %s initialization failed", object_name(obj, b, 63));
++// 				break;
++// 			case 1:
++// 			{
++// 				// wlock(&obj->lock);
++// 				// replace the above with SharedMutexManager
++// 				std::unique_lock<std::shared_mutex> write_lock(SharedMutexManager::get_mutex(&obj->lock));
++
++// 				obj->flags |= OF_INIT;
++// 				obj->flags -= OF_DEFERRED;
++// 				// wunlock(&obj->lock);
++// 				write_lock.unlock();
++// 				break;
++// 			}
++// 			case 2:
++// 				next_arr[ct] = obj;
++// 				++ct;
++// 				break;
++// 				// no default
++// 			}
++// 			if (rv == FAILED)
++// 			{
++// 				// free(next_arr);
++// 				next_arr = {}; // nullptr;
++// 				return rv;
++// 			}
++// 		}
++
++// 		if (ct == def_ct)
++// 		{
++// 			output_error("init_by_deferral_retry(): all uninitialized objects deferred, model is unable to initialize");
++// 			rv = FAILED;
++// 			retry = 0;
++
++// 			// See which iteration we exited on - multi-swap messes up pointers alternatingly
++// 			exit_check = tries % 2;
++
++// 			// Determine how to handle that iteration
++// 			if (exit_check == 1)
++// 			{
++// 				// Yes - fix the pointers before leaving, otherwise we'll double-free things!
++// 				tarray = def_array;
++// 				def_array = next_arr;
++// 				next_arr = tarray;
++// 			}
++// 			// Default else - we failed first try, so pointer swap-around below didn't occur
++// 		}
++// 		else if (0 == ct)
++// 		{
++// 			rv = SUCCESS;
++// 			retry = 0;
++
++// 			// See which iteration we exited on - multi-swap messes up pointers alternatingly
++// 			exit_check = tries % 2;
++
++// 			// Determine how to handle that iteration
++// 			if (exit_check == 1)
++// 			{
++// 				// Yes - fix the pointers before leaving, otherwise we'll double-free things!
++// 				tarray = def_array;
++// 				def_array = next_arr;
++// 				next_arr = tarray;
++// 			}
++// 			// Default else - we succeeded first try, so pointer swap-around below didn't occur
++// 		}
++// 		else
++// 		{
++// 			++tries;
++// 			retry = 1;
++// 			tarray = next_arr;
++// 			next_arr = def_array;
++// 			def_array = tarray;
++// 			def_ct = ct;
++// 			// three-point turn to swap the 'next' and the 'old' arrays, memset 0'ing at the top, along with ct reset
++// 		}
++// 	}
++
++// 	// free(next_arr);
++// 	next_arr = {}; // nullptr;
++// 	return rv;
++// }
+ 
+-			// See which iteration we exited on - multi-swap messes up pointers alternatingly
+-			exit_check = tries % 2;
+ 
+-			// Determine how to handle that iteration
+-			if (exit_check == 1)
+-			{
+-				// Yes - fix the pointers before leaving, otherwise we'll double-free things!
+-				tarray = def_array;
+-				def_array = next_arr;
+-				next_arr = tarray;
+-			}
+-			// Default else - we succeeded first try, so pointer swap-around below didn't occur
+-		}
+-		else
+-		{
+-			++tries;
+-			retry = 1;
+-			tarray = next_arr;
+-			next_arr = def_array;
+-			def_array = tarray;
+-			def_ct = ct;
+-			// three-point turn to swap the 'next' and the 'old' arrays, memset 0'ing at the top, along with ct reset
+-		}
+-	}
+ 
+-	// free(next_arr);
+-	next_arr = {}; // nullptr;
+-	return rv;
+-}
+ 
+ static int init_by_deferral()
+ {
+@@ -1131,6 +1258,23 @@ static int init_by_deferral()
+ 	obj = object_get_first();
+ 	while (obj != 0)
+ 	{
++
++		// This check must exist on the FIRST pass to prevent a premature
++        // call to object_init() on a child with a corrupted parent.
++        if (obj->parent != nullptr &&
++			(obj->parent->oclass == nullptr ||
++			obj->parent->oclass->magic != CLASSVALID))
++		{
++            // The parent is structurally invalid. Defer the child immediately.
++            def_array[def_ct++] = obj;
++            std::unique_lock<std::shared_mutex> write_lock(SharedMutexManager::get_mutex(&obj->lock));
++            obj->flags |= OF_DEFERRED;
++            write_lock.unlock();
++            
++            obj = obj->next; 
++            continue; // Skip the object_init() call for this object.
++        }
++
+ 		obj_rv = object_init(obj);
+ 		switch (obj_rv)
+ 		{
+@@ -1143,10 +1287,10 @@ static int init_by_deferral()
+ 		{
+ 			// wlock(&obj->lock);
+ 			// replace the above with SharedMutexManager
+-			std::unique_lock<std::shared_mutex> write_lock(SharedMutexManager::get_mutex(&obj->lock));
+-			obj->flags |= OF_INIT;
++			// std::unique_lock<std::shared_mutex> write_lock(SharedMutexManager::get_mutex(&obj->lock));
++			// obj->flags |= OF_INIT;
+ 			// wunlock(&obj->lock);
+-			write_lock.unlock();
++			// write_lock.unlock();
+ 			break;
+ 		}
+ 		case 2:
+@@ -1177,7 +1321,10 @@ static int init_by_deferral()
+ 	// recursecursecursive
+ 	if (def_ct > 0)
+ 	{
+-		rv = static_cast<STATUS>(init_by_deferral_retry(def_array, def_ct));
++		// Trim the vector to the actual number of deferred objects before passing it.
++        def_array.resize(def_ct);
++
++		rv = init_by_deferral_retry(def_array);
+ 		if (rv == FAILED) // got hung up retrying
+ 		{
+ 			// free(def_array);
+@@ -1371,6 +1518,8 @@ static STATUS precommit_all(TIMESTAMP t0)
+ 			by a more detailed message that explains why it failed.  Follow
+ 			the guidance for that message and try again.
+ 		 */
++		exec_setexitcode(XC_EXCEPTION); // XC_RUNERR is appropriate for a simulation failure.
++
+ 		rv = FAILED;
+ 	}
+ 	ENDCATCH;
+@@ -1669,6 +1818,8 @@ static TIMESTAMP commit_all(TIMESTAMP t0, TIMESTAMP t2)
+ 			by a more detailed message that explains why it failed.  Follow
+ 			the guidance for that message and try again.
+ 		 */
++		exec_setexitcode(XC_EXCEPTION); // XC_RUNERR is appropriate for a simulation failure.
++
+ 		result = TS_INVALID;
+ 	}
+ 	ENDCATCH;
+@@ -1797,6 +1948,8 @@ static STATUS finalize_all()
+ 			by a more detailed message that explains why it failed.  Follow
+ 			the guidance for that message and try again.
+ 		 */
++		exec_setexitcode(XC_EXCEPTION); // XC_RUNERR is appropriate for a simulation failure.
++
+ 		rv = FAILED;
+ 	}
+ 	ENDCATCH;
+@@ -3189,6 +3342,9 @@ STATUS exec_step(int64 *passes, int64 *tsteps)
+ 	CATCH(const char *msg)
+ 	{
+ 		output_error("exec_step halted: %s", msg);
++		exec_setexitcode(XC_EXCEPTION); // XC_RUNERR is appropriate for a simulation failure.
++
++		
+ 		result = FAILED;
+ 	}
+ 	ENDCATCH
+@@ -3253,6 +3409,7 @@ STATUS exec_start(int64 *passes, int64 *tsteps)
+ 	CATCH(const char *msg)
+ 	{
+ 		output_error("exec halted: %s", msg);
++		exec_setexitcode(XC_EXCEPTION);
+ 		exec_sync_set(sync_data_nullptr, TS_INVALID, false);
+ 		/* TROUBLESHOOT
+ 			This indicates that the core's solver shut down.  This message
+diff --git a/gldcore/module.cpp b/gldcore/module.cpp
+index 7d45840b..ee54476d 100644
+--- a/gldcore/module.cpp
++++ b/gldcore/module.cpp
+@@ -234,6 +234,8 @@ s_callbacks::s_callbacks() throw()
+ 	object.set_parent = object_set_parent;
+ 	object.set_rank = object_set_rank;
+ 	properties.get_property = object_get_property;
++	// std::cerr << "Set properties.get_property to: " << (void*)properties.get_property << std::endl;
++
+ 	properties.set_value_by_addr = object_set_value_by_addr;
+ 	properties.get_value_by_addr = object_get_value_by_addr;
+ 	properties.set_value_by_name = object_set_value_by_name;
+@@ -285,7 +287,15 @@ s_callbacks::s_callbacks() throw()
+ 	time.timestamp_to_hours = timestamp_to_hours;
+ 	time.timestamp_to_minutes = timestamp_to_minutes;
+ 	time.timestamp_to_seconds = timestamp_to_seconds;
++	// time.local_datetime = local_datetime;
++
++
++        // std::cerr << "s_callbacks constructor - this address: " << (void*)this << std::endl;
++    // std::cerr << "local_datetime function pointer: " << (void*)local_datetime << std::endl;
+ 	time.local_datetime = local_datetime;
++    
++	
++	
+ 	time.local_datetime_delta = local_datetime_delta;
+ 	time.convert_to_timestamp = convert_to_timestamp;
+ 	time.convert_to_timestamp_delta = convert_to_timestamp_delta;
+@@ -381,11 +391,18 @@ s_callbacks::s_callbacks() throw()
+ 	version.build = version_build;
+ 	version.branch = version_branch;
+ 	magic = MAGIC;
++
++
++	
+ }
+ 
+-extern CALLBACKS *callbacks = new s_callbacks;
++// extern CALLBACKS *callbacks = new s_callbacks;
+ 
+-CALLBACKS *module_callbacks(void) { return callbacks; }
++CALLBACKS *module_callbacks(void) { 
++	static CALLBACKS *callbacks = new s_callbacks;
++    // std::cerr << "Accessing module_callbacks, properties.get_property at: " << (void*)callbacks->properties.get_property << std::endl;
++	return callbacks; 
++}
+ 
+ static MODULE *first_module = nullptr;
+ static MODULE *last_module = nullptr;
+@@ -414,6 +431,11 @@ MODULE *module_load(const char *file, /**< module filename, searches \p PATH */
+ 					int argc,		  /**< count of arguments in \p argv */
+ 					char *argv[])	  /**< arguments passed from the command line */
+ {
++	// std::cerr << "Entering module_load for module: " << file << std::endl;
++	CALLBACKS *callbacks = module_callbacks();
++	// std::cerr << "Calling init for module " << file << " with callbacks at: " << (void*)callbacks << std::endl;
++    // std::cerr << "properties.get_property in callbacks: " << (void*)callbacks->properties.get_property << std::endl;
++	
+ 	/* check for already loaded */
+ 	MODULE *mod = module_find((char *)file);
+ 
+@@ -539,6 +561,7 @@ MODULE *module_load(const char *file, /**< module filename, searches \p PATH */
+ 				last_module->next = mod;
+ 				last_module = mod;
+ 				mod->oclass = previous ? previous->next : class_get_first_class();
++				// std::cerr << "Passed callback table to module " << file << " with properties.get_property at: " << (void*)callbacks->properties.get_property << std::endl;
+ 			}
+ 			return release_and_return(last_module); // Release and return
+ 		}
+@@ -656,6 +679,8 @@ MODULE *module_load(const char *file, /**< module filename, searches \p PATH */
+ 		output_verbose("%s(%d): module '%s' loaded ok", __FILE__, __LINE__, file);
+ 	}
+ 
++	// std::cerr << "Entering module_load for module: " << file << std::endl;
++
+ 	/* get the initialization function */
+ 	init = (LIBINIT)DLSYM(hLib, "init");
+ 	if (init == nullptr)
+@@ -670,6 +695,7 @@ MODULE *module_load(const char *file, /**< module filename, searches \p PATH */
+ 	else
+ 	{
+ 		output_verbose("%s(%d): module '%s' exports init()", __FILE__, __LINE__, file);
++		// std::cerr << "Init function found for module: " << file << std::endl;
+ 	}
+ 
+ 	/* connect the module's exported data & functions */
+@@ -710,13 +736,27 @@ MODULE *module_load(const char *file, /**< module filename, searches \p PATH */
+ 
+ 	/* call the initialization function */
+ 	errno = 0;
++	CALLBACKS *global_callbacks = module_callbacks();
++	// std::cerr << "Calling init for module " << file << " with callbacks at: " << (void*)callbacks << std::endl;
++    // std::cerr << "properties.get_property in callbacks: " << (void*)callbacks->properties.get_property << std::endl;
++
+ 	mod->oclass = (*init)(callbacks, (void *)mod, argc, argv);
++	// std::cout << "Module " << mod->name << " initialized, oclass address: " <<  mod->oclass << std::endl;
++	// std::cerr << "After init for module " << file << ", properties.get_property still at: " << (void*)callbacks->properties.get_property << std::endl;
++	// std::cerr << "Passed callback table to module " << file << " with properties.get_property at: " << (void*)callbacks->properties.get_property << std::endl;
++
+ 	if (mod->oclass == nullptr && errno != 0)
+ 		return release_and_return(nullptr); // Release and retur
+ 
+ 	/* connect intrinsic functions */
+ 	for (c = mod->oclass; c != nullptr; c = c->next)
+ 	{
++		if (c->name == nullptr) {
++    	    output_error("CLASS name is null for module '%s' at address %p", mod->name, c);
++        	continue;
++   		}
++
++		
+ 		char fname[1024];
+ 		struct
+ 		{
+@@ -740,6 +780,15 @@ MODULE *module_load(const char *file, /**< module filename, searches \p PATH */
+ 		int i;
+ 		for (i = 0; i < sizeof(map) / sizeof(map[0]); i++)
+ 		{
++			if (map[i].name == nullptr) {
++				output_error("map[%d].name is null", i);
++			}
++			if (isforeign && fmod == nullptr) {
++				output_error("fmod is null");
++			}
++			if (!isforeign && (c == nullptr || c->name == nullptr)) {
++				output_error("c or c->name is null");
++			}
+ 			snprintf(fname, sizeof(fname), "%s_%s", map[i].name, isforeign ? fmod : c->name);
+ 			if ((*(map[i].func) = (FUNCTIONADDR)DLSYM(hLib, fname)) == nullptr && !map[i].optional)
+ 			{
+diff --git a/gldcore/object.cpp b/gldcore/object.cpp
+index aed8bf7e..830bff49 100644
+--- a/gldcore/object.cpp
++++ b/gldcore/object.cpp
+@@ -382,7 +382,9 @@ OBJECT *object_create_single(CLASS *oclass)
+ 		 */
+ 	}
+ 
+-	memset(obj, 0, sz + oclass->size);
++	// memset(obj, 0, sz + oclass->size);
++	memset(obj, 0, sz);
++
+ 
+ 	tp_next %= tp_count;
+ 
+@@ -1125,12 +1127,12 @@ int object_set_value_by_name(OBJECT *obj,		/**< the object to change */
+ 							 PROPERTYNAME name, /**< the name of the property to change */
+ 							 char *value)		/**< the value to set */
+ {
+-	if (global_verbose_mode)
+-		std::cerr << "Setting property " << name
+-				  << " to value " << value
+-				  << " on object type " << obj->oclass->name
+-				  << " with id " << obj->id
+-				  << std::endl;
++	// if (global_verbose_mode)
++		// std::cerr << "Setting property " << name
++		// 		  << " to value " << value
++		// 		  << " on object type " << obj->oclass->name
++		// 		  << " with id " << obj->id
++		// 		  << std::endl;
+ 
+ 	// Step 1: Check if value could be a schedule reference
+ 	bool might_be_schedule = false;
+@@ -1629,10 +1631,14 @@ int object_set_parent(OBJECT *obj,	  /**< the object to set */
+ 		output_error("object %s tried to set itself as its parent", object_name(obj, b, 63));
+ 		return -1;
+ 	}
++
+ 	obj->parent = parent;
+-	obj->child_count++;
+-	if (parent != nullptr)
++
++	if (parent != nullptr){
++		parent->child_count++;
+ 		return set_rank(parent, obj->rank, nullptr);
++	}
++
+ 	return obj->rank;
+ }
+ 
+@@ -1706,10 +1712,23 @@ void object_profile(OBJECT *obj, OBJECTPROFILEITEM pass, clock_t t)
+ 	}
+ }
+ 
+-TIMESTAMP _object_sync(OBJECT *obj,		/**< the object to synchronize */
+-					   TIMESTAMP ts,	/**< the desire clock to sync to */
+-					   PASSCONFIG pass) /**< the pass configuration */
++
++// TIMESTAMP _object_sync(OBJECT *obj,		/**< the object to synchronize */
++// 					   TIMESTAMP ts,	/**< the desire clock to sync to */
++// 					   PASSCONFIG pass) /**< the pass configuration */
++// {
++
++extern "C" TIMESTAMP _object_sync(void *object, ...)
+ {
++    va_list args;
++    va_start(args, object);
++    TIMESTAMP ts = va_arg(args, TIMESTAMP);
++    PASSCONFIG pass = va_arg(args, PASSCONFIG);
++    va_end(args);
++
++    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
++
++
+ 	CLASS *oclass = obj->oclass;
+ 	TIMESTAMP plc_time = TS_NEVER, sync_time;
+ 	TIMESTAMP effective_valid_to = std::min(obj->clock + global_skipsafe, obj->valid_to);
+@@ -1880,11 +1899,75 @@ TIMESTAMP object_heartbeat(OBJECT *obj)
+  **/
+ int object_init(OBJECT *obj) /**< the object to initialize */
+ {
++
++	if (obj->oclass == nullptr || obj->oclass->magic != CLASSVALID)
++    {
++        char oname[256];
++        output_error("object_init(): object '%s' (id %d) has invalid class pointer %p (magic=%08x)",
++                     object_name(obj, oname, sizeof(oname)),
++                     obj->id,
++                     (void*)obj->oclass,
++                     obj->oclass ? (unsigned)obj->oclass->magic : 0);
++        exec_setexitcode(XC_EXCEPTION);
++        return FAILED;
++    }
++
+ 	clock_t t = (clock_t)exec_clock();
+ 	int rv = 1;
+ 	obj->clock = global_starttime;
+-	if (obj->oclass->init != nullptr)
++
++	    // VALIDATION WITH DEBUG OUTPUT
++    if (obj->parent != nullptr)
++    {
++        char objname[256];
++        bool parent_valid = false;
++        
++        // fprintf(stderr, "DEBUG: Validating parent %p for object %s\n", 
++                // obj->parent, object_name(obj, objname, sizeof(objname)));
++        
++        // Check: parent must be in the global object list
++        OBJECT *check = object_get_first();
++        int check_count = 0;
++        while (check != nullptr)
++        {
++            check_count++;
++            if (check == obj->parent)
++            {
++                parent_valid = true;
++                // fprintf(stderr, "DEBUG: Found valid parent at position %d\n", check_count);
++                break;
++            }
++            check = check->next;
++        }
++        
++        // fprintf(stderr, "DEBUG: Checked %d objects, parent_valid = %d\n", check_count, parent_valid);
++        
++        if (!parent_valid)
++        {
++            output_error("object %s (id:%d) has INVALID parent pointer (%p)!", 
++                object_name(obj, objname, sizeof(objname)), obj->id, obj->parent);
++            output_error("Parent was NOT found in object list of %d objects", check_count);
++            // obj->parent = nullptr;
++            return 0;
++        }
++        
++        // Verify oclass
++        if (obj->parent->oclass == nullptr)
++        {
++            output_error("object %s has corrupted parent (null oclass)!", 
++                object_name(obj, objname, sizeof(objname)));
++            obj->parent = nullptr;
++            return 0;
++        }
++    }
++	
++	if (obj->oclass->init != nullptr){
+ 		rv = (int)(*(obj->oclass->init))(obj, obj->parent);
++		if (rv == 1)
++		{
++			obj->flags |= OF_INIT;
++		}
++	}
+ 	object_profile(obj, OPI_INIT, t);
+ 	if (global_debug_output > 0)
+ 		output_debug("object %s:%d init -> %s", obj->oclass->name, obj->id, rv ? "ok" : "failed");
+diff --git a/powerflow/meter.cpp b/powerflow/meter.cpp
+index d23d0f7f..a03e57f4 100644
+--- a/powerflow/meter.cpp
++++ b/powerflow/meter.cpp
+@@ -39,6 +39,8 @@ EXPORT int64 meter_reset(OBJECT *obj)
+ // class management data
+ CLASS* meter::oclass = nullptr;
+ CLASS* meter::pclass = nullptr;
++extern "C" CALLBACKS *callback;
++
+ 
+ // the constructor registers the class and properties and sets the defaults
+ meter::meter(MODULE *mod) : node(mod)
+@@ -65,9 +67,10 @@ meter::meter(MODULE *mod) : node(mod)
+             PT_double, "measured_reactive_energy_delta[VAh]",PADDR(measured_reactive_energy_delta),PT_DESCRIPTION,"delta in metered reactive energy consumption from last specified measured_energy_delta_timestep",
+             PT_double, "measured_energy_delta_timestep[s]",PADDR(measured_energy_delta_timestep),PT_DESCRIPTION,"Period of timestep for real and reactive delta energy calculation",
+ 			PT_complex, "measured_power[VA]", PADDR(measured_power),PT_DESCRIPTION,"metered complex power",
+-			PT_complex, "measured_power_A[VA]", PADDR(indiv_measured_power[0]),PT_DESCRIPTION,"metered complex power on phase A",
+-			PT_complex, "measured_power_B[VA]", PADDR(indiv_measured_power[1]),PT_DESCRIPTION,"metered complex power on phase B",
+-			PT_complex, "measured_power_C[VA]", PADDR(indiv_measured_power[2]),PT_DESCRIPTION,"metered complex power on phase C",
++            PT_complex, "measured_power_A", PADDR(indiv_measured_power[0]), PT_UNITS, "VA", PT_DESCRIPTION,"metered complex power on phase A",
++            PT_complex, "measured_power_B", PADDR(indiv_measured_power[1]), PT_UNITS, "VA", PT_DESCRIPTION,"metered complex power on phase B",
++            PT_complex, "measured_power_C", PADDR(indiv_measured_power[2]), PT_UNITS, "VA", PT_DESCRIPTION,"metered complex power on phase C",
++
+ 			PT_double, "measured_demand[W]", PADDR(measured_demand),PT_DESCRIPTION,"greatest metered real power during simulation",
+ 			PT_double, "measured_real_power[W]", PADDR(measured_real_power),PT_DESCRIPTION,"metered real power",
+ 			PT_double, "measured_reactive_power[VAr]", PADDR(measured_reactive_power),PT_DESCRIPTION,"metered reactive power",
+@@ -185,6 +188,7 @@ meter::meter(MODULE *mod) : node(mod)
+ 
+ 			//PT_double, "measured_reactive[kVar]", PADDR(measured_reactive), has not implemented yet
+ 			nullptr)<1) GL_THROW("unable to publish properties in %s",__FILE__);
++		
+ 
+ 		// publish meter reset function
+ 		if (gl_publish_function(oclass,"reset",(FUNCTIONADDR)meter_reset)==nullptr)
+@@ -1435,11 +1439,27 @@ EXPORT int create_meter(OBJECT **obj, OBJECT *parent)
+ {
+ 	try
+ 	{
++
+ 		*obj = gl_create_object(meter::oclass);
++		if (!*obj) return 0;
++
+ 		if (*obj!=nullptr)
+ 		{
+ 			meter *my = object_data<meter>(*obj);
+-			gl_set_parent(*obj,parent);
++
++			if (!my) {
++				gl_error("create_meter: obj->data is null for class 'meter'");
++				return 0;
++			}
++			// #ifdef __cpp_rtti
++			// if (typeid(*my) != typeid(meter)) {
++			// 	gl_error("create_meter: obj->data is not 'meter' (type mismatch)");
++			// 	return 0;
++			// }
++			// #endif
++			
++			
++			// gl_set_parent(*obj,parent);
+ 			return my->create();
+ 		}
+ 		else
+@@ -1457,8 +1477,36 @@ EXPORT int init_meter(OBJECT *obj)
+ 	INIT_CATCHALL(meter);
+ }
+ 
+-EXPORT TIMESTAMP sync_meter(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
++//EXPORT TIMESTAMP sync_meter(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
++//{
++
++extern "C" TIMESTAMP sync_meter(void *object, ...)
+ {
++    va_list args;
++    va_start(args, object);
++    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
++    PASSCONFIG pass = va_arg(args, PASSCONFIG);
++    va_end(args);
++
++    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
++    
++	if (!callback) {
++        gl_error("callback is null in init_climate");
++        return 0;  // Fail module load
++    }
++
++	    // Add structure validation
++    // std::cerr << "Callback structure size check:" << std::endl;
++    // std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
++    // std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
++    // std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
++    
++
++	if (!callback->time.local_datetime) {
++        gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
++        return FAILED;
++    }
++
+ 	try {
+ 		meter *pObj = object_data<meter>(obj);
+ 		TIMESTAMP t1;
+diff --git a/powerflow/node.cpp b/powerflow/node.cpp
+index 8483ee3c..73a479a1 100644
+--- a/powerflow/node.cpp
++++ b/powerflow/node.cpp
+@@ -594,8 +594,24 @@ int node::init(OBJECT *parent)
+ 
+ 		// Check for parents to see if they are a parent/childed load
+ 		if (obj->parent != nullptr)									// Has a parent, let's see if it is a node and link it up
+-		{															//(this will break anything intentionally done this way - e.g. switch between two nodes)
+-			if (!(gl_object_isa(obj->parent, "node", "powerflow"))) // All others alias up to isa:node eventually
++		{		
++			if (parent != nullptr) {
++				gl_debug("node::init for '%s': Parent is '%s' (class: %s). Checking isa('node')... Result: %d", 
++						get_name(), 
++						parent->name, 
++						parent->oclass->name,
++						gl_object_isa(parent, "node"));
++			}
++													//(this will break anything intentionally done this way - e.g. switch between two nodes)
++			// if (!(gl_object_isa(obj->parent, "node", "powerflow"))) // All others alias up to isa:node eventually
++			// in response to: ERROR    [INIT] : init_load(obj=21;measure_freq_load_parent): unhandled exception - NR: Parent is not a node-based object!
++			// if ( !(gl_object_isa(obj->parent, "node", "powerflow") || gl_object_isa(obj->parent, "meter", "powerflow")) )
++			if ( !(strcmp(obj->parent->oclass->name, "node") == 0 ||
++				strcmp(obj->parent->oclass->name, "meter") == 0 ||
++				strcmp(obj->parent->oclass->name, "load") == 0 ||
++				strcmp(obj->parent->oclass->name, "triplex_node") == 0 ||
++				strcmp(obj->parent->oclass->name, "triplex_meter") == 0 ||
++				strcmp(obj->parent->oclass->name, "triplex_load") == 0) )
+ 				GL_THROW("NR: Parent is not a node-based object!");
+ 			/*  TROUBLESHOOT
+ 			A Newton-Raphson parent-child connection was attempted on a non-node.  The parent object must be a node, load, or meter object in the
+@@ -3557,11 +3573,16 @@ EXPORT int create_node(OBJECT **obj, OBJECT *parent)
+ {
+ 	try
+ 	{
++
+ 		*obj = gl_create_object(node::oclass);
+ 		if (*obj != nullptr)
+ 		{
+ 			node *my = object_data<node>(*obj);
+-			gl_set_parent(*obj, parent);
++			if (!my) {
++				gl_error("create_node: obj->data is null for class 'node'");
++				return 0;
++			}
++			// gl_set_parent(*obj, parent);
+ 			return my->create();
+ 		}
+ 		else
+@@ -3633,8 +3654,35 @@ EXPORT int init_node(OBJECT *obj)
+  * @param pass the current pass for this sync call
+  * @return t1, where t1>t0 on success, t1=t0 for retry, t1<t0 on failure
+  */
+-EXPORT TIMESTAMP sync_node(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
++// EXPORT TIMESTAMP sync_node(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
++// {
++extern "C" TIMESTAMP sync_node(void *object, ...)
+ {
++    va_list args;
++    va_start(args, object);
++    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
++    PASSCONFIG pass = va_arg(args, PASSCONFIG);
++    va_end(args);
++
++    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
++    
++	if (!callback) {
++        gl_error("callback is null in sync_node");
++        return 0;  // Fail module load
++    }
++
++	    // Add structure validation
++    // std::cerr << "Callback structure size check:" << std::endl;
++    // std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
++    // std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
++    // std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
++    
++
++	if (!callback->time.local_datetime) {
++        gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
++        return FAILED;
++    }
++
+ 	try
+ 	{
+ 		node *pObj = object_data<node>(obj);
+diff --git a/powerflow/powerflow.cpp b/powerflow/powerflow.cpp
+index b06650fb..bec10820 100644
+--- a/powerflow/powerflow.cpp
++++ b/powerflow/powerflow.cpp
+@@ -35,6 +35,9 @@ extern "C" {
+ #include "output.h"
+ }
+ 
++extern "C" CALLBACKS *callback;
++
++
+ void print_matrix(gld::complex mat[3][3])
+ {
+ 	for (int i = 0; i < 3; i++) {
+diff --git a/powerflow/solver_nr.cpp b/powerflow/solver_nr.cpp
+index a2c960dc..440fe38f 100644
+--- a/powerflow/solver_nr.cpp
++++ b/powerflow/solver_nr.cpp
+@@ -165,6 +165,43 @@ void sparse_reset(SPARSE *sm, int ncols)
+ // Add in new elements to the sparse notation
+ inline void sparse_add(SPARSE *sm, int row, int col, double value, BUSDATA *bus_values, unsigned int bus_values_count, NR_SOLVER_STRUCT *powerflow_information, int island_number_curr)
+ {
++
++
++		// Check sm pointer first
++	if (sm == nullptr)
++	{
++		gl_error("sparse_add: sm is NULL for island %d", island_number_curr);
++		return;
++	}
++
++	// Now safe to check sm members
++	if (sm->cols == nullptr || sm->llheap == nullptr)
++	{
++		gl_error("sparse_add: NULL internal pointers for island %d (cols=%p, llheap=%p)", 
++				island_number_curr, sm->cols, sm->llheap);
++		return;
++	}
++
++	// Check llptr is valid (just non-negative)
++	if (sm->llptr < 0)
++	{
++		gl_error("sparse_add: llptr %d is negative for island %d", 
++				sm->llptr, island_number_curr);
++		return;
++	}
++
++	if (col < 0)
++	{
++		gl_error("sparse_add: negative col index %d for island %d", col, island_number_curr);
++		return;
++	}
++
++	if (row < 0)
++	{
++		gl_error("sparse_add: negative row index %d for island %d", row, island_number_curr);
++		return;
++	}
++
+ 	unsigned int bus_index_val, bus_start_val, bus_end_val;
+ 	bool found_proper_bus_val;
+ 
+@@ -2279,6 +2316,15 @@ int64 solver_nr(unsigned int bus_count, BUSDATA *bus, unsigned int branch_count,
+ 			sparse_reset(powerflow_values->island_matrix_values[island_loop_index].Y_Amatrix, 6 * powerflow_values->island_matrix_values[island_loop_index].bus_count);
+ 		}
+ 
++
++		if (powerflow_values->island_matrix_values[island_loop_index].Y_Amatrix->cols == nullptr ||
++			powerflow_values->island_matrix_values[island_loop_index].Y_Amatrix->llheap == nullptr)
++		{
++			GL_THROW("NR: Island %d sparse matrix not properly initialized - cols or llheap is NULL", island_loop_index);
++		}
++
++
++
+ 		// integrate off diagonal components
+ 		for (indexer = 0; indexer < powerflow_values->island_matrix_values[island_loop_index].size_offdiag_PQ * 2; indexer++)
+ 		{
+diff --git a/powerflow/substation.cpp b/powerflow/substation.cpp
+index c91cab36..2a21756b 100644
+--- a/powerflow/substation.cpp
++++ b/powerflow/substation.cpp
+@@ -472,11 +472,16 @@ EXPORT int create_substation(OBJECT **obj, OBJECT *parent)
+ {
+ 	try
+ 	{
++
+ 		*obj = gl_create_object(substation::oclass);
+ 		if (*obj!=nullptr)
+ 		{
+ 			substation *my = object_data<substation>(*obj);
+-			gl_set_parent(*obj,parent);
++			if (!my) {
++				gl_error("create_substation: obj->data is null for class 'substation'");
++				return 0;
++			}
++			// gl_set_parent(*obj,parent);
+ 			return my->create();
+ 		}
+ 		else
+@@ -494,8 +499,37 @@ EXPORT int init_substation(OBJECT *obj)
+ 	INIT_CATCHALL(substation);
+ }
+ 
+-EXPORT TIMESTAMP sync_substation(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
++// EXPORT TIMESTAMP sync_substation(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
++// {
++
++extern "C" TIMESTAMP sync_substation(void *object, ...)
+ {
++    va_list args;
++    va_start(args, object);
++    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
++    PASSCONFIG pass = va_arg(args, PASSCONFIG);
++    va_end(args);
++
++    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
++    
++	if (!callback) {
++        gl_error("callback is null in sync_substation");
++        return 0;  // Fail module load
++    }
++
++	    // Add structure validation
++    // std::cerr << "Callback structure size check:" << std::endl;
++    // std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
++    // std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
++    // std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
++    
++
++	if (!callback->time.local_datetime) {
++        gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
++        return FAILED;
++    }
++
++
+ 	try {
+ 		substation *pObj = object_data<substation>(obj);
+ 		TIMESTAMP t1;

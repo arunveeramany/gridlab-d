@@ -1,0 +1,407 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 485,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 499,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 504,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 509,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 514,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Runtime",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"build-clang/script/gridlabd.sh"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 2,
+			"component" : "Runtime",
+			"destination" : "include",
+			"paths" : 
+			[
+				"gldcore/class.h",
+				"gldcore/gld_complex.h",
+				"gldcore/debug.h",
+				"gldcore/enduse.h",
+				"gldcore/exception.h",
+				"gldcore/loadshape.h",
+				"gldcore/lock.h",
+				"gldcore/module.h",
+				"gldcore/object.h",
+				"gldcore/property.h",
+				"gldcore/schedule.h",
+				"gldcore/test.h",
+				"gldcore/gldapi.h",
+				"build-clang/headers/build.h",
+				"build-clang/headers/version.h"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 3,
+			"component" : "Runtime",
+			"destination" : "share",
+			"paths" : 
+			[
+				"gldcore/tzinfo.txt",
+				"gldcore/unitfile.txt",
+				"gldcore/rt/about.htm",
+				"gldcore/rt/COPYRIGHT",
+				"gldcore/rt/debugger.conf",
+				"gldcore/rt/eula.htm",
+				"gldcore/rt/favicon.ico",
+				"gldcore/rt/gnuplot.conf",
+				"gldcore/rt/gridlabd.conf",
+				"gldcore/rt/gridlabd.css",
+				"gldcore/rt/gridlabd.h",
+				"gldcore/rt/gridlabd.htm",
+				"gldcore/rt/gridlabd.jpg",
+				"gldcore/rt/gridlabd.js",
+				"gldcore/rt/gridlabd.syn",
+				"gldcore/rt/LICENSE",
+				"gldcore/rt/mingw.conf",
+				"gldcore/rt/STATUS",
+				"gldcore/rt/capacitor_b.png",
+				"gldcore/rt/capacitor_g.png",
+				"gldcore/rt/capacitor_k.png",
+				"gldcore/rt/capacitor_r.png",
+				"gldcore/rt/load_b.png",
+				"gldcore/rt/load_g.png",
+				"gldcore/rt/load_k.png",
+				"gldcore/rt/load_r.png",
+				"gldcore/rt/meter_g.png",
+				"gldcore/rt/node_b.png",
+				"gldcore/rt/node_g.png",
+				"gldcore/rt/node_k.png",
+				"gldcore/rt/node_r.png",
+				"gldcore/rt/regulator_b.png",
+				"gldcore/rt/regulator_g.png",
+				"gldcore/rt/regulator_k.png",
+				"gldcore/rt/regulator_r.png",
+				"gldcore/rt/switch_b.png",
+				"gldcore/rt/switch_g.png",
+				"gldcore/rt/switch_k.png",
+				"gldcore/rt/switch_r.png",
+				"gldcore/rt/transformer_b.png",
+				"gldcore/rt/transformer_g.png",
+				"gldcore/rt/transformer_k.png",
+				"gldcore/rt/transformer_r.png",
+				"gldcore/rt/triplex_meter_b.png",
+				"gldcore/rt/triplex_meter_g.png",
+				"gldcore/rt/triplex_meter_k.png",
+				"gldcore/rt/triplex_meter_r.png",
+				"models/climate_csvreader_example.glm",
+				"models/collector_example.glm",
+				"models/diesel_deltamode_load_player_A.csv",
+				"models/diesel_deltamode_load_player_B.csv",
+				"models/diesel_deltamode_load_player_C.csv",
+				"models/house_HVAC_example.glm",
+				"models/IEEE_13_Node_Test_Feeder.glm",
+				"models/IEEE_13_Node_With_Houses.glm",
+				"models/passive_controller_example.glm",
+				"models/random_fault_generator_example.glm",
+				"models/residential_zipload_example.glm",
+				"models/Standard_Weather.csv",
+				"models/subsecond_diesel_generator_example.glm",
+				"models/taxonomy_feeder_R1-12.47-1.glm",
+				"models/transactive_controller_example.glm",
+				"models/WA-Seattle.tmy2",
+				"models/WA-Yakima.tmy2",
+				"models/waterheater_example.glm",
+				"models/weather.csv",
+				"models/wind_turbine_example.glm",
+				"gldcore/gridlabd.htm"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 4,
+			"component" : "Runtime",
+			"destination" : "share/doc",
+			"paths" : 
+			[
+				"COPYRIGHT",
+				"LICENSE"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 5,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"lib/assert.dylib"
+			],
+			"targetId" : "assert::@1671d8e23090e9d198dd",
+			"targetIndex" : 28,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 5,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"lib/climate.dylib"
+			],
+			"targetId" : "climate::@f16a7e9b86555afd7b29",
+			"targetIndex" : 32,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 5,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"lib/commercial.dylib"
+			],
+			"targetId" : "commercial::@f68eb6c933b63bdf3d13",
+			"targetIndex" : 39,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 5,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"lib/connection.dylib"
+			],
+			"targetId" : "connection::@19dd9b301cb36e05ed96",
+			"targetIndex" : 40,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 5,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"lib/libgldapi.dylib"
+			],
+			"targetId" : "gldapi::@4bf5ca48242ef1e71568",
+			"targetIndex" : 55,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 5,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"lib/generators.dylib"
+			],
+			"targetId" : "generators::@bbde10ff578790c4d6a3",
+			"targetIndex" : 54,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 5,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"lib/market.dylib"
+			],
+			"targetId" : "market::@25243aabb81a3a1b4d30",
+			"targetIndex" : 59,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 5,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"lib/mysql.dylib"
+			],
+			"targetId" : "mysql::@f65a429cd5ed81adfdd0",
+			"targetIndex" : 60,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 5,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"lib/optimize.dylib"
+			],
+			"targetId" : "optimize::@5b1742a3450a18b31e7b",
+			"targetIndex" : 61,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 5,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"lib/powerflow.dylib"
+			],
+			"targetId" : "powerflow::@d00fbfd40f3f7d476ee1",
+			"targetIndex" : 62,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 5,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"lib/reliability.dylib"
+			],
+			"targetId" : "reliability::@c4ed11b91853f4751be5",
+			"targetIndex" : 63,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 5,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"lib/residential.dylib"
+			],
+			"targetId" : "residential::@52d5c5d78584da7fd153",
+			"targetIndex" : 64,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 5,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"lib/tape.dylib"
+			],
+			"targetId" : "tape::@c426be2a2eca2eff4dab",
+			"targetIndex" : 75,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 5,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"lib/tape_file.dylib"
+			],
+			"targetId" : "tape_file::@3239e25cea398f0ac6dc",
+			"targetIndex" : 76,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 5,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"lib/tape_plot.dylib"
+			],
+			"targetId" : "tape_plot::@e7e179b681c473f8bb08",
+			"targetIndex" : 77,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 5,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"lib/glsolvers.dylib"
+			],
+			"targetId" : "glsolvers::@79b5b8ef10c422638f59",
+			"targetIndex" : 56,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 5,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"lib/glxengine.dylib"
+			],
+			"targetId" : "glxengine::@42437d3dcd5f272df387",
+			"targetIndex" : 57,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 5,
+			"component" : "Runtime",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"bin/gridlabd"
+			],
+			"targetId" : "gridlabd::@4bf5ca48242ef1e71568",
+			"targetIndex" : 58,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 5,
+			"component" : "Development",
+			"destination" : "lib/static",
+			"paths" : 
+			[
+				"lib/static/libsuperlu.a"
+			],
+			"targetId" : "superlu::@a8eaf087c42f87d13365",
+			"targetIndex" : 73,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	}
+}

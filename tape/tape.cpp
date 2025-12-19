@@ -269,20 +269,20 @@ EXPORT CLASS *init(CALLBACKS *fntable, MODULE *module, int argc, char *argv[])
 
 	callback = fntable;
 
-	std::cerr << "Received callback table in init_tape at address: " << (void*)callback << std::endl;
+	// std::cerr << "back table in init_tape at address: " << (void*)callback << std::endl;
 
 	if (!callback) {
         std::cerr << "FATAL: init_tape received null callback table" << std::endl;
         return 0;
     }
-    std::cerr << "Callback initialized at address: " << (void*)callback << std::endl;
-	std::cerr << "properties.get_property callback value: " << (void*)callback->properties.get_property << std::endl;
+    // std::cerr << "Callback initialized at address: " << (void*)callback << std::endl;
+	// std::cerr << "properties.get_property callback value: " << (void*)callback->properties.get_property << std::endl;
 
 	if (!callback->properties.get_property) {
         std::cerr << "FATAL: properties.get_property callback is null" << std::endl;
         return 0;
     }
-	std::cerr << "properties.get_property callback initialized at address: " << (void*)callback->properties.get_property << std::endl;
+	// std::cerr << "properties.get_property callback initialized at address: " << (void*)callback->properties.get_property << std::endl;
 
 	
 
@@ -473,6 +473,13 @@ EXPORT int check(void)
 		while ((obj = gl_find_next(players, obj)) != nullptr)
 		{
 			struct player *pData = object_data<struct player>(obj);
+			//null check
+			if(pData == nullptr) {
+				errcount++;
+				gl_error("player %s (id=%d) is not properly initialized", obj->name ? obj->name : "(unnamed)", obj->id);
+				continue;
+			}
+
 			if (gl_findfile(pData->file, nullptr, F_OK, fpath, sizeof(fpath)) == nullptr)
 			{
 				errcount++;
@@ -587,20 +594,20 @@ EXPORT unsigned long preupdate(MODULE *module, TIMESTAMP t0, unsigned int64 dt)
 EXPORT SIMULATIONMODE interupdate(MODULE *module, TIMESTAMP t0, unsigned int64 delta_time, unsigned long dt, unsigned int iteration_count_val)
 {
 
-	std::cerr << "Received callback table in tape interupdate at address: " << (void*)callback << std::endl;
+	// std::cerr << "Received callback table in tape interupdate at address: " << (void*)callback << std::endl;
 
 	if (!callback) {
         std::cerr << "FATAL: tape interupdate received null callback table" << std::endl;
         return SM_ERROR;
     }
-    std::cerr << "Callback initialized at address: " << (void*)callback << std::endl;
-	std::cerr << "properties.get_property callback value: " << (void*)callback->properties.get_property << std::endl;
+    // std::cerr << "Callback initialized at address: " << (void*)callback << std::endl;
+	// std::cerr << "properties.get_property callback value: " << (void*)callback->properties.get_property << std::endl;
 
 	if (!callback->properties.get_property) {
         std::cerr << "FATAL: properties.get_property callback is null" << std::endl;
         return SM_ERROR;
     }
-	std::cerr << "properties.get_property callback initialized at address: " << (void*)callback->properties.get_property << std::endl;
+	// std::cerr << "properties.get_property callback initialized at address: " << (void*)callback->properties.get_property << std::endl;
 
 
 	DELTAOBJ_LIST *index_item;
@@ -697,6 +704,12 @@ EXPORT SIMULATIONMODE interupdate(MODULE *module, TIMESTAMP t0, unsigned int64 d
 			OBJECT *obj = index_item->obj;
 			OBJECT *temp_obj = nullptr;
 			struct player *my = object_data<struct player>(obj);
+			//null check
+			if (my == nullptr)
+			{
+				gl_error("player:%d: unable to allocate space for player", obj->id);
+				return SM_ERROR;
+			}
 			int y = 0, m = 0, d = 0, H = 0, M = 0, S = 0, ms = 0, n = 0;
 			char *fmt = const_cast<char *>("%d/%d/%d %d:%d:%d.%d,%*s");
 			double t = (double)my->next.ts + (double)my->next.ns / 1e9;
@@ -846,20 +859,20 @@ EXPORT SIMULATIONMODE interupdate(MODULE *module, TIMESTAMP t0, unsigned int64 d
 EXPORT STATUS postupdate(MODULE *module, TIMESTAMP t0, unsigned int64 dt)
 {
 
-	std::cerr << "Received callback table in tape interupdate at address: " << (void*)callback << std::endl;
+	// std::cerr << "Received callback table in tape interupdate at address: " << (void*)callback << std::endl;
 
 	if (!callback) {
         std::cerr << "FATAL: tape interupdate received null callback table" << std::endl;
         return FAILED;
     }
-    std::cerr << "Callback initialized at address: " << (void*)callback << std::endl;
-	std::cerr << "properties.get_property callback value: " << (void*)callback->properties.get_property << std::endl;
+    // std::cerr << "Callback initialized at address: " << (void*)callback << std::endl;
+	// std::cerr << "properties.get_property callback value: " << (void*)callback->properties.get_property << std::endl;
 
 	if (!callback->properties.get_property) {
         std::cerr << "FATAL: properties.get_property callback is null" << std::endl;
         return FAILED;
     }
-	std::cerr << "properties.get_property callback initialized at address: " << (void*)callback->properties.get_property << std::endl;
+	// std::cerr << "properties.get_property  at address: " << (void*)callback->properties.get_property << std::endl;
 
 
 

@@ -406,7 +406,11 @@ EXPORT int create_controller2(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			controller2 *my = OBJECTDATA(*obj,controller2);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_controller2: obj->data is null for class 'controller2'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 	}

@@ -543,7 +543,11 @@ EXPORT int create_double_controller(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			double_controller *my = /*OBJECTDATA(*obj, double_controller)*/ object_data<double_controller>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_double_controller: obj->data is null for class 'double_controller'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

@@ -298,7 +298,11 @@ EXPORT int create_powerflow_object(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			powerflow_object *my = object_data<powerflow_object>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_powerflow_object: obj->data is null for class 'powerflow_object'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

@@ -256,7 +256,11 @@ EXPORT int create_voltdump(OBJECT **obj, OBJECT *parent)
 		if (*obj != nullptr)
 		{
 			voltdump *my = object_data<voltdump>(*obj);
-			gl_set_parent(*obj, parent);
+			if (!my) {
+				gl_error("create_voltdump: obj->data is null for class 'voltdump'");
+				return 0;
+			}
+			// gl_set_parent(*obj, parent);
 			return my->create();
 		}
 		else

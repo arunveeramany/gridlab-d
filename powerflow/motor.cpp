@@ -2248,7 +2248,11 @@ EXPORT int create_motor(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			motor *my = /*OBJECTDATA(obj,<>)*/ object_data<motor>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_motor: obj->data is null for class 'motor'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else

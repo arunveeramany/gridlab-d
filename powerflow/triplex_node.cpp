@@ -316,7 +316,11 @@ EXPORT int create_triplex_node(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			triplex_node *my = object_data<triplex_node>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_triplex_node: obj->data is null for class 'triplex_node'");
+				return 0;
+			}
+			// gl_set_parent(*obj,parent);
 			return my->create();
 		}	
 		else

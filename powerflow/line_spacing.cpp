@@ -86,7 +86,15 @@ EXPORT int create_line_spacing(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			line_spacing *my = /*OBJECTDATA(obj,<>)*/ object_data<line_spacing>(*obj);
-			gl_set_parent(*obj,parent);
+			if (!my) {
+				gl_error("create_line_spacing: obj->data is null for class 'line_spacing'");
+				return 0;
+			}
+			// if (parent != nullptr && gl_object_isa(parent, "object"))
+			// {
+				//line spacing typically has no parent, but if it does, set it
+				//gl_set_parent(*obj,parent);
+			// }
 			return my->create();
 		}
 		else
@@ -94,6 +102,7 @@ EXPORT int create_line_spacing(OBJECT **obj, OBJECT *parent)
 	}
 	CREATE_CATCHALL(line_spacing);
 }
+
 EXPORT TIMESTAMP sync_line_spacing(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 {
 	return TS_NEVER;

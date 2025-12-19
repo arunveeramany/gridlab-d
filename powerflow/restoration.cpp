@@ -6186,7 +6186,11 @@ EXPORT int create_restoration(OBJECT **obj, OBJECT *parent)
 		if (*obj != nullptr)
 		{
 			restoration *my = object_data<restoration>(*obj);
-			gl_set_parent(*obj, parent);
+			if (!my) {
+				gl_error("create_restoration: obj->data is null for class 'restoration'");
+				return 0;
+			}
+			// gl_set_parent(*obj, parent);
 			return my->create();
 		}
 		else
