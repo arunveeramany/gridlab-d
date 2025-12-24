@@ -31,7 +31,7 @@ events:
       - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/"
       - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
       - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
-      - "/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/bin/"
+      - "/opt/pmk/env/global/bin/"
     searched_directories:
       - "/opt/homebrew/bin/uname"
       - "/opt/homebrew/sbin/uname"
@@ -51,14 +51,14 @@ events:
         - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin"
         - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin"
         - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
-        - "/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23//build-clang/bin"
+        - "/opt/pmk/env/global/bin"
   -
     kind: "message-v1"
     backtrace:
       - "/opt/homebrew/share/cmake/Modules/CMakeDetermineSystem.cmake:212 (message)"
       - "CMakeLists.txt:16 (project)"
     message: |
-      The system is: Darwin - 24.6.0 - arm64
+      The system is: Darwin - 25.2.0 - arm64
   -
     kind: "find-v1"
     backtrace:
@@ -90,7 +90,7 @@ events:
       - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/"
       - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
       - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
-      - "/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/bin/"
+      - "/opt/pmk/env/global/bin/"
     searched_directories:
       - "/opt/homebrew/bin/install_name_tool"
       - "/opt/homebrew/sbin/install_name_tool"
@@ -110,6 +110,6 @@ events:
         - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin"
         - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin"
         - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
-        - "/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23//build-clang/bin"
+        - "/opt/pmk/env/global/bin"
       CMAKE_INSTALL_PREFIX: "/usr/local"
 ...

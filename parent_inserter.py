@@ -1,170 +1,166 @@
+
+#!/usr/bin/env python3
 import re
 import os
 import sys
+from typing import List, Tuple, Dict, Optional
 
-def find_object_end(lines, start):
-    """
-    Finds the ending line index of the current object, handling nesting.
-    """
-    level = 1  # Starting with the opening '{'
-    j = start + 1
-    while j < len(lines):
-        stripped = lines[j].strip()
-        if re.match(r'\s*object\s+[^\s{]+\s*\{?', lines[j]) and (re.sub(r'//.*$', '', lines[j]).rstrip().endswith('{') or (j+1 < len(lines) and lines[j+1].strip() == '{')):
-            level += 1
-        elif stripped.startswith('}') or stripped == '};':
-            level -= 1
-            if level == 0:
-                return j
-        j += 1
-    return -1  # Error: no matching '}'
+def strip_comment(line: str) -> str:
+    return re.sub(r"//.*$", "", line).rstrip()
 
-def modify_glm_file(input_filename):
-    """
-    Revises a GLM file to ensure that any nested '*assert', 'player', 'recorder', 
-    or any other 'object' receives a 'parent' reference if nested. Assigns unique 
-    names to nameless qualifying objects, using parent-based naming for asserts.
-    Handles deep nesting and flexible brace placement.
-    """
-    try:
-        with open(input_filename, 'r') as file:
-            lines = file.read().splitlines()
-    except FileNotFoundError:
-        print(f"Error: Input file not found at '{input_filename}'")
-        return
+def is_object_start(line: str) -> bool:
+    return bool(re.match(r"^\s*object\s+[^{\s]+", strip_comment(line)))
 
-    modified_lines = []
-    object_stack = []  # Stack of (type, name, start_index) tuples
-    name_counters = {}
-    parent_insert_count = 0
-    name_insert_count = 0
-    i = 0
+def find_object_end(lines: List[str], brace_idx: int) -> int:
+    depth = 1
+    i = brace_idx + 1
+    while i < len(lines) and depth > 0:
+        s = strip_comment(lines[i]).strip()
+        if s.endswith("{") or s == "{":
+            depth += 1
+        elif s.startswith("}") or s == "};":
+            depth -= 1
+        i += 1
+    return i
 
-    while i < len(lines):
-        line = lines[i]
-        stripped = line.strip()
+used_names: set = set()
+name_counters: Dict[str, int] = {}
+summary: Dict[str, list] = {"names_added": [], "names_renamed": [], "parents_added": []}
 
-        # Detect object end
-        if stripped.startswith('}') or stripped == '};':
-            if object_stack:
-                object_stack.pop()
-            modified_lines.append(line)
+def generate_unique_name(obj_type: str) -> str:
+    n = name_counters.get(obj_type, 0) + 1
+    cand = f"{obj_type}_{n}"
+    while cand in used_names:
+        n += 1
+        cand = f"{obj_type}_{n}"
+    name_counters[obj_type] = n
+    used_names.add(cand)
+    return cand
+
+def parse_object(lines: List[str], start_idx: int, parent_name: Optional[str]):
+    header_line = lines[start_idx]
+    m = re.match(r"^(\s*)object\s+([^\s{]+)", strip_comment(header_line))
+    indent = m.group(1)
+    obj_type = m.group(2)
+
+    brace_idx = start_idx
+    if not strip_comment(header_line).endswith("{"):
+        brace_idx += 1
+
+    end_idx = find_object_end(lines, brace_idx)
+    body_start = brace_idx + 1
+    body_end = end_idx - 1
+
+    # Scan body for name/parent
+    has_name, has_parent, current_name = False, False, None
+    for j in range(body_start, body_end):
+        s = strip_comment(lines[j]).strip()
+        if s.startswith("name ") and not has_name:
+            nm = re.match(r"^name\s+([^;\s]+)", s)
+            if nm:
+                current_name = nm.group(1)
+                has_name = True
+        if s.startswith("parent "):
+            has_parent = True
+
+    # Determine body indentation (match existing content)
+    body_indent = None
+    for j in range(body_start, body_end):
+        raw = lines[j]
+        s = strip_comment(raw).strip()
+        if s and not s.startswith("object") and not s.startswith("}"):
+            body_indent = re.match(r"^(\s*)", raw).group(1)
+            break
+    if body_indent is None:
+        body_indent = indent + "\t"  # fallback: one level deeper
+
+    # Name resolution
+    inserted_name = False
+    if not has_name:
+        current_name = generate_unique_name(obj_type)
+        inserted_name = True
+        summary["names_added"].append(current_name)
+    else:
+        if current_name in used_names:
+            new_name = generate_unique_name(obj_type)
+            summary["names_renamed"].append((current_name, new_name))
+            current_name = new_name
+            inserted_name = True
+        else:
+            used_names.add(current_name)
+
+    # Parent insertion
+    inserted_parent = False
+    if parent_name and not has_parent:
+        summary["parents_added"].append((current_name, parent_name))
+        inserted_parent = True
+
+    # Render object
+    out = [header_line]
+    if brace_idx != start_idx:
+        out.append(lines[brace_idx])
+    if inserted_name:
+        out.append(f"{body_indent}name {current_name};")
+    if inserted_parent:
+        out.append(f"{body_indent}parent {parent_name};")
+
+    i = body_start
+    while i < body_end:
+        s = strip_comment(lines[i]).strip()
+        if is_object_start(s):
+            child_lines, new_i, _ = parse_object(lines, i, current_name)
+            out.extend(child_lines)
+            i = new_i
+            continue
+        if s.startswith("name ") and inserted_name:
             i += 1
             continue
-
-        # Detect object start (handle '{' on same or next line)
-        match = re.match(r'(\s*)object\s+([^\s{]+)', line)
-        if match:
-            current_indent = match.group(1)
-            current_type = match.group(2)
-            start_index = i
-
-            # Remove comment for brace check
-            comment_free = re.sub(r'//.*$', '', line).rstrip()
-
-            # Check for '{' on this line or the next
-            brace_line = i
-            if not comment_free.endswith('{'):
-                brace_line += 1
-                if brace_line >= len(lines) or re.sub(r'//.*$', '', lines[brace_line]).strip() != '{':
-                    modified_lines.append(line)
-                    i += 1
-                    continue
-
-            # Append the opening lines to modified_lines
-            modified_lines.append(line)
-            if brace_line != i:
-                modified_lines.append(lines[brace_line])
-                i = brace_line + 1
-            else:
-                i += 1
-
-            # Find the end of this object
-            end = find_object_end(lines, brace_line)
-            if end == -1:
-                print(f"Warning: Unmatched object at line {start_index+1}")
-                continue
-
-            # Scan the body (brace_line+1 to end exclusive) for explicit name and parent
-            determined_name = None
-            has_explicit_name = False
-            has_parent = False
-            for j in range(brace_line + 1, end):
-                check_line = lines[j].strip()
-                check_line = re.sub(r'//.*$', '', check_line).strip()  # Remove inline comments
-                if not check_line:
-                    continue
-
-                # Check for name (only set the first one found)
-                name_match = re.match(r'name\s+["\']?([^"\';\s]+)["\']?', check_line)
-                if name_match and not has_explicit_name:
-                    determined_name = name_match.group(1)
-                    has_explicit_name = True
-
-                # Check for parent
-                if check_line.startswith('parent '):
-                    has_parent = True
-
-            # Determine if needs parent/name
-            is_player = current_type == 'player'
-            is_recorder = current_type == 'recorder'
-            is_assert = current_type == 'assert' or current_type.endswith('_assert')
-            is_collector = current_type == 'collector'
-            is_generic_object = current_type == 'object'
-            needs_parent = is_player or is_recorder or is_assert or is_collector or is_generic_object
-
-            # Get parent info from stack
-            parent_name = object_stack[-1][1] if object_stack else None
-
-            # Add parent reference if needed (for nested objects), without quotes
-            if parent_name and needs_parent and not has_parent:
-                insert_line = f"{current_indent}        parent {parent_name};"
-                modified_lines.append(insert_line)
-                parent_insert_count += 1
-                print(f"Inserted parent reference '{parent_name}' for object '{current_type}' at line {len(modified_lines) + 1}")
-
-            # Generate and insert name for nameless qualifying objects (include all types)
-            if needs_parent and not has_explicit_name:
-                key = f"{parent_name if parent_name else 'global'}_{current_type}"
-                count = name_counters.get(key, 0)
-                determined_name = f"{key}_{count}"
-                name_counters[key] = count + 1
-                insert_line = f"{current_indent}        name {determined_name};"
-                modified_lines.append(insert_line)
-                name_insert_count += 1
-                print(f"Inserted name '{determined_name}' for object '{current_type}' at line {len(modified_lines) + 1}")
-
-            # Set determined_name if not set (fallback for stack)
-            if determined_name is None:
-                key = f"{parent_name if parent_name else 'global'}_{current_type}"
-                count = name_counters.get(key, 0)
-                determined_name = f"{key}_{count}"
-                name_counters[key] = count + 1  # Increment even for fallback
-
-            # Push current object to stack
-            object_stack.append((current_type, determined_name, start_index))
+        if s.startswith("parent ") and inserted_parent:
+            i += 1
             continue
-
-        # Append non-object lines
-        modified_lines.append(line)
+        out.append(lines[i])
         i += 1
 
-    # Write output
-    base, ext = os.path.splitext(input_filename)
-    output_filename = f"{base}_fix{ext}"
-    
-    with open(output_filename, 'w') as file:
-        file.write('\n'.join(modified_lines) + '\n')
-    
-    print(f"Fixed GLM file written to: {output_filename}")
-    # Print total insertions at the end
-    print(f"Total parent references inserted: {parent_insert_count}")
-    print(f"Total names inserted: {name_insert_count}")
-    print(f"Grand total instances inserted: {parent_insert_count + name_insert_count}")
+    out.append(lines[body_end])
+    return out, end_idx, current_name
 
-if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        input_file = sys.argv[1]
-        modify_glm_file(input_file)
-    else:
-        print("Usage: python parent_inserter_fixed_v9.py <path_to_glm_file>")
+def process_file(path: str) -> str:
+    with open(path, "r") as f:
+        raw_lines = f.read().splitlines()
+
+    result = []
+    i = 0
+    while i < len(raw_lines):
+        s = strip_comment(raw_lines[i]).strip()
+        if is_object_start(s):
+            obj_lines, new_i, _ = parse_object(raw_lines, i, None)
+            result.extend(obj_lines)
+            i = new_i
+        else:
+            result.append(raw_lines[i])
+            i += 1
+
+    base, ext = os.path.splitext(path)
+    out_path = f"{base}_fix{ext}"
+    with open(out_path, "w") as f:
+        f.write("\n".join(result) + "\n")
+    return out_path
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python parent_inserter.py <path_to_glm_file>")
+        sys.exit(1)
+    out = process_file(sys.argv[1])
+    print("Fixed GLM file written to:", out)
+
+    # After writing out_path...
+    print("Total names added:", len(summary["names_added"]))
+    print("Total names renamed:", len(summary["names_renamed"]))
+    print("Total parents added:", len(summary["parents_added"]))
+    if summary["names_added"]:
+        print("Names added:", ", ".join(summary["names_added"]))
+    if summary["names_renamed"]:
+        print("Names renamed:", ", ".join([f"{old}->{new}" for (old, new) in summary["names_renamed"]])) 
+    if summary["parents_added"]:
+        print("Parents added:", ", ".join([f"{child}->{parent}" for (child, parent) in summary["parents_added"]]))
+

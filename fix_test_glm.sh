@@ -4,11 +4,11 @@
 # Step 0: Determine which E line to use
 N=${1:-1}  # Default to 1st E line if no argument is provided
 
-suite="generators"
+suite="residential"
 err_type="E"   #manually change ^X
 
 # Loop through N = 1 to 10
-for N in {1..40}; do
+for N in {1..5}; do
   echo "🔁 Starting iteration N=$N"
 
   echo "🔍 Step 1: Reading validate.txt to find the ${N}th line starting with '${err_type}'..."

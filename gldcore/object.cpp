@@ -54,6 +54,7 @@
 #endif
 
 #include <algorithm> // Ensure std::min is available
+#include <unordered_map>
 
 using std::isnan;
 
@@ -75,6 +76,47 @@ KEYWORD oflags[] = {
 	{"RECALC", OF_RECALC, oflags + 5},
 	{"DELTAMODE", OF_DELTAMODE, nullptr},
 };
+
+
+static std::unordered_map<OBJECT*, std::string> g_pending_parent;
+
+
+static void register_pending_parent_link(OBJECT* child, const char* parent_name) 
+{
+    if (child && parent_name && *parent_name) 
+	{
+        g_pending_parent[child] = parent_name;
+    }
+}
+
+
+// Resolve after al l objects are created, before init_all()
+void resolve_pending_parent_links() {
+	std::cerr << "Resolving deferred parent links"<< std::endl;
+    for (auto& kv : g_pending_parent) {
+        OBJECT* child = kv.first;
+        const std::string& pname = kv.second;
+        OBJECT* parent = object_find_name(pname.c_str());
+        if (parent) {
+            object_set_parent(child, parent);
+
+
+			if (parent && child && child->oclass && strcmp(child->oclass->name,"solar")==0) {
+				output_verbose("Linked solar '%s' → parent '%s' (class=%s)",
+							child->name ? child->name : "(unnamed)",
+							parent->name ? parent->name : "(unnamed)",
+							parent->oclass->name ? parent->oclass->name : "(null class)");
+			}
+
+        } else {
+            // Leave it null; modules may support no-parent operation (e.g., solar static voltages)
+            output_verbose("Deferred parent '%s' still not found for object %s:%d",
+                           pname.c_str(), child->oclass->name, child->id);
+        }
+    }
+    g_pending_parent.clear();
+}
+
 
 /* WARNING: untested. -d3p988 30 Jan 08 */
 int object_get_oflags(KEYWORD **extflags)
@@ -960,23 +1002,39 @@ static int set_header_value(OBJECT *obj, char *name, char *value)
 			object_set_name(obj, value);
 			return SUCCESS;
 		}
-	}
+	}	
 	else if (strcmp(name, "parent") == 0)
 	{
-		OBJECT *parent = object_find_name(value);
-		if (parent == nullptr && strcmp(value, "") != 0)
+		// Empty string means "no parent" -- clear any existing parent
+		if (strcmp(value, "") == 0)
 		{
-			output_error("object %s:%d parent %s not found", obj->oclass->name, obj->id, value);
-			return FAILED;
+			if (object_set_parent(obj, nullptr) == FAILED)
+			{
+				output_error("object %s:%d cannot clear parent (value was empty)", obj->oclass->name, obj->id);
+				return FAILED;
+			}
+			return SUCCESS;
 		}
-		else if (object_set_parent(obj, parent) == FAILED && strcmp(value, "") != 0)
+
+		// Non-empty parent name
+		OBJECT *parent = object_find_name(value);
+		if (parent != nullptr)
 		{
-			output_error("object %s:%d cannot use parent %s", obj->oclass->name, obj->id, value);
-			return FAILED;
+			// Link immediately
+			if (object_set_parent(obj, parent) == FAILED)
+			{
+				output_error("object %s:%d cannot use parent %s", obj->oclass->name, obj->id, value);
+				return FAILED;
+			}
+			return SUCCESS;
 		}
 		else
-			return SUCCESS;
-	}
+		{
+			// Defer: remember desired parent name for post-parse resolution
+			register_pending_parent_link(obj, value);
+			return SUCCESS; 
+		}
+	}	
 	else if (strcmp(name, "rank") == 0)
 	{
 		if (object_set_rank(obj, atoi(value)) < 0)

@@ -76,15 +76,15 @@ third_party/SuperLU/EXAMPLE/CMakeFiles/clinsol.dir/clinsol.c.o: third_party/Supe
 third_party/SuperLU/EXAMPLE/CMakeFiles/clinsol.dir/clinsol.c.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/clinsol.c
 third_party/SuperLU/EXAMPLE/CMakeFiles/clinsol.dir/clinsol.c.o: third_party/SuperLU/EXAMPLE/CMakeFiles/clinsol.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object third_party/SuperLU/EXAMPLE/CMakeFiles/clinsol.dir/clinsol.c.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/clang $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT third_party/SuperLU/EXAMPLE/CMakeFiles/clinsol.dir/clinsol.c.o -MF CMakeFiles/clinsol.dir/clinsol.c.o.d -o CMakeFiles/clinsol.dir/clinsol.c.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/clinsol.c
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT third_party/SuperLU/EXAMPLE/CMakeFiles/clinsol.dir/clinsol.c.o -MF CMakeFiles/clinsol.dir/clinsol.c.o.d -o CMakeFiles/clinsol.dir/clinsol.c.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/clinsol.c
 
 third_party/SuperLU/EXAMPLE/CMakeFiles/clinsol.dir/clinsol.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/clinsol.dir/clinsol.c.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/clang $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/clinsol.c > CMakeFiles/clinsol.dir/clinsol.c.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/clinsol.c > CMakeFiles/clinsol.dir/clinsol.c.i
 
 third_party/SuperLU/EXAMPLE/CMakeFiles/clinsol.dir/clinsol.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/clinsol.dir/clinsol.c.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/clang $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/clinsol.c -o CMakeFiles/clinsol.dir/clinsol.c.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/clinsol.c -o CMakeFiles/clinsol.dir/clinsol.c.s
 
 # Object files for target clinsol
 clinsol_OBJECTS = \

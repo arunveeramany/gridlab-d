@@ -76,15 +76,15 @@ tape_plot/CMakeFiles/tape_plot.dir/tape_plot.cpp.o: tape_plot/CMakeFiles/tape_pl
 tape_plot/CMakeFiles/tape_plot.dir/tape_plot.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/tape_plot/tape_plot.cpp
 tape_plot/CMakeFiles/tape_plot.dir/tape_plot.cpp.o: tape_plot/CMakeFiles/tape_plot.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object tape_plot/CMakeFiles/tape_plot.dir/tape_plot.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/tape_plot && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT tape_plot/CMakeFiles/tape_plot.dir/tape_plot.cpp.o -MF CMakeFiles/tape_plot.dir/tape_plot.cpp.o.d -o CMakeFiles/tape_plot.dir/tape_plot.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/tape_plot/tape_plot.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/tape_plot && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT tape_plot/CMakeFiles/tape_plot.dir/tape_plot.cpp.o -MF CMakeFiles/tape_plot.dir/tape_plot.cpp.o.d -o CMakeFiles/tape_plot.dir/tape_plot.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/tape_plot/tape_plot.cpp
 
 tape_plot/CMakeFiles/tape_plot.dir/tape_plot.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/tape_plot.dir/tape_plot.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/tape_plot && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/tape_plot/tape_plot.cpp > CMakeFiles/tape_plot.dir/tape_plot.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/tape_plot && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/tape_plot/tape_plot.cpp > CMakeFiles/tape_plot.dir/tape_plot.cpp.i
 
 tape_plot/CMakeFiles/tape_plot.dir/tape_plot.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/tape_plot.dir/tape_plot.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/tape_plot && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/tape_plot/tape_plot.cpp -o CMakeFiles/tape_plot.dir/tape_plot.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/tape_plot && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/tape_plot/tape_plot.cpp -o CMakeFiles/tape_plot.dir/tape_plot.cpp.s
 
 # Object files for target tape_plot
 tape_plot_OBJECTS = \

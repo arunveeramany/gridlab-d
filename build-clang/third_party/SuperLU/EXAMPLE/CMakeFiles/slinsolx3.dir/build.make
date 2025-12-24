@@ -76,15 +76,15 @@ third_party/SuperLU/EXAMPLE/CMakeFiles/slinsolx3.dir/slinsolx3.c.o: third_party/
 third_party/SuperLU/EXAMPLE/CMakeFiles/slinsolx3.dir/slinsolx3.c.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/slinsolx3.c
 third_party/SuperLU/EXAMPLE/CMakeFiles/slinsolx3.dir/slinsolx3.c.o: third_party/SuperLU/EXAMPLE/CMakeFiles/slinsolx3.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object third_party/SuperLU/EXAMPLE/CMakeFiles/slinsolx3.dir/slinsolx3.c.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/clang $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT third_party/SuperLU/EXAMPLE/CMakeFiles/slinsolx3.dir/slinsolx3.c.o -MF CMakeFiles/slinsolx3.dir/slinsolx3.c.o.d -o CMakeFiles/slinsolx3.dir/slinsolx3.c.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/slinsolx3.c
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT third_party/SuperLU/EXAMPLE/CMakeFiles/slinsolx3.dir/slinsolx3.c.o -MF CMakeFiles/slinsolx3.dir/slinsolx3.c.o.d -o CMakeFiles/slinsolx3.dir/slinsolx3.c.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/slinsolx3.c
 
 third_party/SuperLU/EXAMPLE/CMakeFiles/slinsolx3.dir/slinsolx3.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/slinsolx3.dir/slinsolx3.c.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/clang $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/slinsolx3.c > CMakeFiles/slinsolx3.dir/slinsolx3.c.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/slinsolx3.c > CMakeFiles/slinsolx3.dir/slinsolx3.c.i
 
 third_party/SuperLU/EXAMPLE/CMakeFiles/slinsolx3.dir/slinsolx3.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/slinsolx3.dir/slinsolx3.c.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/clang $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/slinsolx3.c -o CMakeFiles/slinsolx3.dir/slinsolx3.c.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/slinsolx3.c -o CMakeFiles/slinsolx3.dir/slinsolx3.c.s
 
 # Object files for target slinsolx3
 slinsolx3_OBJECTS = \

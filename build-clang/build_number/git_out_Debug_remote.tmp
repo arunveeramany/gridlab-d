@@ -1,2 +1,6 @@
+fork	https://github.com/arunveeramany/gridlab-d.git (fetch)
+fork	https://github.com/arunveeramany/gridlab-d.git (push)
 origin	git@github.com:arunveeramany/gridlab-d.git (fetch)
 origin	git@github.com:arunveeramany/gridlab-d.git (push)
+upstream	https://github.com/gridlab-d/gridlab-d.git (fetch)
+upstream	https://github.com/gridlab-d/gridlab-d.git (push)

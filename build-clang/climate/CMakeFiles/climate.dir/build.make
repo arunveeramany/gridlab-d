@@ -76,85 +76,85 @@ climate/CMakeFiles/climate.dir/climate.cpp.o: climate/CMakeFiles/climate.dir/fla
 climate/CMakeFiles/climate.dir/climate.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/climate.cpp
 climate/CMakeFiles/climate.dir/climate.cpp.o: climate/CMakeFiles/climate.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object climate/CMakeFiles/climate.dir/climate.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT climate/CMakeFiles/climate.dir/climate.cpp.o -MF CMakeFiles/climate.dir/climate.cpp.o.d -o CMakeFiles/climate.dir/climate.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/climate.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT climate/CMakeFiles/climate.dir/climate.cpp.o -MF CMakeFiles/climate.dir/climate.cpp.o.d -o CMakeFiles/climate.dir/climate.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/climate.cpp
 
 climate/CMakeFiles/climate.dir/climate.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/climate.dir/climate.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/climate.cpp > CMakeFiles/climate.dir/climate.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/climate.cpp > CMakeFiles/climate.dir/climate.cpp.i
 
 climate/CMakeFiles/climate.dir/climate.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/climate.dir/climate.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/climate.cpp -o CMakeFiles/climate.dir/climate.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/climate.cpp -o CMakeFiles/climate.dir/climate.cpp.s
 
 climate/CMakeFiles/climate.dir/csv_reader.cpp.o: climate/CMakeFiles/climate.dir/flags.make
 climate/CMakeFiles/climate.dir/csv_reader.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/csv_reader.cpp
 climate/CMakeFiles/climate.dir/csv_reader.cpp.o: climate/CMakeFiles/climate.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object climate/CMakeFiles/climate.dir/csv_reader.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT climate/CMakeFiles/climate.dir/csv_reader.cpp.o -MF CMakeFiles/climate.dir/csv_reader.cpp.o.d -o CMakeFiles/climate.dir/csv_reader.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/csv_reader.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT climate/CMakeFiles/climate.dir/csv_reader.cpp.o -MF CMakeFiles/climate.dir/csv_reader.cpp.o.d -o CMakeFiles/climate.dir/csv_reader.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/csv_reader.cpp
 
 climate/CMakeFiles/climate.dir/csv_reader.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/climate.dir/csv_reader.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/csv_reader.cpp > CMakeFiles/climate.dir/csv_reader.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/csv_reader.cpp > CMakeFiles/climate.dir/csv_reader.cpp.i
 
 climate/CMakeFiles/climate.dir/csv_reader.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/climate.dir/csv_reader.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/csv_reader.cpp -o CMakeFiles/climate.dir/csv_reader.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/csv_reader.cpp -o CMakeFiles/climate.dir/csv_reader.cpp.s
 
 climate/CMakeFiles/climate.dir/solar_angles.cpp.o: climate/CMakeFiles/climate.dir/flags.make
 climate/CMakeFiles/climate.dir/solar_angles.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/solar_angles.cpp
 climate/CMakeFiles/climate.dir/solar_angles.cpp.o: climate/CMakeFiles/climate.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object climate/CMakeFiles/climate.dir/solar_angles.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT climate/CMakeFiles/climate.dir/solar_angles.cpp.o -MF CMakeFiles/climate.dir/solar_angles.cpp.o.d -o CMakeFiles/climate.dir/solar_angles.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/solar_angles.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT climate/CMakeFiles/climate.dir/solar_angles.cpp.o -MF CMakeFiles/climate.dir/solar_angles.cpp.o.d -o CMakeFiles/climate.dir/solar_angles.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/solar_angles.cpp
 
 climate/CMakeFiles/climate.dir/solar_angles.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/climate.dir/solar_angles.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/solar_angles.cpp > CMakeFiles/climate.dir/solar_angles.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/solar_angles.cpp > CMakeFiles/climate.dir/solar_angles.cpp.i
 
 climate/CMakeFiles/climate.dir/solar_angles.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/climate.dir/solar_angles.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/solar_angles.cpp -o CMakeFiles/climate.dir/solar_angles.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/solar_angles.cpp -o CMakeFiles/climate.dir/solar_angles.cpp.s
 
 climate/CMakeFiles/climate.dir/test.cpp.o: climate/CMakeFiles/climate.dir/flags.make
 climate/CMakeFiles/climate.dir/test.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/test.cpp
 climate/CMakeFiles/climate.dir/test.cpp.o: climate/CMakeFiles/climate.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object climate/CMakeFiles/climate.dir/test.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT climate/CMakeFiles/climate.dir/test.cpp.o -MF CMakeFiles/climate.dir/test.cpp.o.d -o CMakeFiles/climate.dir/test.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/test.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT climate/CMakeFiles/climate.dir/test.cpp.o -MF CMakeFiles/climate.dir/test.cpp.o.d -o CMakeFiles/climate.dir/test.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/test.cpp
 
 climate/CMakeFiles/climate.dir/test.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/climate.dir/test.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/test.cpp > CMakeFiles/climate.dir/test.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/test.cpp > CMakeFiles/climate.dir/test.cpp.i
 
 climate/CMakeFiles/climate.dir/test.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/climate.dir/test.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/test.cpp -o CMakeFiles/climate.dir/test.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/test.cpp -o CMakeFiles/climate.dir/test.cpp.s
 
 climate/CMakeFiles/climate.dir/weather.cpp.o: climate/CMakeFiles/climate.dir/flags.make
 climate/CMakeFiles/climate.dir/weather.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/weather.cpp
 climate/CMakeFiles/climate.dir/weather.cpp.o: climate/CMakeFiles/climate.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object climate/CMakeFiles/climate.dir/weather.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT climate/CMakeFiles/climate.dir/weather.cpp.o -MF CMakeFiles/climate.dir/weather.cpp.o.d -o CMakeFiles/climate.dir/weather.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/weather.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT climate/CMakeFiles/climate.dir/weather.cpp.o -MF CMakeFiles/climate.dir/weather.cpp.o.d -o CMakeFiles/climate.dir/weather.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/weather.cpp
 
 climate/CMakeFiles/climate.dir/weather.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/climate.dir/weather.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/weather.cpp > CMakeFiles/climate.dir/weather.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/weather.cpp > CMakeFiles/climate.dir/weather.cpp.i
 
 climate/CMakeFiles/climate.dir/weather.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/climate.dir/weather.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/weather.cpp -o CMakeFiles/climate.dir/weather.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/weather.cpp -o CMakeFiles/climate.dir/weather.cpp.s
 
 climate/CMakeFiles/climate.dir/weather_reader.cpp.o: climate/CMakeFiles/climate.dir/flags.make
 climate/CMakeFiles/climate.dir/weather_reader.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/weather_reader.cpp
 climate/CMakeFiles/climate.dir/weather_reader.cpp.o: climate/CMakeFiles/climate.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object climate/CMakeFiles/climate.dir/weather_reader.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT climate/CMakeFiles/climate.dir/weather_reader.cpp.o -MF CMakeFiles/climate.dir/weather_reader.cpp.o.d -o CMakeFiles/climate.dir/weather_reader.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/weather_reader.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT climate/CMakeFiles/climate.dir/weather_reader.cpp.o -MF CMakeFiles/climate.dir/weather_reader.cpp.o.d -o CMakeFiles/climate.dir/weather_reader.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/weather_reader.cpp
 
 climate/CMakeFiles/climate.dir/weather_reader.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/climate.dir/weather_reader.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/weather_reader.cpp > CMakeFiles/climate.dir/weather_reader.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/weather_reader.cpp > CMakeFiles/climate.dir/weather_reader.cpp.i
 
 climate/CMakeFiles/climate.dir/weather_reader.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/climate.dir/weather_reader.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/weather_reader.cpp -o CMakeFiles/climate.dir/weather_reader.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/climate/weather_reader.cpp -o CMakeFiles/climate.dir/weather_reader.cpp.s
 
 # Object files for target climate
 climate_OBJECTS = \

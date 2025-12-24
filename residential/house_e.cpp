@@ -945,7 +945,7 @@ int house_e::init_climate()
 			if((obj->flags & OF_INIT) != OF_INIT){
 				char objname[256];
 				gl_verbose("house::init(): deferring initialization on %s", gl_name(obj, objname, 255));
-				return 0; // defer
+				return 2; // defer
 			}
 		}
 	}

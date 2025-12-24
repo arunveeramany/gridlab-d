@@ -128,8 +128,8 @@ triplex_meter::triplex_meter(MODULE *mod) : triplex_node(mod)
 			// Set safe defaults instead of crashing
 		}
 
-		// oclass->init = (FUNCTIONADDR)init_triplex_meter_object;
-		// oclass->sync = (FUNCTIONADDR)sync_triplex_meter;
+		oclass->init = (FUNCTIONADDR)init_triplex_meter_object;
+		oclass->sync = (FUNCTIONADDR)sync_triplex_meter;
 
 		// publish the class properties
 		if (gl_publish_variable(oclass,
@@ -353,7 +353,22 @@ int triplex_meter::init(OBJECT *parent)
 		*/
 	}
 
-	return triplex_node::init(parent);
+	//return triplex_node::init(parent);
+
+	int rv = triplex_node::init(parent);
+
+
+	gl_debug("triplex_meter::init(%s): parent=%p", obj->name, parent);
+	gl_debug("triplex_meter::init: triplex_node::init returned %d", rv);
+
+
+	if (rv == 2 && parent == nullptr) {
+        // Top-level meter shouldn’t wait—let children proceed
+        return 1;
+    }
+
+    return rv;
+
 }
 
 

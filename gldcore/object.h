@@ -524,6 +524,11 @@ extern "C"
 
 	int object_loadmethod(OBJECT *obj, char *name, char *value);
 
+
+	// Resolve deferred parent links (declared in object.cpp)
+	void resolve_pending_parent_links();
+
+
 #ifdef __cplusplus
 }
 #endif

@@ -76,15 +76,15 @@ third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsolx.dir/zlinsolx.c.o: third_party/Su
 third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsolx.dir/zlinsolx.c.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/zlinsolx.c
 third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsolx.dir/zlinsolx.c.o: third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsolx.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsolx.dir/zlinsolx.c.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/clang $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsolx.dir/zlinsolx.c.o -MF CMakeFiles/zlinsolx.dir/zlinsolx.c.o.d -o CMakeFiles/zlinsolx.dir/zlinsolx.c.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/zlinsolx.c
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsolx.dir/zlinsolx.c.o -MF CMakeFiles/zlinsolx.dir/zlinsolx.c.o.d -o CMakeFiles/zlinsolx.dir/zlinsolx.c.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/zlinsolx.c
 
 third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsolx.dir/zlinsolx.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/zlinsolx.dir/zlinsolx.c.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/clang $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/zlinsolx.c > CMakeFiles/zlinsolx.dir/zlinsolx.c.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/zlinsolx.c > CMakeFiles/zlinsolx.dir/zlinsolx.c.i
 
 third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsolx.dir/zlinsolx.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/zlinsolx.dir/zlinsolx.c.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/clang $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/zlinsolx.c -o CMakeFiles/zlinsolx.dir/zlinsolx.c.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/zlinsolx.c -o CMakeFiles/zlinsolx.dir/zlinsolx.c.s
 
 # Object files for target zlinsolx
 zlinsolx_OBJECTS = \

@@ -76,15 +76,15 @@ third_party/SuperLU/EXAMPLE/CMakeFiles/superlu_example.dir/superlu.c.o: third_pa
 third_party/SuperLU/EXAMPLE/CMakeFiles/superlu_example.dir/superlu.c.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/superlu.c
 third_party/SuperLU/EXAMPLE/CMakeFiles/superlu_example.dir/superlu.c.o: third_party/SuperLU/EXAMPLE/CMakeFiles/superlu_example.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object third_party/SuperLU/EXAMPLE/CMakeFiles/superlu_example.dir/superlu.c.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/clang $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT third_party/SuperLU/EXAMPLE/CMakeFiles/superlu_example.dir/superlu.c.o -MF CMakeFiles/superlu_example.dir/superlu.c.o.d -o CMakeFiles/superlu_example.dir/superlu.c.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/superlu.c
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT third_party/SuperLU/EXAMPLE/CMakeFiles/superlu_example.dir/superlu.c.o -MF CMakeFiles/superlu_example.dir/superlu.c.o.d -o CMakeFiles/superlu_example.dir/superlu.c.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/superlu.c
 
 third_party/SuperLU/EXAMPLE/CMakeFiles/superlu_example.dir/superlu.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/superlu_example.dir/superlu.c.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/clang $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/superlu.c > CMakeFiles/superlu_example.dir/superlu.c.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/superlu.c > CMakeFiles/superlu_example.dir/superlu.c.i
 
 third_party/SuperLU/EXAMPLE/CMakeFiles/superlu_example.dir/superlu.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/superlu_example.dir/superlu.c.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/clang $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/superlu.c -o CMakeFiles/superlu_example.dir/superlu.c.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/superlu.c -o CMakeFiles/superlu_example.dir/superlu.c.s
 
 # Object files for target superlu_example
 superlu_example_OBJECTS = \

@@ -1373,6 +1373,9 @@ static STATUS init_all()
 	if (loadshape_initall() == FAILED || enduse_initall() == FAILED)
 		return FAILED;
 
+	//ensure parent pointers are linked for reverse-order GLMs
+    resolve_pending_parent_links();
+
 	switch (global_init_sequence)
 	{
 	case IS_CREATION:

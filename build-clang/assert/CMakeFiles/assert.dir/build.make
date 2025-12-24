@@ -76,85 +76,85 @@ assert/CMakeFiles/assert.dir/gld_assert.cpp.o: assert/CMakeFiles/assert.dir/flag
 assert/CMakeFiles/assert.dir/gld_assert.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/gld_assert.cpp
 assert/CMakeFiles/assert.dir/gld_assert.cpp.o: assert/CMakeFiles/assert.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object assert/CMakeFiles/assert.dir/gld_assert.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT assert/CMakeFiles/assert.dir/gld_assert.cpp.o -MF CMakeFiles/assert.dir/gld_assert.cpp.o.d -o CMakeFiles/assert.dir/gld_assert.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/gld_assert.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT assert/CMakeFiles/assert.dir/gld_assert.cpp.o -MF CMakeFiles/assert.dir/gld_assert.cpp.o.d -o CMakeFiles/assert.dir/gld_assert.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/gld_assert.cpp
 
 assert/CMakeFiles/assert.dir/gld_assert.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/assert.dir/gld_assert.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/gld_assert.cpp > CMakeFiles/assert.dir/gld_assert.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/gld_assert.cpp > CMakeFiles/assert.dir/gld_assert.cpp.i
 
 assert/CMakeFiles/assert.dir/gld_assert.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/assert.dir/gld_assert.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/gld_assert.cpp -o CMakeFiles/assert.dir/gld_assert.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/gld_assert.cpp -o CMakeFiles/assert.dir/gld_assert.cpp.s
 
 assert/CMakeFiles/assert.dir/complex_assert.cpp.o: assert/CMakeFiles/assert.dir/flags.make
 assert/CMakeFiles/assert.dir/complex_assert.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/complex_assert.cpp
 assert/CMakeFiles/assert.dir/complex_assert.cpp.o: assert/CMakeFiles/assert.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object assert/CMakeFiles/assert.dir/complex_assert.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT assert/CMakeFiles/assert.dir/complex_assert.cpp.o -MF CMakeFiles/assert.dir/complex_assert.cpp.o.d -o CMakeFiles/assert.dir/complex_assert.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/complex_assert.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT assert/CMakeFiles/assert.dir/complex_assert.cpp.o -MF CMakeFiles/assert.dir/complex_assert.cpp.o.d -o CMakeFiles/assert.dir/complex_assert.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/complex_assert.cpp
 
 assert/CMakeFiles/assert.dir/complex_assert.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/assert.dir/complex_assert.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/complex_assert.cpp > CMakeFiles/assert.dir/complex_assert.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/complex_assert.cpp > CMakeFiles/assert.dir/complex_assert.cpp.i
 
 assert/CMakeFiles/assert.dir/complex_assert.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/assert.dir/complex_assert.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/complex_assert.cpp -o CMakeFiles/assert.dir/complex_assert.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/complex_assert.cpp -o CMakeFiles/assert.dir/complex_assert.cpp.s
 
 assert/CMakeFiles/assert.dir/double_assert.cpp.o: assert/CMakeFiles/assert.dir/flags.make
 assert/CMakeFiles/assert.dir/double_assert.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/double_assert.cpp
 assert/CMakeFiles/assert.dir/double_assert.cpp.o: assert/CMakeFiles/assert.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object assert/CMakeFiles/assert.dir/double_assert.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT assert/CMakeFiles/assert.dir/double_assert.cpp.o -MF CMakeFiles/assert.dir/double_assert.cpp.o.d -o CMakeFiles/assert.dir/double_assert.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/double_assert.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT assert/CMakeFiles/assert.dir/double_assert.cpp.o -MF CMakeFiles/assert.dir/double_assert.cpp.o.d -o CMakeFiles/assert.dir/double_assert.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/double_assert.cpp
 
 assert/CMakeFiles/assert.dir/double_assert.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/assert.dir/double_assert.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/double_assert.cpp > CMakeFiles/assert.dir/double_assert.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/double_assert.cpp > CMakeFiles/assert.dir/double_assert.cpp.i
 
 assert/CMakeFiles/assert.dir/double_assert.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/assert.dir/double_assert.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/double_assert.cpp -o CMakeFiles/assert.dir/double_assert.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/double_assert.cpp -o CMakeFiles/assert.dir/double_assert.cpp.s
 
 assert/CMakeFiles/assert.dir/enum_assert.cpp.o: assert/CMakeFiles/assert.dir/flags.make
 assert/CMakeFiles/assert.dir/enum_assert.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/enum_assert.cpp
 assert/CMakeFiles/assert.dir/enum_assert.cpp.o: assert/CMakeFiles/assert.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object assert/CMakeFiles/assert.dir/enum_assert.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT assert/CMakeFiles/assert.dir/enum_assert.cpp.o -MF CMakeFiles/assert.dir/enum_assert.cpp.o.d -o CMakeFiles/assert.dir/enum_assert.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/enum_assert.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT assert/CMakeFiles/assert.dir/enum_assert.cpp.o -MF CMakeFiles/assert.dir/enum_assert.cpp.o.d -o CMakeFiles/assert.dir/enum_assert.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/enum_assert.cpp
 
 assert/CMakeFiles/assert.dir/enum_assert.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/assert.dir/enum_assert.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/enum_assert.cpp > CMakeFiles/assert.dir/enum_assert.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/enum_assert.cpp > CMakeFiles/assert.dir/enum_assert.cpp.i
 
 assert/CMakeFiles/assert.dir/enum_assert.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/assert.dir/enum_assert.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/enum_assert.cpp -o CMakeFiles/assert.dir/enum_assert.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/enum_assert.cpp -o CMakeFiles/assert.dir/enum_assert.cpp.s
 
 assert/CMakeFiles/assert.dir/int_assert.cpp.o: assert/CMakeFiles/assert.dir/flags.make
 assert/CMakeFiles/assert.dir/int_assert.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/int_assert.cpp
 assert/CMakeFiles/assert.dir/int_assert.cpp.o: assert/CMakeFiles/assert.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object assert/CMakeFiles/assert.dir/int_assert.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT assert/CMakeFiles/assert.dir/int_assert.cpp.o -MF CMakeFiles/assert.dir/int_assert.cpp.o.d -o CMakeFiles/assert.dir/int_assert.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/int_assert.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT assert/CMakeFiles/assert.dir/int_assert.cpp.o -MF CMakeFiles/assert.dir/int_assert.cpp.o.d -o CMakeFiles/assert.dir/int_assert.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/int_assert.cpp
 
 assert/CMakeFiles/assert.dir/int_assert.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/assert.dir/int_assert.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/int_assert.cpp > CMakeFiles/assert.dir/int_assert.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/int_assert.cpp > CMakeFiles/assert.dir/int_assert.cpp.i
 
 assert/CMakeFiles/assert.dir/int_assert.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/assert.dir/int_assert.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/int_assert.cpp -o CMakeFiles/assert.dir/int_assert.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/int_assert.cpp -o CMakeFiles/assert.dir/int_assert.cpp.s
 
 assert/CMakeFiles/assert.dir/init.cpp.o: assert/CMakeFiles/assert.dir/flags.make
 assert/CMakeFiles/assert.dir/init.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/init.cpp
 assert/CMakeFiles/assert.dir/init.cpp.o: assert/CMakeFiles/assert.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object assert/CMakeFiles/assert.dir/init.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT assert/CMakeFiles/assert.dir/init.cpp.o -MF CMakeFiles/assert.dir/init.cpp.o.d -o CMakeFiles/assert.dir/init.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/init.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT assert/CMakeFiles/assert.dir/init.cpp.o -MF CMakeFiles/assert.dir/init.cpp.o.d -o CMakeFiles/assert.dir/init.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/init.cpp
 
 assert/CMakeFiles/assert.dir/init.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/assert.dir/init.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/init.cpp > CMakeFiles/assert.dir/init.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/init.cpp > CMakeFiles/assert.dir/init.cpp.i
 
 assert/CMakeFiles/assert.dir/init.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/assert.dir/init.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/init.cpp -o CMakeFiles/assert.dir/init.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/init.cpp -o CMakeFiles/assert.dir/init.cpp.s
 
 # Object files for target assert
 assert_OBJECTS = \

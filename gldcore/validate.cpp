@@ -735,7 +735,7 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 #else
     // macOS/Linux use the new robust implementation
     // code = vsystem_posix(command_line.c_str());
-	std::vector<std::string> argv({executable_to_run_path.string(), "-W",dir, "--debug", command_line}) ;
+	std::vector<std::string> argv({executable_to_run_path.string(), "-W",dir, command_line}) ;
 	code = vsystem_posix_exec_argv(argv);
 #endif
 	}

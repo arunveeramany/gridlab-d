@@ -2304,6 +2304,7 @@ MYPROCINFO *sched_allocate_procs(unsigned int n_threads, pid_t pid)
 		if (thread_policy_set(mach_thread_self(), THREAD_AFFINITY_POLICY, reinterpret_cast<thread_policy_t>(&policy), THREAD_AFFINITY_POLICY_COUNT) != KERN_SUCCESS)
 			output_warning("unable to set thread policy: %s", strerror(errno));
 	}
+	
 #elif defined DYN_PROC_AFFINITY
 	if (sched_setaffinity(pid, CPU_ALLOC_SIZE(n_procs), cpuset))
 		output_warning("unable to set current process affinity mask: %s", strerror(errno));

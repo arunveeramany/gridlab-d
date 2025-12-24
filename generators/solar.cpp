@@ -18,6 +18,7 @@
 #include <cmath>
 #include <climits>
 #include <iostream>
+#include <cctype>
 
 using namespace std;
 
@@ -517,10 +518,63 @@ int solar::init_climate()
 	return 1;
 }
 
+
+
+
+static inline bool ieq(const char* a, const char* b) {
+    if (!a || !b) return false;
+    while (*a && *b) {
+        if (std::tolower(static_cast<unsigned char>(*a)) !=
+            std::tolower(static_cast<unsigned char>(*b))) return false;
+        ++a; ++b;
+    }
+    return *a == *b;
+}
+
+static inline bool parent_is_inverter_basic(OBJECT* p) {
+    return p && p->oclass && p->oclass->name && ieq(p->oclass->name, "inverter");
+}
+
+static inline bool parent_is_inverter_dyn(OBJECT* p) {
+    return p && p->oclass && p->oclass->name && ieq(p->oclass->name, "inverter_dyn");
+}
+
+static inline bool parent_is_inverter(OBJECT* p) {
+    return parent_is_inverter_basic(p) || parent_is_inverter_dyn(p);
+}
+
+
+
+// Return true if parent looks like a basic inverter (has V_In, I_In, P_In)
+static bool looks_like_basic_inverter(OBJECT* parent) {
+    if (!parent) return false;
+    gld_property v(parent, "V_In");
+    gld_property i(parent, "I_In");
+    gld_property p(parent, "P_In");
+    return v.is_valid() && v.is_double()
+        && i.is_valid() && i.is_double()
+        && p.is_valid() && p.is_double();
+}
+
+// Return true if parent looks like an inverter_dyn (has V_In + pvc_Pmax + DC registration function)
+static bool looks_like_dyn_inverter(OBJECT* parent) {
+    if (!parent) return false;
+    gld_property v(parent, "V_In");
+    gld_property pvc(parent, "pvc_Pmax");
+    FUNCTIONADDR reg = (FUNCTIONADDR)(gl_get_function(parent, "register_gen_DC_object"));
+    return v.is_valid() && v.is_double()
+        && pvc.is_valid() && pvc.is_double()
+        && reg != nullptr;
+}
+
+
+
+
 /* Object initialization is called once after all object have been created */
 int solar::init(OBJECT *parent)
 {
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
 	int climate_result;
 	gld_property *temp_property_pointer = nullptr;
 	unsigned test_rlock = 0;
@@ -532,14 +586,46 @@ int solar::init(OBJECT *parent)
 	FUNCTIONADDR temp_fxn = nullptr;
 	STATUS fxn_return_status;
 
-	if (parent != nullptr)
+
+	// --- Compute parent existence/readiness once ---
+    const bool parent_exists = (parent != nullptr);
+    const bool parent_ready  = parent_exists && ((parent->flags & OF_INIT) == OF_INIT);
+
+
+	if (parent_exists)
 	{
-		if ((parent->flags & OF_INIT) != OF_INIT)
+		if (!parent_ready)
 		{
-			char objname[256];
+			char objname[256] = {0};
+			gl_name(parent, objname, 255);
 			gl_verbose("solar::init(): deferring initialization on %s", gl_name(parent, objname, 255));
 			return 2; // defer
 		}
+
+		// --- Instrument parent pointer and identity ---
+		gl_debug("solar::init(): parent READY (flags=0x%X, id=%d)", parent->flags, parent->id);
+		// gl_debug("solar::init(): parent ptr=%p, obj->parent ptr=%p, equal=%s",
+				// (void*)parent, (void*)obj->parent, (parent == obj->parent ? "yes":"no"));
+
+	
+		// gl_debug("solar::init(): parent id=%d, child id=%d",
+		// 		parent->id, obj->id);
+
+		// const char* cname = (parent->oclass && parent->oclass->name) ? parent->oclass->name : "(null class)";
+		// const char* mname = (parent->oclass && parent->oclass->module && parent->oclass->module->name)
+		// 					? parent->oclass->module->name : "(null module)";
+		// gl_debug("solar::init(): parent class=%s module=%s", cname, mname);
+
+		// // Probe whether inverter interface is actually present
+		// gld_property v(parent, "V_In"), i(parent, "I_In"), p(parent, "P_In");
+		// gl_debug("solar::init(): probes V_In valid=%d typeDouble=%d, I_In valid=%d typeDouble=%d, P_In valid=%d typeDouble=%d",
+		// 		v.is_valid(), v.is_double(), i.is_valid(), i.is_double(), p.is_valid(), p.is_double());
+
+		// FUNCTIONADDR reg_dc = (FUNCTIONADDR)(gl_get_function(parent, "register_gen_DC_object"));
+		// gld_property pvc(parent, "pvc_Pmax");
+		// gl_debug("solar::init(): dyn probes pvc_Pmax valid=%d typeDouble=%d, register_gen_DC_object=%p",
+		// 		pvc.is_valid(), pvc.is_double(), (void*)reg_dc);
+
 	}
 
 	if (panel_type_v == UNKNOWN)
@@ -645,10 +731,125 @@ int solar::init(OBJECT *parent)
 	}
 
 	// find parent inverter, if not defined, use a default voltage
-	if (parent != nullptr)
+	if (parent_ready)
 	{
-		if (gl_object_isa(parent, "inverter", "generators")) // SOLAR has a PARENT and PARENT is an INVERTER - old-school inverter
+
+		bool mapped = false;
+
+		// Attempt inverter_dyn mapping first if its hallmark is visible
+		FUNCTIONADDR reg_dc = (FUNCTIONADDR)(gl_get_function(parent, "register_gen_DC_object"));
+		gld_property pvc(parent, "pvc_Pmax");
+
+
+		//if (looks_like_dyn_inverter(parent))
+		if (reg_dc != nullptr && pvc.is_valid() && pvc.is_double())
 		{
+			// Map the inverter voltage
+			inverter_voltage_property = new gld_property(parent, "V_In");
+
+			// Check it
+			if (!inverter_voltage_property->is_valid() || !inverter_voltage_property->is_double())
+			{
+				GL_THROW("solar:%d - %s - Unable to map inverter power interface field", obj->id, (obj->name ? obj->name : "Unnamed"));
+				// Defined above
+			}
+
+			// Map the inverter property pvc_pmax, which indicates the maximum power avaialbe from the PV now
+			const char *cur_prop_name = "pvc_Pmax";
+			inverter_pvc_Pmax_property = new gld_property(parent, cur_prop_name);
+
+			// Check it
+			if (!inverter_pvc_Pmax_property->is_valid() || !inverter_pvc_Pmax_property->is_double())
+			{
+				GL_THROW("solar:%d - %s - Unable to map a default power interface field '%s'", obj->id, (obj->name ? obj->name : "Unnamed"), cur_prop_name);
+				/*  TROUBLESHOOT
+			While attempting to map to one of the default power interface variables, an error occurred.  Please try again.
+			If the error persists, please submit a bug report and your model file via the issue tracking system.
+			*/
+			}
+
+			// Map the inverter current
+			inverter_current_property = new gld_property(parent, "I_In");
+
+			// Check it
+			if (!inverter_current_property->is_valid() || !inverter_current_property->is_double())
+			{
+				GL_THROW("solar:%d - %s - Unable to map inverter power interface field", obj->id, (obj->name ? obj->name : "Unnamed"));
+				// Defined above
+			}
+
+			// Map the inverter power value
+			inverter_power_property = new gld_property(parent, "P_In");
+
+			// Check it
+			if (!inverter_power_property->is_valid() || !inverter_power_property->is_double())
+			{
+				GL_THROW("solar:%d - %s - Unable to map inverter power interface field", obj->id, (obj->name ? obj->name : "Unnamed"));
+				// Defined above
+			}
+
+			// Map the inverter rated power value
+			inverter_rated_power_va_property = new gld_property(parent, "rated_power");
+
+			// Check it
+			if (!inverter_rated_power_va_property->is_valid() || !inverter_rated_power_va_property->is_double())
+			{
+				GL_THROW("solar:%d - %s - Unable to map inverter rated power interface field", obj->id, (obj->name ? obj->name : "Unnamed"));
+				// Defined above
+			}
+
+			// Map the inverter dc voltage
+			inverter_rated_dc_voltage = new gld_property(parent, "rated_DC_Voltage");
+
+			// Check it
+			if (!inverter_rated_dc_voltage->is_valid() || !inverter_rated_dc_voltage->is_double())
+			{
+				GL_THROW("solar:%d - %s - Unable to map inverter rated DC voltage interface field", obj->id, (obj->name ? obj->name : "Unnamed"));
+				// Defined above
+			}
+
+			// Other variables mapped to normal inverter above -- if these end up being needed for inverter_dyn implementations, map them here
+			// See if we're the PV-DC model - if so, register us with the inverter
+			if (solar_power_model != PV_CURVE)
+			{
+				gl_warning("solar:%d - %s - inverter_dyn object only supports PV_CURVE model - forcing that", obj->id, (obj->name ? obj->name : "Unnamed"));
+				/*  TROUBLESHOOT
+				At this time, the inverter_dyn and solar interactions only support the PV_CURVE model.  This may change in the future.
+				*/
+
+				// Force it
+				solar_power_model = PV_CURVE;
+			}
+
+			//"Register" us with the inverter
+
+			// Map the function
+			temp_fxn = (FUNCTIONADDR)(gl_get_function(parent, "register_gen_DC_object"));
+
+			// See if it was located
+			if (temp_fxn == nullptr)
+			{
+				GL_THROW("solar:%d - %s - failed to map additional current injection mapping for inverter_dyn:%d - %s", obj->id, (obj->name ? obj->name : "unnamed"), parent->id, (parent->name ? parent->name : "unnamed"));
+				/*  TROUBLESHOOT
+				While attempting to map the DC interfacing function for the solar object, an error was encountered.
+				Please try again.  If the error persists, please submit your code and a bug report via the issues tracker.
+				*/
+			}
+
+			// Call the mapping function
+			fxn_return_status = ((STATUS (*)(OBJECT *, OBJECT *))(*temp_fxn))(obj->parent, obj);
+
+			// Make sure it worked
+			if (fxn_return_status != SUCCESS)
+			{
+				GL_THROW("solar:%d - %s - failed to map additional current injection mapping for inverter_dyn:%d - %s", obj->id, (obj->name ? obj->name : "unnamed"), parent->id, (parent->name ? parent->name : "unnamed"));
+				// Defined above
+			}
+			mapped = true;
+		} // End inverter_dyn
+		else //if(looks_like_basic_inverter(parent))
+		{
+
 			// Map the inverter voltage
 			inverter_voltage_property = new gld_property(parent, "V_In");
 
@@ -851,118 +1052,20 @@ int solar::init(OBJECT *parent)
 				}
 			}
 			// gl_verbose("Max_P is : %f", Max_P);
+			mapped = true;
 		}
-		else if (gl_object_isa(parent, "inverter_dyn", "generators")) // SOLAR has a PARENT and PARENT is an inverter_dyn object
-		{
-			// Map the inverter voltage
-			inverter_voltage_property = new gld_property(parent, "V_In");
+		
 
-			// Check it
-			if (!inverter_voltage_property->is_valid() || !inverter_voltage_property->is_double())
-			{
-				GL_THROW("solar:%d - %s - Unable to map inverter power interface field", obj->id, (obj->name ? obj->name : "Unnamed"));
-				// Defined above
-			}
-
-			// Map the inverter property pvc_pmax, which indicates the maximum power avaialbe from the PV now
-			const char *cur_prop_name = "pvc_Pmax";
-			inverter_pvc_Pmax_property = new gld_property(parent, cur_prop_name);
-
-			// Check it
-			if (!inverter_pvc_Pmax_property->is_valid() || !inverter_pvc_Pmax_property->is_double())
-			{
-				GL_THROW("solar:%d - %s - Unable to map a default power interface field '%s'", obj->id, (obj->name ? obj->name : "Unnamed"), cur_prop_name);
-				/*  TROUBLESHOOT
-			While attempting to map to one of the default power interface variables, an error occurred.  Please try again.
-			If the error persists, please submit a bug report and your model file via the issue tracking system.
-			*/
-			}
-
-			// Map the inverter current
-			inverter_current_property = new gld_property(parent, "I_In");
-
-			// Check it
-			if (!inverter_current_property->is_valid() || !inverter_current_property->is_double())
-			{
-				GL_THROW("solar:%d - %s - Unable to map inverter power interface field", obj->id, (obj->name ? obj->name : "Unnamed"));
-				// Defined above
-			}
-
-			// Map the inverter power value
-			inverter_power_property = new gld_property(parent, "P_In");
-
-			// Check it
-			if (!inverter_power_property->is_valid() || !inverter_power_property->is_double())
-			{
-				GL_THROW("solar:%d - %s - Unable to map inverter power interface field", obj->id, (obj->name ? obj->name : "Unnamed"));
-				// Defined above
-			}
-
-			// Map the inverter rated power value
-			inverter_rated_power_va_property = new gld_property(parent, "rated_power");
-
-			// Check it
-			if (!inverter_rated_power_va_property->is_valid() || !inverter_rated_power_va_property->is_double())
-			{
-				GL_THROW("solar:%d - %s - Unable to map inverter rated power interface field", obj->id, (obj->name ? obj->name : "Unnamed"));
-				// Defined above
-			}
-
-			// Map the inverter dc voltage
-			inverter_rated_dc_voltage = new gld_property(parent, "rated_DC_Voltage");
-
-			// Check it
-			if (!inverter_rated_dc_voltage->is_valid() || !inverter_rated_dc_voltage->is_double())
-			{
-				GL_THROW("solar:%d - %s - Unable to map inverter rated DC voltage interface field", obj->id, (obj->name ? obj->name : "Unnamed"));
-				// Defined above
-			}
-
-			// Other variables mapped to normal inverter above -- if these end up being needed for inverter_dyn implementations, map them here
-			// See if we're the PV-DC model - if so, register us with the inverter
-			if (solar_power_model != PV_CURVE)
-			{
-				gl_warning("solar:%d - %s - inverter_dyn object only supports PV_CURVE model - forcing that", obj->id, (obj->name ? obj->name : "Unnamed"));
-				/*  TROUBLESHOOT
-				At this time, the inverter_dyn and solar interactions only support the PV_CURVE model.  This may change in the future.
-				*/
-
-				// Force it
-				solar_power_model = PV_CURVE;
-			}
-
-			//"Register" us with the inverter
-
-			// Map the function
-			temp_fxn = (FUNCTIONADDR)(gl_get_function(parent, "register_gen_DC_object"));
-
-			// See if it was located
-			if (temp_fxn == nullptr)
-			{
-				GL_THROW("solar:%d - %s - failed to map additional current injection mapping for inverter_dyn:%d - %s", obj->id, (obj->name ? obj->name : "unnamed"), parent->id, (parent->name ? parent->name : "unnamed"));
-				/*  TROUBLESHOOT
-				While attempting to map the DC interfacing function for the solar object, an error was encountered.
-				Please try again.  If the error persists, please submit your code and a bug report via the issues tracker.
-				*/
-			}
-
-			// Call the mapping function
-			fxn_return_status = ((STATUS (*)(OBJECT *, OBJECT *))(*temp_fxn))(obj->parent, obj);
-
-			// Make sure it worked
-			if (fxn_return_status != SUCCESS)
-			{
-				GL_THROW("solar:%d - %s - failed to map additional current injection mapping for inverter_dyn:%d - %s", obj->id, (obj->name ? obj->name : "unnamed"), parent->id, (parent->name ? parent->name : "unnamed"));
-				// Defined above
-			}
-		} // End inverter_dyn
-		else // It's not an inverter - fail it.
-		{
+		// If neither mapping succeeded, then enforce the rule
+		if (!mapped) {
+			gl_error("solar::init(): parent id=%d exposes no inverter interface; class='%s' module='%s'",
+					parent->id,
+					(parent->oclass && parent->oclass->name) ? parent->oclass->name : "(null)",
+					(parent->oclass && parent->oclass->module && parent->oclass->module->name) ? parent->oclass->module->name : "(null)");
 			GL_THROW("Solar panel can only have an inverter as its parent.");
-			/* TROUBLESHOOT
-			The solar panel can only have an INVERTER as parent, and no other object. Or it can be all by itself, without a parent.
-			*/
 		}
+
+		
 	}
 	else // No parent
 	{	 // default values of voltage
@@ -1070,7 +1173,8 @@ int solar::init(OBJECT *parent)
 		}
 
 		// Make sure our parent is an inverter and deltamode enabled (otherwise this is dumb)
-		if (gl_object_isa(parent, "inverter", "generators") || gl_object_isa(parent, "inverter_dyn", "generators"))
+		//if (gl_object_isa(parent, "inverter", "generators") || gl_object_isa(parent, "inverter_dyn", "generators"))
+		if (parent_is_inverter(parent) || looks_like_basic_inverter(parent) || looks_like_dyn_inverter(parent)) 
 		{
 			// Make sure our parent has the flag set
 			if ((parent->flags & OF_DELTAMODE) != OF_DELTAMODE)
