@@ -4,7 +4,7 @@
 # Step 0: Determine which E line to use
 N=${1:-1}  # Default to 1st E line if no argument is provided
 
-suite="residential"
+suite="climate"
 err_type="E"   #manually change ^X
 
 # Loop through N = 1 to 10
