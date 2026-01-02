@@ -21,7 +21,8 @@
 //extern enum class RANDOMTYPE;
 
 
-CLASS *csv_reader::oclass = 0;
+
+CLASS *csv_reader::oclass = nullptr;
 
 EXPORT int create_csv_reader(OBJECT **obj, OBJECT *parent){
 	csv_reader *my = 0;

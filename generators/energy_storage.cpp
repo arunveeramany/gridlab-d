@@ -98,6 +98,8 @@ int energy_storage::create(void)
 int energy_storage::init(OBJECT *parent)
 {
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
+
 	FUNCTIONADDR temp_fxn;
 	STATUS fxn_return_status;
 

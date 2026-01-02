@@ -191,6 +191,8 @@ int pqload::init(OBJECT *parent)
 	// init_weather from house_e.cpp:init_weather
 	static FINDLIST *climates = nullptr;
 	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+
 	int not_found = 0;
 	if (climates == nullptr && not_found == 0)
 	{

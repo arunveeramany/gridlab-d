@@ -110,6 +110,9 @@ unsigned int ss_model::scan_references(char *input, gld_property *target[], unsi
 
 int ss_model::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	double val[256];
 	unsigned int n,m;
 

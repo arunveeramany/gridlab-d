@@ -108,6 +108,9 @@ int lights::create(void)
 
 int lights::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+
 	if(parent != nullptr){
 		if((parent->flags & OF_INIT) != OF_INIT){
 			char objname[256];
@@ -115,7 +118,7 @@ int lights::init(OBJECT *parent)
 			return 2; // defer
 		}
 	}
-	OBJECT *hdr = object_header(this);
+	// OBJECT *hdr = object_header(this);
 	hdr->flags |= OF_SKIPSAFE;
 
 	// check the load configuration before initializing the parent class

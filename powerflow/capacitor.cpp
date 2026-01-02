@@ -186,6 +186,7 @@ int capacitor::init(OBJECT *parent)
 	int result = node::init();
 
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
 
 	if ((control == VARVOLT) && (SecondaryRemote!=nullptr))	//Something set in the secondary sensor location & VARVOLT scheme
 	{

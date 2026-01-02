@@ -728,6 +728,10 @@ EXPORT CLASS* init(CALLBACKS *fntable, MODULE *mod, int argc, char *argv[])
 
     // instantiate the climate class to trigger registration
     new climate(mod);
+
+	// Ensure the csv_reader class is registered in this module on load
+    new csv_reader(mod);
+
 	// std::cerr << "Climate class oclass after registration: " << (void*)climate::oclass << std::endl;
 
     // return 1 on success, 0 on failure
@@ -918,6 +922,7 @@ int climate::init(OBJECT *parent)
 {
 	char *dot = 0;
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
 	TIMESTAMP t0 = obj->clock;
 	double meter_to_feet = 1.0;
 	double tz_num_offset;

@@ -54,6 +54,10 @@ int pw_recorder::create(){
 }
 
 int pw_recorder::init(OBJECT *parent){
+
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	char objname[64];
 	// check nonzero model
 	//  * if null, check for parent, fill model from that

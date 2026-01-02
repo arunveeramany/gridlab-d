@@ -56,6 +56,7 @@ int metrics_collector_writer::create()
 int metrics_collector_writer::init(OBJECT *parent)
 {
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
 	FILE *fn = nullptr;
 	int index = 0;
 	char time_str[64];

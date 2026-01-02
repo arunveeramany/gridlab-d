@@ -100,6 +100,9 @@ int regulator::create()
 
 int regulator::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	bool TapInitialValue[3];
 	char jindex;
 	int result = link_object::init(parent);

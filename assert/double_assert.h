@@ -78,6 +78,28 @@ protected:
     enumeration within_mode; // Member variable of type `enumeration`.
     double within;           // Member variable of type `double`.
 
+private:
+    TIMESTAMP ts_in = 0;
+    TIMESTAMP ts_out = 0;
+
+
+public:
+    // Static inline method to get the byte offset of the member `status`.
+    static inline size_t get_ts_in_offset(void)
+    {
+        return offsetof(double_assert, ts_in);
+        // double_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->status)) - reinterpret_cast<const char *>(current_defaults);
+    }
+
+    // Static inline method to get the byte offset of the member `status`.
+    static inline size_t get_ts_out_offset(void)
+    {
+        return offsetof(double_assert, ts_out);
+        // double_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->status)) - reinterpret_cast<const char *>(current_defaults);
+    }
+
 public:
     // Static inline method to get the byte offset of the member `status`.
     static inline size_t get_status_offset(void)

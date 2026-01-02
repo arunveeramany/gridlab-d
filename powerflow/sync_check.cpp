@@ -96,6 +96,8 @@ int sync_check::create(void)
 int sync_check::init(OBJECT *parent)
 {
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
+
 	int retval = powerflow_object::init(parent);
 
 	// Check if the parent is a switch_object object

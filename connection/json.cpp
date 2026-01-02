@@ -224,6 +224,9 @@ int json::create(void)
 
 int json::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	native::init(parent,&json_translate);
 
 	if ( get_connection()==nullptr )

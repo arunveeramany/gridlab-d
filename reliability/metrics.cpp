@@ -91,6 +91,8 @@ int metrics::create(void)
 int metrics::init(OBJECT *parent)
 {
 	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+
 	int index, indexa, indexb, returnval;
 	char work_metrics[1025];
 	char *startVal, *endVal, *workVal;

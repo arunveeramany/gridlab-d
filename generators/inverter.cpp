@@ -630,6 +630,8 @@ int inverter::create(void)
 int inverter::init(OBJECT *parent_arg)
 {
 	OBJECT *obj = object_header(this);
+	parent_arg = obj->parent;
+
 	PROPERTY *pval = nullptr;
 	bool *dyn_gen_posting;
 	unsigned iindex, jindex;

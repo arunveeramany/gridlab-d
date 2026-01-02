@@ -170,6 +170,9 @@ int triplex_node::create(void)
 
 int triplex_node::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	if ( !(has_phase(PHASE_S)) )
 	{
 		OBJECT *obj = object_header(this);

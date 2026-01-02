@@ -216,6 +216,7 @@ int histogram::init(OBJECT *parent)
 {
 	PROPERTY *prop = nullptr;
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
 	char tprop[64], tpart[8];
 	int e = 0;
 	TAPEFUNCS *tf = 0;

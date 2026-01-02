@@ -79,6 +79,8 @@ int supervisory_control::create(void) {
 /* Object initialization is called once after all object have been created */
 int supervisory_control::init(OBJECT *parent) {
 	OBJECT *obj=object_header(this);
+	parent = obj->parent;
+
 	market_id = 0;
 	n_bids_on = 0;
 	n_bids_off = 0;

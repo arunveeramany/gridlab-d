@@ -2072,12 +2072,12 @@ TIMESTAMP object_commit(OBJECT *obj, TIMESTAMP t1, TIMESTAMP t2)
 		rv = TS_NEVER;
 	}
 	object_profile(obj, OPI_COMMIT, t);
-	if (global_debug_output > 0)
-	{
-		char dt[64] = "(invalid)";
-		convert_from_timestamp(absolute_timestamp(rv), dt, sizeof(dt));
-		output_debug("object %s:%d commit -> %s %s", obj->oclass->name, obj->id, is_soft_timestamp(rv) ? "SOFT" : "HARD", dt);
-	}
+	// if (global_debug_output > 0)
+	// {
+	// 	char dt[64] = "(invalid)";
+	// 	convert_from_timestamp(absolute_timestamp(rv), dt, sizeof(dt));
+	// 	output_debug("object %s:%d commit -> %s %s", obj->oclass->name, obj->id, is_soft_timestamp(rv) ? "SOFT" : "HARD", dt);
+	// }
 	return rv;
 }
 

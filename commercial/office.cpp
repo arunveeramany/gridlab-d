@@ -376,6 +376,7 @@ int office::init(OBJECT *parent)
 		zone.hvac.heating.cop = 1.25;
 
 	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
 
 	// link to climate data
 	static FINDLIST *climates = gl_find_objects(FL_NEW, FT_CLASS, SAME, "climate", FT_END);

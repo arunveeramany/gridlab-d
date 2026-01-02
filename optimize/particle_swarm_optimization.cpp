@@ -96,6 +96,8 @@ int particle_swarm_optimization::init(OBJECT *parent)
 {
 	//int rval;
 	OBJECT *obj = object_header(this);
+	parent = hdr->parent;
+
 	char buffer[1024];
 
 	if (cycle_interval == 0.0)

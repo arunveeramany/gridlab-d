@@ -70,6 +70,7 @@ int triplex_line::init(OBJECT *parent)
 	char index;
 	OBJECT *temp_obj;
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
 	triplex_line_configuration *temp_config = nullptr;
 	
 	int result = line::init(parent);

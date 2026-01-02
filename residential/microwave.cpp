@@ -105,6 +105,9 @@ void microwave::init_noshape(){
 
 int microwave::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+
 	if(parent != nullptr){
 		if((parent->flags & OF_INIT) != OF_INIT){
 			char objname[256];
@@ -112,7 +115,7 @@ int microwave::init(OBJECT *parent)
 			return 2; // defer
 		}
 	}
-	OBJECT *hdr = object_header(this);
+	// OBJECT *hdr = object_header(this);
 	hdr->flags |= OF_SKIPSAFE;
 
 	if (load.voltage_factor==0) load.voltage_factor = 1.0;

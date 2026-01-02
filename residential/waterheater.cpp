@@ -255,6 +255,8 @@ int waterheater::create()
 int waterheater::init(OBJECT *parent)
 {
 	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+
 
 	nominal_voltage = (2.0 * default_line_voltage); //@TODO:  Determine if this should be published or how we want to obtain this from the equipment/network
 	actual_voltage = nominal_voltage;

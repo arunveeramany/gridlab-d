@@ -65,6 +65,9 @@ int occupantload::create()
 
 int occupantload::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+
 	if(parent != nullptr){
 		if((parent->flags & OF_INIT) != OF_INIT){
 			char objname[256];
@@ -75,7 +78,7 @@ int occupantload::init(OBJECT *parent)
 	if (number_of_occupants==0)	number_of_occupants = 4;		// defaulted to 4, but perhaps define it based on house size??
 	if (heatgain_per_person==0) heatgain_per_person = 400.0;	// Based on DOE-2, includes latent and sensible heatgain
 
-	OBJECT *hdr = object_header(this);
+	// OBJECT *hdr = object_header(this);
 	hdr->flags |= OF_SKIPSAFE;
 
 	if (parent==nullptr || (!gl_object_isa(parent,"house") && !gl_object_isa(parent,"house_e")))

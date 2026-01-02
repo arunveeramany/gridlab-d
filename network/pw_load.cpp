@@ -559,6 +559,10 @@ int pw_load::post_powerworld_current(){
 	@return 0 on failure, 1 on success, 2 if model object has not initialized yet
  **/
 int pw_load::init(OBJECT *parent){
+
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	_bstr_t otype;
 	_variant_t plist;
 	_variant_t vlist;

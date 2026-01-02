@@ -114,6 +114,9 @@ int freezer::create()
 
 int freezer::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+
 	gl_warning("This device, %s, is considered very experimental and has not been validated.", get_name());
 
 	if(parent != nullptr){
@@ -134,7 +137,7 @@ int freezer::init(OBJECT *parent)
 	if (Tout==0)				Tout = 59.0;
 	if (power_factor==0)		power_factor = 0.95;
 
-	OBJECT *hdr = object_header(this);
+	// OBJECT *hdr = object_header(this);
 	hdr->flags |= OF_SKIPSAFE;
 
 	

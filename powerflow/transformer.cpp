@@ -131,6 +131,9 @@ void transformer::fetch_double(double **prop, const char *name, OBJECT *parent){
 
 int transformer::init(OBJECT *parent)
 {
+	OBJECT *obj = object_header(this);
+	parent = obj->parent;
+
 	int idex;
 	gld_property *tphases_ref;
 	set tphases;
@@ -180,7 +183,6 @@ int transformer::init(OBJECT *parent)
 	if (result == 2)
 		return 2;	//Return the deferment - no sense doing everything else!
 
-	OBJECT *obj = object_header(this);
 
 	//map and pull the phases
 	tphases_ref = new gld_property(to,"phases");

@@ -5,6 +5,7 @@
 #define _enum_assert_H
 
 #include <stdarg.h>
+#include <cstddef>
 
 #include "gridlabd.h"
 
@@ -23,118 +24,87 @@ public:
 protected:
     enumeration status;  // Member variable of type `enumeration`.
     char1024 target; // Protected member variable
-    int32 value;  // Member variable of type `int32`.
+    char1024 value_text;  // expected value as text (e.g., "NONE", "UNDER_VOLTAGE", or "3")
+    enumeration value_code;  // parsed numeric code of expected value (internal; also published for numeric feeds)
 
 
 public:
 
-    // Static inline method to get the byte offset of the member `target`
-    static inline size_t get_target_offset(void) {
-        enum_assert* current_defaults = get_defaults();
-        return reinterpret_cast<const char*>(&(current_defaults->target)) - reinterpret_cast<const char*>(current_defaults);
 
+    // --- Offsets used by gl_publish_variable (modern: offsetof) ---
+    static constexpr size_t get_status_offset()     noexcept { return offsetof(enum_assert, status); }
+    static constexpr size_t get_target_offset()     noexcept { return offsetof(enum_assert, target); }
+    static constexpr size_t get_value_text_offset() noexcept { return offsetof(enum_assert, value_text); }
+    static constexpr size_t get_value_code_offset() noexcept { return offsetof(enum_assert, value_code); }
+
+public:
+    // --- Accessors: lock-free & lightweight ---
+    // Atomics: relaxed loads/stores (we rely on GridLAB-D phase ordering for happens-before)
+    inline enumeration get_status() const noexcept {
+        return status;
+    }
+    inline void set_status(enumeration s) noexcept {
+        status = s;
     }
 
-    // Getter method to safely retrieve the string value of `target` as std::string
+public:
+    inline enumeration get_value_code() const noexcept {
+        return value_code;
+    }
+    inline void set_value_code(enumeration v) noexcept {
+        value_code = v;
+    }
+
+public:
     inline std::string get_target(void) {
-        auto& mtx = SharedMutexManager::get_mutex(my());
-        std::shared_lock<std::shared_mutex> lock(mtx);
+        // auto& mtx = SharedMutexManager::get_mutex(my());
+        // std::shared_lock<std::shared_mutex> lock(mtx);
         return std::string(target);
     }
 
-    inline void set_target(const char* str) {
-        auto& mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
-        strncpy(target, str, sizeof(target) - 1);
-        target[sizeof(target) - 1] = '\0'; // Ensure null-termination
-    }
 
-    // Getter method to retrieve gld_property for `target`
-    inline gld_property get_target_property(void) {
-        if (!my()) { // Check if `my()` returns a valid object
-            throw std::runtime_error("Invalid object context for retrieving gld_property.");
+    // Write string buffers only during initialization (single-threaded by GLD semantics).
+    inline void set_target(const char* str) noexcept {
+        if (str) {
+            std::strncpy(target, str, sizeof(target) - 1);
+            target[sizeof(target) - 1] = '\0';
+        } else {
+            target[0] = '\0';
         }
-        return gld_property(my(), std::string("target").c_str()); // Duplicate string literal `target`
     }
 
 public:
 
-    // Static inline method to get the byte offset of the member `status`.
-    static inline size_t get_status_offset(void) {
-        enum_assert* current_defaults = get_defaults();
-        return reinterpret_cast<const char*>(&(current_defaults->status)) - reinterpret_cast<const char*>(current_defaults);
+    inline std::string get_value_text(void) {
+        // auto& mtx = SharedMutexManager::get_mutex(my());
+        // std::shared_lock<std::shared_mutex> lock(mtx);
+        return std::string(value_text);
     }
 
-
-    // Inline function to get the value of `status`.
-    inline enumeration get_status(void) {
-        return status;
-    }
-
-    // Inline method to return a gld_property object for `status`.
-    inline gld_property get_status_property(void) {
-        return gld_property(my(), std::string("status").c_str());
-    }
-
-    // Inline method to set the value of `status`.
-    inline void set_status(enumeration p) {
-        status = p;
-    }
-
-    // Inline method to get the string representation of the `status` property.
-    inline gld_string get_status_string(void) {
-        return get_status_property().get_string();
-    }
-
-    // Inline method to set the `status` property from a provided string.
-    inline void set_status(char* str) {
-        get_status_property().from_string(str);
-    }
-
-public:
-
-    enum_assert() {}
-    ~enum_assert() { if (defaults) delete defaults; }
-
-    static inline enum_assert* get_defaults() {
-        if (!defaults) {
-            defaults = new enum_assert(); // Initialize lazily
+    // Write string buffers only during initialization (single-threaded by GLD semantics).
+    inline void set_value_text(const char* str) noexcept {
+        if (str) {
+            std::strncpy(value_text, str, sizeof(value_text) - 1);
+            value_text[sizeof(value_text) - 1] = '\0';
+        } else {
+            value_text[0] = '\0';
         }
-        return defaults;
     }
+
+    
 
 public:
-    // Static inline method to get the byte offset of the member `value`.
-    static inline size_t get_value_offset(void) {
-        enum_assert* current_defaults = get_defaults();
-        return reinterpret_cast<const char*>(&(current_defaults->value)) - reinterpret_cast<const char*>(current_defaults);
+
+    
+    enum_assert() : status(ASSERT_TRUE), value_code(0) {
+        target[0] = '\0';
+        value_text[0] = '\0';
     }
 
-    // Inline function to get the value of `value`.
-    inline int32 get_value(void) {
-        return value;
-    }
 
-    // Inline method to return a gld_property object for `value`.
-    inline gld_property get_value_property(void) {
-        return gld_property(my(), std::string("value").c_str());
-    }
+    // ~enum_assert() { if (defaults) delete defaults; }
 
-    // Inline method to set the value of `value`.
-    inline void set_value(int32 p) {
-        value = p;
-    }
-
-    // Inline method to get the string representation of the `value` property.
-    inline gld_string get_value_string(void) {
-        return get_value_property().get_string();
-    }
-
-    // Inline method to set the `value` property from a provided string.
-    inline void set_value(char* str) {
-        get_value_property().from_string(str);
-    }
-
+   
 
 public:
 	/* required implementations */
@@ -145,7 +115,7 @@ public:
 
 public:
 	static CLASS *oclass;
-	static enum_assert *defaults;
+	// static enum_assert *defaults;
 };
 
 #endif

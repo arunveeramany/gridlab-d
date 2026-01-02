@@ -327,6 +327,7 @@ int triplex_meter::init(OBJECT *parent)
 #endif
 
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
 
 	// Verify callback table 
     if (!callback || !callback->time.local_datetime) {

@@ -169,6 +169,9 @@ int comm::create()
 /** Initialize the new object */
 int comm::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	char rt[33];
 	if (sscanf(latency.get_string(),"%32[^(](%lf,%lf)",rt,&a,&b)==3)
 		rtype = gl_randomtype(rt);

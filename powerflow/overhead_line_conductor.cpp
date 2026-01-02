@@ -55,6 +55,9 @@ int overhead_line_conductor::create(void)
 
 int overhead_line_conductor::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	//Check resistance
 	if (resistance == 0.0)
 	{

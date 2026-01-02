@@ -134,6 +134,8 @@ int performance_motor::create()
 int performance_motor::init(OBJECT *parent)
 {
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
+
 	int result;
     double Z_base;
 	gld_property *temp_gld_property;

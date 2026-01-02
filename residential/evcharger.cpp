@@ -348,6 +348,9 @@ static bool hiV[] = {false,true,true};
 
 int evcharger::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+
 	int retval;
 
 	if(parent != nullptr){
@@ -377,7 +380,7 @@ int evcharger::init(OBJECT *parent)
 	//if (distance.shorttrip==0) distance.shorttrip = gl_random_lognormal(3,1);
 	//if (distance.longtrip==0) distance.longtrip = gl_random_lognormal(4,2);
 
-	OBJECT *hdr = object_header(this);
+	// OBJECT *hdr = object_header(this);
 	hdr->flags |= OF_SKIPSAFE;
 
 	//Make sure the efficiency is valid

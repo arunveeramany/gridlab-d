@@ -301,6 +301,7 @@ int emissions::init(OBJECT *parent)
 {
 	int rval;
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
 
 	rval = powerflow_object::init(parent);
  

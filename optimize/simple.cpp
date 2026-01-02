@@ -79,6 +79,8 @@ int simple::create(void)
 int simple::init(OBJECT *parent)
 {
 	OBJECT *my = object_header(this);
+	parent = my->parent;
+
 	char buffer[1024];
 	struct {
 		const char *name;

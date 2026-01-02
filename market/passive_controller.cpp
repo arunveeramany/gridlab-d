@@ -241,6 +241,8 @@ int passive_controller::create(){
 int passive_controller::init(OBJECT *parent){
 	
 	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+
 	PROPERTY *enduseProperty;
 
 	if(parent == nullptr){

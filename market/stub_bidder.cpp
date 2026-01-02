@@ -43,6 +43,8 @@ int stub_bidder::init(OBJECT *parent)
 	lastbid_id = -1;
 	lastmkt_id = -1;
 	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+
 	if (market==nullptr)
 		throw "market is not defined";
 	thismkt_id = (int64*)gl_get_addr(market,"market_id");

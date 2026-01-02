@@ -49,6 +49,9 @@ int load_tracker::create()
 
 int load_tracker::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	// Make sure we have a target object
 	if (target==nullptr)
 	{

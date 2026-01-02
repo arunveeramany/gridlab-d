@@ -550,6 +550,8 @@ int inverter_dyn::create(void)
 int inverter_dyn::init(OBJECT *parent)
 {
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
+
 	double temp_volt_mag;
 	double temp_volt_ang[3];
 	gld_property *temp_property_pointer = nullptr;

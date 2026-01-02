@@ -162,6 +162,10 @@ int check_COM_output(_variant_t output){
 }
 
 int pw_model::init(OBJECT *parent){
+
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	_variant_t output;
 	_variant_t element;
 //	SAFEARRAY *output_array;

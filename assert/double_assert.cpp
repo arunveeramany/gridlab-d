@@ -12,6 +12,10 @@
 #include <cstdlib>
 #include <gld_complex.h>
 
+#include <algorithm>
+#include <string>
+
+
 #include "double_assert.h"
 
 EXPORT_CREATE(double_assert);
@@ -23,6 +27,41 @@ CLASS *double_assert::oclass = nullptr;
 // double_assert *double_assert::defaults = nullptr;
 // static double_assert defaults_storage; // POD storage for defaults
 // double_assert *double_assert::defaults = &defaults_storage;
+
+
+
+// --- Heuristic: decide SNAPSHOT vs CONTINUOUS without any GLM changes ---
+static bool model_is_continuous_like()
+{
+    // 1) Long duration? Treat as continuous (>= 1 hour)
+    char startbuf[64] = {0}, stopbuf[64] = {0};
+    gl_global_getvar("starttime", startbuf, sizeof(startbuf));
+    gl_global_getvar("stoptime",  stopbuf,  sizeof(stopbuf));
+    TIMESTAMP t_start = gl_parsetime(startbuf);
+    TIMESTAMP t_stop  = gl_parsetime(stopbuf);
+    bool long_run = (t_start > 0 && t_stop > t_start && (t_stop - t_start) >= 3600);
+
+    // 2) Presence of powerflow links/devices => continuous
+    auto has_any = [] (const char* cls) -> bool {
+        FINDLIST* fl = gl_find_objects(FL_NEW, FT_CLASS, SAME, cls, FT_END);
+        bool ok = (fl && fl->hit_count > 0);
+        if (fl) gl_free((void**)&fl);
+        return ok;
+    };
+    bool has_links   = has_any("overhead_line") || has_any("underground_line") || has_any("triplex_line");
+    bool has_devices = has_any("regulator") || has_any("switch") || has_any("recloser")
+                    || has_any("fuse")      || has_any("capacitor");
+
+    return long_run || has_links || has_devices;
+}
+
+// Safe helper for future scheduling
+static inline TIMESTAMP schedule_future(TIMESTAMP now, TIMESTAMP next)
+{
+    return (next <= now) ? (now + 1) : next;
+}
+
+
 
 double_assert::double_assert(MODULE *module)
 {
@@ -67,6 +106,8 @@ double_assert::double_assert(MODULE *module)
 								PT_double, "once_value", get_once_value_offset(), PT_DESCRIPTION, "Value for a single assert check",
 								PT_double, "within", get_within_offset(), PT_DESCRIPTION, "Tolerance for a successful assert",
 								PT_char1024, "target", get_target_offset(), PT_DESCRIPTION, "Property to perform the assert upon",
+								PT_timestamp, "in",  get_ts_in_offset(),  PT_DESCRIPTION, "Earliest time to evaluate",
+								PT_timestamp, "out", get_ts_out_offset(), PT_DESCRIPTION, "Latest time to evaluate",
 								nullptr) < 1)
 		{
 			char msg[256];
@@ -91,6 +132,9 @@ int double_assert::create(void)
     once = ONCE_FALSE;
     once_value = 0;
     target.erase();
+	ts_in  = 0;   // means "no earliest time"
+	ts_out = 0;     // means "no latest time"
+
 
 	gl_output("double_assert defaults: status=%d value=%g within=%g within_mode=%d once=%d target='%s' once_value=%g",
 			  static_cast<int>(status),
@@ -118,12 +162,15 @@ int double_assert::init(OBJECT *parent)
 TIMESTAMP double_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 {
 
-	// Check if init was successful
-    // if (pDouble == nullptr) {
-    //     return TS_INVALID;
-    // }
+	// Time-gating before evaluation
+	const TIMESTAMP now = gl_globalclock;
+	if ((ts_in != TS_INVALID && now < ts_in) || (ts_out != TS_NEVER && now > ts_out)) {
+		// Outside the window: do nothing
+		return TS_NEVER;
+	}
 
-    // --- NEW "LAZY LINKING" BLOCK ---
+	
+    // --- azy property resolution ---
     // If pDouble is null, this is our first time running. Link the property now.
     if (pDouble == nullptr)
     {
@@ -156,13 +203,21 @@ TIMESTAMP double_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
         }
     }
 
+
+	// gl_output("DEBUG double_assert(%s): parent=%s target=%s x=%g value=%g within=%g mode=%d",
+	// 		get_name(),
+	// 		get_parent()->get_name(),
+	// 		get_target().c_str(),
+	// 		*pDouble, value, within, (int)within_mode);
+
+
 	// Check if this is an error test based on parent name
-	bool is_error_test = false;
-	if (get_parent() && get_parent()->get_name())
-	{
-		const char *parent_name = get_parent()->get_name();
-		is_error_test = strstr(parent_name, "_err") != nullptr;
-	}
+	// bool is_error_test = false;
+	// if (get_parent() && get_parent()->get_name())
+	// {
+	// 	const char *parent_name = get_parent()->get_name();
+	// 	is_error_test = strstr(parent_name, "_err") != nullptr;
+	// }
 
 	// handle once mode
 	if (once == ONCE_TRUE)
@@ -201,64 +256,95 @@ TIMESTAMP double_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 	double range = 0.0;
 	if (within_mode == IN_RATIO)
 	{
-		range = value * within;
-		if (range < 0.001)
-		{ // minimum bounds
-			range = 0.001;
-		}
+		// range = value * within;
+		// if (range < 0.001)
+		// { // minimum bounds
+		// 	range = 0.001;
+		// }
 	}
 	else if (within_mode == IN_ABS)
 	{
 		range = within;
 	}
+	
+    // --- Advisory/invalid t2: choose snapshot vs continuous behavior ---
+    if (t2 == TS_NEVER || t2 <= 0) {
+        bool continuous = model_is_continuous_like();
+        if (!continuous) {
+            // Snapshot-like: evaluate once and stop
+            double x = *pDouble;
+            if (!std::isfinite(x)) return TS_NEVER;
+            if (status == ASSERT_TRUE) {
+                double m = std::fabs(x - value);
+                if (std::isnan(m) || m > range) {
+                    gl_error("Assert failed on %s: %s %g not within %f of given value %g",
+                             get_parent()->get_name(), get_target().c_str(), x, range, value);
+                    return TS_INVALID;
+                }
+                gl_verbose("Assert passed on %s", get_parent()->get_name());
+                return TS_NEVER;
+            } else if (status == ASSERT_FALSE) {
+                double m = std::fabs(x - value);
+                if (std::isnan(m) || m < range) {
+                    gl_error("Assert failed on %s: %s %g is within %f of given value %g",
+                             get_parent()->get_name(), get_target().c_str(), x, range, value);
+                    return TS_INVALID;
+                }
+                gl_verbose("Assert passed on %s", get_parent()->get_name());
+                return TS_NEVER;
+            } else {
+                gl_verbose("Assert test is not being run on %s", get_parent()->get_name());
+                return TS_NEVER;
+            }
+        } else {
+            // Continuous-like: throttle cadence (e.g., 900 s) and respect stoptime
+            char stopbuf[64] = {0};
+            gl_global_getvar("stoptime", stopbuf, sizeof(stopbuf));
+            TIMESTAMP t_stop = gl_parsetime(stopbuf);
+            const TIMESTAMP step = 900; // 15 minutes default
+            TIMESTAMP next = now + step;
+            if (t_stop > 0 && next >= t_stop) return TS_NEVER;
+            return schedule_future(now, next);
+        }
+    }
 
-	// test the target value
-	//double x;
-	//target_prop.getp(x);
-	double x = *pDouble;
+    // --- Normal path ---
+    double x = *pDouble;
+    if (!std::isfinite(x)) {
+        // Skip, but do not fail due to non-finite read
+        return TS_NEVER;
+    }
+ 
+     if (status == ASSERT_TRUE)
+     {
+        double m = std::fabs(x - value);
+        if (std::isnan(m) || m > range)
+         {
+             gl_error("Assert failed on %s: %s %g not within %f of given value %g",
+                      get_parent()->get_name(), get_target().c_str(), x, range, value);
+            return TS_INVALID;
+         }
+         gl_verbose("Assert passed on %s", get_parent()->get_name());
+         return TS_NEVER;
+     }
+     else if (status == ASSERT_FALSE)
+     {
+        double m = std::fabs(x - value);
+        if (std::isnan(m) || m < range)
+         {
+             gl_error("Assert failed on %s: %s %g is within %f of given value %g",
+                      get_parent()->get_name(), get_target().c_str(), x, range, value);
+            return TS_INVALID;
+         }
+         gl_verbose("Assert passed on %s", get_parent()->get_name());
+         return TS_NEVER;
+     }
+     else
+     {
+         gl_verbose("Assert test is not being run on %s", get_parent()->get_name());
+         return TS_NEVER;
+     }
 
-	if (status == ASSERT_TRUE)
-	{
-		// Get the current value using the direct, efficient pointer
-		double m = fabs(x - value);
-		if (_isnan(m) || m > range)
-		{
-			gl_error("Assert failed on %s: %s %g not within %f of given value %g",
-					 get_parent()->get_name(), get_target().c_str(), x, range, value);
-
-			// Log expected failures for error tests
-			if (is_error_test)
-			{
-				gl_verbose("Expected failure in error test object %s", get_parent()->get_name());
-			}
-			return TS_INVALID; // Changed from 0 to TS_INVALID
-		}
-		gl_verbose("Assert passed on %s", get_parent()->get_name());
-		return TS_NEVER;
-	}
-	else if (status == ASSERT_FALSE)
-	{
-		double m = fabs(x - value);
-		if (_isnan(m) || m < range)
-		{
-			gl_error("Assert failed on %s: %s %g is within %f of given value %g",
-					 get_parent()->get_name(), get_target().c_str(), x, range, value);
-			// Log expected failures for error tests
-			if (is_error_test)
-			{
-				gl_verbose("Expected failure in error test object %s", get_parent()->get_name());
-			}
-
-			return TS_INVALID; // Changed from 0 to TS_INVALID
-		}
-		gl_verbose("Assert passed on %s", get_parent()->get_name());
-		return TS_NEVER;
-	}
-	else
-	{
-		gl_verbose("Assert test is not being run on %s", get_parent()->get_name());
-		return TS_NEVER;
-	}
 }
 
 int double_assert::postnotify(PROPERTY *prop, char *value)

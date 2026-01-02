@@ -66,6 +66,9 @@ int underground_line::create(void)
 
 int underground_line::init(OBJECT *parent)
 {
+	OBJECT *obj = object_header(this);
+	parent = obj->parent;
+
 	double *temp_rating_value = nullptr;
 	double temp_rating_continuous = 10000.0;
 	double temp_rating_emergency = 20000.0;
@@ -73,7 +76,7 @@ int underground_line::init(OBJECT *parent)
 	int type_A, type_B, type_C, type_N;
 	int cond_present, cond_present_CN, cable_types_value;
 	OBJECT *temp_obj;
-	OBJECT *obj = object_header(this);
+	// OBJECT *obj = object_header(this);
 
 	int result = line::init(parent);
 

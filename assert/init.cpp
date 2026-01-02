@@ -73,7 +73,7 @@ EXPORT CLASS* init(CALLBACKS *fntable, MODULE *mod, int argc, char *argv[])
 	new double_assert(mod);
 
     // return 1;
-	return double_assert::oclass;
+	return enum_assert::oclass;
 }
 
 

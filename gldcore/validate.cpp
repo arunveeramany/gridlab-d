@@ -37,6 +37,7 @@
 #include "object.h"
 
 static std::mutex subprocess_launch_mutex;
+static std::shared_mutex report_data_lock;
 
 /** validating result counter */
 class counters
@@ -262,7 +263,7 @@ static int report_data(const char *fmt = "", ...)
 	if (report_fp)
 	{
 		// wlock(&report_lock);
-		std::unique_lock<std::shared_mutex> lock(SharedMutexManager::get_mutex(&report_lock));
+		std::unique_lock<std::shared_mutex> lock(report_data_lock);
 
 		if (report_cols++ > 0)
 			len = fprintf(report_fp, "%s", report_col);

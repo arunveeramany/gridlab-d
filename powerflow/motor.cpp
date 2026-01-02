@@ -297,6 +297,8 @@ int motor::create()
 int motor::init(OBJECT *parent)
 {
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
+
 	int result;
 	bool temp_house_motor_state;
 	double temp_house_capacity_info, temp_house_cop;

@@ -105,6 +105,9 @@ int database::create(void)
 
 int database::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	db_initialized = true;
 	// initialize the client
 	mysql_client = mysql_init(mysql_client);

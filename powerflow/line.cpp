@@ -97,6 +97,8 @@ int line::create()
 int line::init(OBJECT *parent)
 {
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
+
 	gld_property *fNode_nominal, *tNode_nominal;
 	double f_nominal_voltage, t_nominal_voltage;
 	gld::complex Zabc_mat_temp[3][3], Yabc_mat_temp[3][3];

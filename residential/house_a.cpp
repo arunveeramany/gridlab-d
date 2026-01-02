@@ -307,6 +307,7 @@ and internal gain variables.
 int house::init(OBJECT *parent)
 {
 	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
 	hdr->flags |= OF_SKIPSAFE;
 
 	// construct circuit variable map to meter

@@ -267,6 +267,8 @@ int load::init(OBJECT *parent)
 {
 	char temp_buff[128];
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
+
 	int ret_value;
 	
 	if (has_phase(PHASE_S))

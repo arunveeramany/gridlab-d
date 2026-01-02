@@ -84,6 +84,8 @@ void network::update_latency(){
 int network::init(OBJECT *parent)
 {
 	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+
 	// input validation checks
 	if(latency_mode[0] != 0){
 		random_type = gl_randomtype(latency_mode);

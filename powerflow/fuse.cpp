@@ -132,6 +132,7 @@ int fuse::init(OBJECT *parent)
 {
 	char jindex, kindex;
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
 
 	if ((phases & PHASE_S) == PHASE_S)
 	{

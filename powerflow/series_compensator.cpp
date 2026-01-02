@@ -224,6 +224,9 @@ int series_compensator::create()
 
 int series_compensator::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	char iindex, jindex;
 	int result = link_object::init(parent);
 	OBJECT *obj = object_header(this);

@@ -319,6 +319,8 @@ int windturb_dg::init_climate()
 int windturb_dg::init(OBJECT *parent)
 {
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
+
 	double temp_double_value;
 	gld_property *temp_property_pointer;
 	enumeration temp_enum;

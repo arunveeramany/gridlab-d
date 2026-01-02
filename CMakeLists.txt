@@ -1,8 +1,22 @@
 cmake_minimum_required(VERSION 3.13)
 
+project(GridLAB-D LANGUAGES C CXX)
 
 
-project(GridLAB-D)
+#Apply conservative FP flags only on Apple Silicon + AppleClang
+if(APPLE AND CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64")
+  if(CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
+    add_compile_options(-ffp-contract=off -fno-fast-math)
+  endif()
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+    add_compile_options(-ffp-contract=off -fno-fast-math)
+  endif()
+
+endif()
+
+
+message(STATUS "Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_SYSTEM_PROCESSOR}")
+
 
 
 set(CMAKE_BUILD_TYPE Debug)

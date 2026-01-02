@@ -268,6 +268,9 @@ int machine::compile(char *source)
 //    n - succeeded, wait n seconds before calling run
 int machine::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	gl_debug("Connecting PLC to %s:%d...", parent->oclass->name, parent->id);
 	PLCDATA item;
 	for (item=_data; item->name!=nullptr; item++)

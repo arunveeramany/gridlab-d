@@ -138,6 +138,8 @@ void double_controller::fetch(double **value, char *name, OBJECT *parent, PROPER
 
 int double_controller::init(OBJECT *parent){
 	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+
 	char tname[32];
 	char *namestr = (hdr->name ? hdr->name : tname);
 

@@ -127,6 +127,7 @@ int switch_object::init(OBJECT *parent)
 	gld::set phase_from, phase_to;
 
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
 
 	//Special flag moved to be universal for all solvers - mainly so phase checks catch it now
 	SpecialLnk = SWITCH;

@@ -107,6 +107,9 @@ int meter::create()
 // Initialize a distribution meter, return 1 on success
 int meter::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	return node::init(parent);
 }
 

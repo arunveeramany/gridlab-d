@@ -414,6 +414,8 @@ int node::create(void)
 int node::init(OBJECT *parent)
 {
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
+
 	OBJECT *tmp_obj, *tmp_subnode_parent;
 	node *tmp_node, *tmp_par_node;
 	int index_loop_val;
@@ -595,13 +597,13 @@ int node::init(OBJECT *parent)
 		// Check for parents to see if they are a parent/childed load
 		if (obj->parent != nullptr)									// Has a parent, let's see if it is a node and link it up
 		{		
-			if (parent != nullptr) {
-				gl_debug("node::init for '%s': Parent is '%s' (class: %s). Checking isa('node')... Result: %d", 
-						get_name(), 
-						parent->name, 
-						parent->oclass->name,
-						gl_object_isa(parent, "node"));
-			}
+			// if (parent != nullptr) {
+				// gl_debug("node::init for '%s': Parent is '%s' (class: %s). Checking isa('node')... Result: %d", 
+				// 		get_name(), 
+				// 		parent->name, 
+				// 		parent->oclass->name,
+				// 		gl_object_isa(parent, "node"));
+			// }
 													//(this will break anything intentionally done this way - e.g. switch between two nodes)
 			// if (!(gl_object_isa(obj->parent, "node", "powerflow"))) // All others alias up to isa:node eventually
 			// in response to: ERROR    [INIT] : init_load(obj=21;measure_freq_load_parent): unhandled exception - NR: Parent is not a node-based object!

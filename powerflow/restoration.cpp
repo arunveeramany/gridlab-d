@@ -227,6 +227,8 @@ int restoration::create(void)
 int restoration::init(OBJECT *parent)
 {
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
+
 	int working_int_val, indexval;
 
 	if (solver_method == SM_NR)

@@ -189,6 +189,8 @@ int dishwasher::init(OBJECT *parent)
 	// @todo This class has serious problems and should be deleted and started from scratch. Fuller 9/27/2013.
 
 	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+
 	if(parent != nullptr){
 		if((parent->flags & OF_INIT) != OF_INIT){
 			char objname[256];

@@ -82,6 +82,9 @@ int plc::create()
 /** Initialize the new object */
 int plc::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	if (strcmp(source,"")==0 && parent!=nullptr) /* default source */
 		sprintf(source.get_string(),"%s.plc",parent->oclass->name);
 	if (controller->compile(source)<0)

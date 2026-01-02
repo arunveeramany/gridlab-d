@@ -80,6 +80,9 @@ int series_reactor::create()
 
 int series_reactor::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	int result = link_object::init(parent);
 
 	//Check for deferred

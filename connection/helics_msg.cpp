@@ -145,6 +145,8 @@ int helics_msg::init(OBJECT *parent){
 	//write zplfile
 	bool defer = false;
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
+
 	OBJECT *vObj = nullptr;
 	char buffer[1024] = "";
 	string simName = string(gl_name(obj, buffer, 1023));

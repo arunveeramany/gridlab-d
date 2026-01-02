@@ -74,6 +74,10 @@ int residential_enduse::create(bool connect_shape)
 int residential_enduse::init(OBJECT *parent)
 {
 	set_flags(get_flags()|OF_SKIPSAFE);
+
+	OBJECT* hdr = object_header(this);
+	parent = hdr->parent;
+
 	gld_object *pParent = object_data<gld_object>(parent);
 
 	//	pull parent attach_enduse and attach the enduseload

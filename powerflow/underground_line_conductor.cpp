@@ -68,6 +68,9 @@ int underground_line_conductor::create(void)
 
 int underground_line_conductor::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	if (outer_diameter < conductor_diameter)
 	{
 		GL_THROW("outer_diameter was specified as less than or equal to the conductor_diameter");

@@ -166,6 +166,8 @@ int generator_controller::create(void)
 int generator_controller::init(OBJECT *parent)
 {
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
+
 	PROPERTY *ptemp;
 	gld::set *temp_set;
 	int index;

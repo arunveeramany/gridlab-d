@@ -245,6 +245,8 @@ int auction::create(void)
 int auction::init(OBJECT *parent)
 {
 	OBJECT *obj=object_header(this);
+	parent = obj->parent;
+
 	unsigned int i = 0;
 
 	if(capacity_reference_object != nullptr){

@@ -97,6 +97,7 @@ int central_dg_control::init(OBJECT *parent)
 	int index = 0;
 	OBJECT *obj = 0;
 	OBJECT *thisobj = object_header(this);
+	parent = thisobj->parent;
 	all_inverter_S_rated = 0;
 	all_battery_S_rated = 0;
 	all_solar_S_rated = 0;

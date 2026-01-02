@@ -73,6 +73,7 @@ int jsondump::create(void)
 int jsondump::init(OBJECT *parent)
 {
 	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
 
 	// Check if we need to dump line and line configuration to JSON file
 	if ((filename_dump_system[0] == '\0') && write_system)

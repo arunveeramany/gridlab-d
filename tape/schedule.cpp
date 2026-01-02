@@ -358,6 +358,7 @@ int schedule::create()
 int schedule::init(OBJECT *parent)
 {
 	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
 	int rv = 1;
 
 	currval = default_value;

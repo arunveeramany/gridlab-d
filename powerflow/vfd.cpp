@@ -149,6 +149,8 @@ int vfd::create()
 int vfd::init(OBJECT *parent)
 {
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
+
 	FUNCTIONADDR temp_fxn;
 	STATUS temp_status_val;
 	double temp_voltage_check, temp_diff_value;

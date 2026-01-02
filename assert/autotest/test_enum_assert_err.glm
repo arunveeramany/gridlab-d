@@ -9,6 +9,7 @@ object climate {
 };
 
 object enum_assert {
+    name enum_assert_1;
     parent my_climate; // Use the parent property to link to the climate object
     target "interpolate";
     value 1;

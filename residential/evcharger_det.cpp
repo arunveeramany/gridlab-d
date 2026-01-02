@@ -191,6 +191,9 @@ int evcharger_det::create()
 
 int evcharger_det::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+
 	if(parent != nullptr){
 		if((parent->flags & OF_INIT) != OF_INIT){
 			char objname[256];
@@ -198,7 +201,7 @@ int evcharger_det::init(OBJECT *parent)
 			return 2; // defer
 		}
 	}
-	OBJECT *hdr = object_header(this);
+	// OBJECT *hdr = object_header(this);
 	int init_res;
 	int comma_count, curr_idx, curr_comma_count;
 	char temp_char;

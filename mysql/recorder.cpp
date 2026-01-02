@@ -89,6 +89,9 @@ int recorder::create(void) {
 int recorder::init(OBJECT *parent) {
 // check the connection
 
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	if ( get_connection()!=nullptr )
 		db = (database*)(get_connection()+1);
 	if ( db==nullptr )

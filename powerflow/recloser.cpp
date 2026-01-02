@@ -84,6 +84,9 @@ int recloser::create()
 
 int recloser::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	int result = switch_object::init(parent);
 
 	//Check for deferred

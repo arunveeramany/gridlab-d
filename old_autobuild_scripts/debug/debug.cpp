@@ -158,6 +158,9 @@ int g_debug::create(void)
 
 int g_debug::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	char buffer[64];
 	strcpy(buffer,get_name());
 	if ( get_parent() )

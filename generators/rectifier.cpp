@@ -92,6 +92,7 @@ int rectifier::create(void)
 int rectifier::init(OBJECT *parent)
 {
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
 
 	rectifier_type_v = SIX_PULSE;
 

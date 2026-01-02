@@ -4,7 +4,7 @@
 
 clock {
 	timezone EST+5EDT;
-	starttime '2000-01-01 0:00:00';
+	starttime '2000-01-01 0:00:03';
 	stoptime '2000-01-01 0:00:25';
 }
 
@@ -103,32 +103,32 @@ object meter {
 	name source_node;
 	nominal_voltage 7200.0;
 	bustype SWING;
-	// object recorder {
-		// property "measured_power.real,measured_power.imag";
-		// interval -1;
-		// file data_GFA_system_power_overall_QSTS.csv;
-	// };
 	object complex_assert {
-		name asserter;
+		name complex_assert_1;
+		parent source_node;
 		target measured_power;
 		within 0.1;
 		object player {
-			parent asserter;
+			name player_1;
+			parent complex_assert_1;
 			property "value";
 			file "../data_GFA_system_power_overall_QSTS.csv";
 		};
 	};
 	object player {
+		name player_2;
 		parent source_node;
 		property voltage_A;
 		file "../data_GFA_voltage_frequency_player_A.csv";
 	};
 	object player {
+		name player_3;
 		parent source_node;
 		property voltage_B;
 		file "../data_GFA_voltage_frequency_player_B.csv";
 	};
 	object player {
+		name player_4;
 		parent source_node;
 		property voltage_C;
 		file "../data_GFA_voltage_frequency_player_C.csv";
@@ -164,15 +164,18 @@ object load {
 	GFA_enable true;
 	GFA_reconnect_time 1.0 s;
 	object player {
+		name player_5;
 		parent direct_freq_load;
 		property "measured_frequency";
 		file "../data_GFA_frequency_values_player.csv";
 	};
 	object enum_assert {
-		name easserter;
+		name enum_assert_1;
+		parent direct_freq_load;
 		target "GFA_trip_method";
 		object player {
-			parent easserter;
+			name player_6;
+			parent enum_assert_1;
 			property "value";
 			file "../data_direct_freq_GFA_trip_method_QSTS.csv";
 		};
@@ -205,10 +208,12 @@ object load {
 	GFA_reconnect_time 1.0 s;
 	frequency_measure_type SIMPLE;
 	object enum_assert {
-		name easserter3;
+		name enum_assert_2;
+		parent measure_freq_load_parent;
 		target "GFA_trip_method";
 		object player {
-			parent easserter3;
+			name player_7;
+			parent enum_assert_2;
 			property "value";
 			file "../data_measure_freq_GFA_trip_method_QSTS.csv";
 		};
@@ -238,15 +243,18 @@ object triplex_load {
 	GFA_enable true;
 	GFA_reconnect_time 1.0 s;
 	object player {
+		name player_8;
 		parent tpl_B;
 		property "measured_frequency";
 		file "../data_GFA_frequency_values_player.csv";
 	};
 	object enum_assert {
-		name easserter1;
+		name enum_assert_3;
+		parent tpl_B;
 		target "GFA_trip_method";
 		object player {
-			parent easserter1;
+			name player_9;
+			parent enum_assert_3;
 			property "value";
 			file "../data_direct_freq_GFA_trip_method_QSTS.csv";
 		};
@@ -270,10 +278,12 @@ object triplex_load {
 	GFA_reconnect_time 1.0 s;
 	frequency_measure_type SIMPLE;
 	object enum_assert {
-		name easserter6;
+		name enum_assert_4;
+		parent tpl_B_freq;
 		target "GFA_trip_method";
 		object player {
-			parent easserter6;
+			name player_10;
+			parent enum_assert_4;
 			property "value";
 			file "../data_measure_freq_GFA_trip_method_QSTS.csv";
 		};
@@ -298,10 +308,12 @@ object triplex_load {
 	GFA_reconnect_time 1.0 s;
 	frequency_measure_type SIMPLE;
 	object enum_assert {
-		name easserter2;
+		name enum_assert_5;
+		parent tpl_B_freq_parent;
 		target "GFA_trip_method";
 		object player {
-			parent easserter2;
+			name player_11;
+			parent enum_assert_5;
 			property "value";
 			file "../data_measure_freq_GFA_trip_method_QSTS.csv";
 		};
@@ -355,6 +367,7 @@ object overhead_line {
 }
 
 object transformer {
+	name transformer_1;
 	phases BS;
 	from secondary_node;
 	to tpm_B;
@@ -362,6 +375,7 @@ object transformer {
 }
 
 object triplex_line {
+	name triplex_line_1;
 	phases BS;
 	from tpm_B;
 	to tpl_B;
@@ -370,6 +384,7 @@ object triplex_line {
 }
 
 object triplex_line {
+	name triplex_line_2;
 	phases BS;
 	from tpm_B;
 	to tpl_B_freq;
@@ -378,6 +393,7 @@ object triplex_line {
 }
 
 object triplex_line {
+	name triplex_line_3;
 	phases BS;
 	from tpm_B;
 	to tpm_B2;
@@ -386,6 +402,7 @@ object triplex_line {
 }
 
 object group_recorder {
+	name group_recorder_1;
 	group "groupid=GFA_loads";
 	property "GFA_status";
 	file "group_GFA_status.csv";
@@ -405,3 +422,13 @@ object group_recorder {
 	// file "group_measured_frequency.csv";
 	// interval 1;
 // }
+
+
+
+//object recorder {
+//    parent source_node;
+//    property "measured_power";    // records complex in polar form by default
+//    file "data_GFA_system_power_overall_QSTS.csv";
+//    interval 1;
+//}
+

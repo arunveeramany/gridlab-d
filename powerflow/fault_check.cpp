@@ -89,7 +89,7 @@ int fault_check::create(void)
 int fault_check::init(OBJECT *parent)
 {
 	OBJECT *obj = object_header(this);
-
+	parent = obj->parent;
 
 	FILE *FPoint;
 
@@ -475,6 +475,7 @@ TIMESTAMP fault_check::sync(TIMESTAMP t0)
             // or TS_NEVER if you want to suppress further checks.
 			// return t0;  // Re-sync if needed
 			return tret;
+			//return TS_NEVER;
 		}
 		else
 		{

@@ -47,6 +47,9 @@ int impedance_dump::create(void)
 
 int impedance_dump::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	if(filename[0] == '\0'){
 		gl_error("No filename was specified. Unable to open file for righting.");
 		return 0;

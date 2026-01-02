@@ -88,6 +88,8 @@ int controller_dg::create(void)
 int controller_dg::init(OBJECT *parent)
 {
 	OBJECT *thisobj = object_header(this);
+	parent = thisobj->parent;
+
 	OBJECT *obj;
 	gld_property *temp_prop;
 	gld_object *temp_from, *temp_to;

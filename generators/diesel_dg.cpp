@@ -679,6 +679,7 @@ int diesel_dg::create(void)
 int diesel_dg::init(OBJECT *parent)
 {
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
 	OBJECT *tmp_obj = nullptr;
 	gld_object *tmp_gld_obj = nullptr;
 

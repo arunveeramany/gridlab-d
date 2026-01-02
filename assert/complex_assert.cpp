@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <cstddef> // Required for offsetof
 
+#include "gridlabd.h"
 #include "gld_complex.h"
 
 #include "complex_assert.h"
@@ -23,12 +24,13 @@
 // EXPORT int gld_minor = 3;
 
 
-EXPORT_CREATE(complex_assert);
-EXPORT_INIT(complex_assert);
+// EXPORT_CREATE(complex_assert);
+// EXPORT_INIT(complex_assert);
 
 
-EXPORT_COMMIT(complex_assert);
+// EXPORT_COMMIT(complex_assert);
 //EXPORT_NOTIFY(complex_assert);
+
 
 CLASS *complex_assert::oclass = nullptr;
 // static complex_assert defaults_storage; // POD storage for defaults
@@ -36,9 +38,164 @@ CLASS *complex_assert::oclass = nullptr;
 extern "C" CALLBACKS *callback;
 
 
+// Global (or static) map: did any switch change at this timestep?
+static std::unordered_map<TIMESTAMP, bool> ts_had_switch_change;
+
+
+// ---- Switch state tracker (inside complex_assert.cpp) ----
+struct PhasePtrs {
+    int* A{nullptr};
+    int* B{nullptr};
+    int* C{nullptr};
+};
+
+struct PhaseLast {
+    int A{-1}, B{-1}, C{-1};
+};
+
+struct MonitoredSwitch {
+    OBJECT* obj{nullptr};
+    // we cache direct addresses to the published phase state properties
+    PhasePtrs ptrs;
+    PhaseLast last;
+    // optional: operating mode (BANKED/INDIVIDUAL) if you want to log it
+    int* pMode{nullptr};  // enumeration pointer, may be null if not found
+};
+
+// Keep a container on the complex_assert instance:
+std::vector<MonitoredSwitch> sw_list;
+bool switches_index_built = false;
+
+
+
+// --- Heuristic: decide SNAPSHOT vs CONTINUOUS without GLM changes ---
+// Rationale: Snapshot tests (like your meter-only case) have no network links and 
+// often very short duration. IEEE feeder models have links/devices and longer durations. 
+// The heuristic captures that without GLM edits. 
+static bool model_is_continuous_like()
+{
+    // 1) Long duration? Treat as continuous.
+    char startbuf[64] = {0}, stopbuf[64] = {0};
+    gl_global_getvar("starttime", startbuf, sizeof(startbuf));
+    gl_global_getvar("stoptime",  stopbuf,  sizeof(stopbuf));
+    TIMESTAMP t_start = gl_parsetime(startbuf);
+    TIMESTAMP t_stop  = gl_parsetime(stopbuf);
+    bool long_run = (t_start > 0 && t_stop > t_start && (t_stop - t_start) >= 3600); // >= 1 hour
+
+    // 2) Presence of network/controls? Treat as continuous.
+    auto has_any = [] (const char* cls) -> bool {
+        FINDLIST* fl = gl_find_objects(FL_NEW, FT_CLASS, SAME, cls, FT_END);
+        bool ok = (fl && fl->hit_count > 0);
+        if (fl) gl_free((void**)&fl);
+        return ok;
+    };
+
+    bool has_links = has_any("overhead_line") || has_any("underground_line") || has_any("triplex_line");
+    bool has_devices = has_any("regulator") || has_any("switch") || has_any("recloser") || has_any("fuse") || has_any("capacitor");
+
+    return long_run || has_links || has_devices;
+}
+
+
+// Build a list of all switch-like objects in the GLM
+void build_switch_index() {
+    if (switches_index_built) return;
+
+    // Find all `switch` objects
+    FINDLIST* fl_switch = gl_find_objects(FL_NEW, FT_CLASS, SAME, "switch", FT_END);
+    if (fl_switch != nullptr && fl_switch->hit_count > 0) {
+        OBJECT* o = nullptr;
+        while ((o = gl_find_next(fl_switch, o)) != nullptr) {
+            MonitoredSwitch ms;
+            ms.obj = o;
+
+            // Cache pointers to phase state properties if present
+            PROPERTY* pA = gl_get_property(o, "phase_A_state");
+            PROPERTY* pB = gl_get_property(o, "phase_B_state");
+            PROPERTY* pC = gl_get_property(o, "phase_C_state");
+            if (pA) ms.ptrs.A = (int*)gl_get_addr(o, "phase_A_state");
+            if (pB) ms.ptrs.B = (int*)gl_get_addr(o, "phase_B_state");
+            if (pC) ms.ptrs.C = (int*)gl_get_addr(o, "phase_C_state");
+
+            // Optional: banked/individual mode
+            PROPERTY* pMode = gl_get_property(o, "operating_mode");
+            if (pMode) ms.pMode = (int*)gl_get_addr(o, "operating_mode");
+
+            // Initialize last seen values to current ones (so we don't flag on first sample)
+            ms.last.A = (ms.ptrs.A ? *ms.ptrs.A : -1);
+            ms.last.B = (ms.ptrs.B ? *ms.ptrs.B : -1);
+            ms.last.C = (ms.ptrs.C ? *ms.ptrs.C : -1);
+
+            sw_list.push_back(ms);
+        }
+        gl_free((void**)&fl_switch);
+    }
+
+    // Also include `recloser` objects (they subclass switch behavior)
+    FINDLIST* fl_recloser = gl_find_objects(FL_NEW, FT_CLASS, SAME, "recloser", FT_END);
+    if (fl_recloser != nullptr && fl_recloser->hit_count > 0) {
+        OBJECT* o = nullptr;
+        while ((o = gl_find_next(fl_recloser, o)) != nullptr) {
+            MonitoredSwitch ms;
+            ms.obj = o;
+
+            PROPERTY* pA = gl_get_property(o, "phase_A_state");
+            PROPERTY* pB = gl_get_property(o, "phase_B_state");
+            PROPERTY* pC = gl_get_property(o, "phase_C_state");
+            if (pA) ms.ptrs.A = (int*)gl_get_addr(o, "phase_A_state");
+            if (pB) ms.ptrs.B = (int*)gl_get_addr(o, "phase_B_state");
+            if (pC) ms.ptrs.C = (int*)gl_get_addr(o, "phase_C_state");
+
+            PROPERTY* pMode = gl_get_property(o, "operating_mode");
+            if (pMode) ms.pMode = (int*)gl_get_addr(o, "operating_mode");
+
+            ms.last.A = (ms.ptrs.A ? *ms.ptrs.A : -1);
+            ms.last.B = (ms.ptrs.B ? *ms.ptrs.B : -1);
+            ms.last.C = (ms.ptrs.C ? *ms.ptrs.C : -1);
+
+            sw_list.push_back(ms);
+        }
+        gl_free((void**)&fl_recloser);
+    }
+
+    switches_index_built = true;
+    gl_verbose("complex_assert: indexed %zu switch/recloser objects", sw_list.size());
+}
+
+
+
+// Returns true if any phase on any monitored switch changed this step
+bool switching_happened_this_step(TIMESTAMP ts_now) {
+    bool changed = false;
+    for (auto& ms : sw_list) {
+        // Read current values (if pointers exist)
+        int currA = (ms.ptrs.A ? *ms.ptrs.A : ms.last.A);
+        int currB = (ms.ptrs.B ? *ms.ptrs.B : ms.last.B);
+        int currC = (ms.ptrs.C ? *ms.ptrs.C : ms.last.C);
+
+        // Compare to last seen values
+        if (currA != ms.last.A || currB != ms.last.B || currC != ms.last.C) {
+            changed = true;
+            // update last so changes are only detected once per transition
+            ms.last.A = currA;
+            ms.last.B = currB;
+            ms.last.C = currC;
+
+            // optional: log which switch changed
+            gl_debug("complex_assert: switch '%s' changed state (A=%d,B=%d,C=%d)",
+                     (ms.obj->name ? ms.obj->name : "unnamed"), currA, currB, currC);
+        }
+    }
+	if (changed) ts_had_switch_change[ts_now] = true;
+    return changed;
+}
+
+
+
 complex_assert::complex_assert(MODULE *module) : gld_object() 
 {
-	
+	gl_output("complex_assert ctor: build %s %s", __DATE__, __TIME__);	
+
 	status = ASSERT_TRUE;
 	within = 0.0;
 	value = 0.0;
@@ -48,12 +205,23 @@ complex_assert::complex_assert(MODULE *module) : gld_object()
 	strcpy(target, "");
 	pTarget = nullptr;
 	pComplex = nullptr;
+	done = false;
+	pending_fail_ts = 0;
+	prestart_deferral_done = false;
+	seen_finite = false;
+	switches_index_built = false;
+	last_to = 0;
+	ts_in = 0;
+	ts_out = 0;
+	
 	
 	if (oclass == nullptr)
 	{
 		// register to receive notice for first top down. bottom up, and second top down synchronizations
-		// oclass = gl_register_class(module, "complex_assert", sizeof(complex_assert), PC_AUTOLOCK | PC_OBSERVER);
-		oclass = gl_register_class(module, "complex_assert", sizeof(complex_assert), PC_AUTOLOCK );
+		//Making assert a POSTTOPDOWN observer increases the chance the detector sees switching change before 
+		// any assert fires in that timestamp—reducing race conditions
+		oclass = gl_register_class(module, "complex_assert", sizeof(complex_assert),   PC_AUTOLOCK | PC_OBSERVER);
+		//oclass = gl_register_class(module, "complex_assert", sizeof(complex_assert), PC_AUTOLOCK );
 
 		if (oclass == nullptr)
 			throw "unable to register class complex_assert";
@@ -79,6 +247,8 @@ complex_assert::complex_assert(MODULE *module) : gld_object()
 								PT_complex, "value", get_value_offset(), PT_DESCRIPTION, "Value to assert",
 								PT_double, "within", get_within_offset(), PT_DESCRIPTION, "Tolerance for a successful assert",
 								PT_char1024, "target",  get_target_offset(), PT_DESCRIPTION, "Property to perform the assert upon",
+								PT_timestamp, "in",  get_ts_in_offset(),  PT_DESCRIPTION, "Earliest time to evaluate",
+								PT_timestamp, "out", get_ts_out_offset(), PT_DESCRIPTION, "Latest time to evaluate",
 								nullptr) < 1)
 		{
 			char msg[256];
@@ -114,44 +284,112 @@ int complex_assert::create(void)
     value = gld::complex(0.0, 0.0);
     once = ONCE_FALSE;
     once_value = gld::complex(0.0, 0.0);
+	seen_finite = false;
+	pTarget = nullptr;
+	ts_in  = 0;
+	ts_out = 0;
 
 	// Use strncpy for safety and ensure null termination.
     strncpy(target, "", sizeof(target) - 1);
     target[sizeof(target) - 1] = '\0';
 
-	printf("DEBUG: complex_assert::create() - target initialized to: '%s'\n", target);
+	// printf("DEBUG: complex_assert::create() - target initialized to: '%s'\n", target);
 
 	return 1; /* return 1 on success, 0 on failure */
 }
 
+
+
+
+// TIMESTAMP complex_assert::resched_safe(const char* reason)
+// {
+//     // If we’re truly done, never schedule again
+//     if (done) {
+//         gl_debug("ASSERT[%s]: resched (%s) -> TS_NEVER [done]", get_name(), reason);
+//         return TS_NEVER;
+//     }
+
+//     const TIMESTAMP now = gl_globalclock;
+
+//     // First-time scheduling
+//     if (!prestart_deferral_done) {
+//         TIMESTAMP initial = 0;
+//         if (ts_in != 0 /* && gl_isvalidtime(ts_in) */) {
+//             initial = ts_in;
+//         } else {
+//             char startbuf[64] = {0};
+//             gl_global_getvar("starttime", startbuf, sizeof(startbuf));
+//             TIMESTAMP t_start = gl_parsetime(startbuf);
+//             initial = (t_start > 0 /* && gl_isvalidtime(t_start) */) ? t_start : (now + 1);
+//         }
+//         prestart_deferral_done = true;
+//         last_to = initial;
+//         char buf[64] = {0}; gl_printtime(initial, buf, sizeof(buf));
+//         gl_debug("ASSERT[%s]: resched (%s) -> %lld (%s) [initial]", get_name(), reason, (long long)initial, buf);
+//         return initial;
+//     }
+
+//     // Haven’t reached ts_in yet? Aim at it.
+//     if (ts_in != 0 && now < ts_in) {
+//         last_to = ts_in;
+//         char buf[64] = {0}; gl_printtime(ts_in, buf, sizeof(buf));
+//         gl_debug("ASSERT[%s]: resched (%s) -> %lld (%s) [gate to ts_in]", get_name(), reason, (long long)ts_in, buf);
+//         return ts_in;
+//     }
+
+//     // Normal continuous scheduling: strictly after (monotonic)
+//     TIMESTAMP next = std::max(last_to + 1, now + 1);
+//     last_to = next;
+//     char buf[64] = {0}; gl_printtime(next, buf, sizeof(buf));
+//     gl_debug("ASSERT[%s]: resched (%s) -> %lld (%s) [normal]", get_name(), reason, (long long)next, buf);
+//     return next;
+// }
+
+
+
+
+
 int complex_assert::init(OBJECT *parent)
-{
-    printf("*** INIT METHOD CALLED FOR OBJECT %d ***\n", get_id());
-    
-    // Just store the parent and target name for later resolution
-    if (parent == nullptr) {
-        printf("ERROR: Parent object is null\n");
-        return 0;
+{	
+	const char* me_name  = get_name();
+    auto*       parent_o = get_parent();                    // gld_object*
+    const char* par_name = parent_o ? parent_o->get_name() : nullptr;
+
+    // If the parent isn't linked yet, request deferred init (return 2)
+    if (!parent_o) {
+        gl_warning("complex_assert init: parent not yet linked; deferring. child='%s' (id=%llu)",
+                   me_name ? me_name : "(unnamed)", (unsigned long long)get_id());
+        return 2;                                           // <-- DEFER (not fatal)
     }
-    
-    // Don't try to resolve properties yet - just validate basic structure
-    printf("DEBUG: Deferring property resolution until commit phase\n");
-    
-    return 1; // Success - actual property resolution happens in commit()
+
+    // Fail-fast: try to resolve the target now (if available)
+    if (resolve_target_property() == 0) {
+        // If property resolution fails, defer once more to give the core a chance
+        gl_warning("complex_assert init: target '%s' unresolved on parent '%s'; deferring. child='%s' (id=%llu)",
+                   get_target().c_str(),
+                   par_name ? par_name : "(unnamed)",
+                   me_name ? me_name : "(unnamed)",
+                   (unsigned long long)get_id());
+        return 2;                                           // <-- DEFER (not fatal)
+    }
+
+    return 1; // Success
+
+
 }
 
 // Add a new method for property resolution
 int complex_assert::resolve_target_property()
 {
-		return TS_NEVER;
+	// return TS_NEVER;
 
     const char* target_str = get_target().c_str();
 
-	printf("DEBUG: target_str raw content: '");
-    for(int i = 0; i < 20 && target_str[i] != '\0'; i++) {
-        printf("%c", isprint(target_str[i]) ? target_str[i] : '?');
-    }
-    printf("'\n");
+	// printf("DEBUG: target_str raw content: '");
+    // for(int i = 0; i < 20 && target_str[i] != '\0'; i++) {
+    //     printf("%c", isprint(target_str[i]) ? target_str[i] : '?');
+    // }
+    // printf("'\n");
     
     // Add safety check for empty target
     if (strlen(target_str) == 0) {
@@ -195,8 +433,8 @@ int complex_assert::resolve_target_property()
         strcpy(prop_name_str, target_str);
     }
     
-    gl_debug("Resolving target property '%s' on object '%s'", 
-             prop_name_str, target_obj->name ? target_obj->name : "unnamed");
+    // gl_debug("Resolving target property '%s' on object '%s'", 
+    //          prop_name_str, target_obj->name ? target_obj->name : "unnamed");
              
     // Use target_obj and prop_name_str (not parent and target_str)
     pTarget = gl_get_property(target_obj, prop_name_str);
@@ -218,232 +456,44 @@ int complex_assert::resolve_target_property()
         return 0;
     }
     
-    gl_debug("Successfully resolved property '%s' at address %p", prop_name_str, pComplex);
+    // gl_debug("Successfully resolved property '%s' at address %p", prop_name_str, pComplex);
     return 1;
 }
 
-TIMESTAMP complex_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
-{
-	
-	    // Resolve properties on first commit (lazy initialization)
-    if (pComplex == nullptr) {
-        if (resolve_target_property() == 0) {
-            return TS_INVALID;
-        }
+
+// Helper
+static const char* op_to_string(int op) {
+    switch (op) {
+        case complex_assert::FULL:      return "FULL";
+        case complex_assert::REAL:      return "REAL";
+        case complex_assert::IMAGINARY: return "IMAGINARY";
+        case complex_assert::MAGNITUDE: return "MAGNITUDE";
+        case complex_assert::ANGLE:     return "ANGLE";
+        default:        return "UNKNOWN";
     }
-
-	gl_verbose("DEBUG: Entering complex_assert::commit for object %d", get_id());
-
-	try
-	{
-		// Add a debug check for the specific problematic object
-        if (get_id() == 4) {
-            gl_verbose("DEBUG: Processing object 4 (ANGLE operation)");
-            gl_verbose("DEBUG: pComplex=%p, operation=%d", pComplex, operation);
-        }
-		// The target is now resolved in init(). If pComplex is null, init() failed.
-		if (pComplex == nullptr)
-		{
-			return TS_INVALID; // Don't run if initialization failed
-		}
-		// Add safety check before dereferencing
-        gl_verbose("DEBUG: About to dereference pComplex for object %d", get_id());
-		// Get the current value from the cached pointer
-		complex x = *pComplex;
-		gl_verbose("DEBUG: Successfully dereferenced pComplex: %g+%gi", x.Re(), x.Im());
-
-		// Determine if this is an error test based on the parent object's name
-		bool is_error_test = false;
-		if (get_parent() && get_parent()->get_name())
-		{
-			const char *parent_name = get_parent()->get_name();
-			is_error_test = strstr(parent_name, "_err") != nullptr;
-		}
-
-		// Handle 'once' logic
-		if (once == ONCE_TRUE)
-		{
-			once_value = value;
-			once = ONCE_DONE;
-		}
-		else if (once == ONCE_DONE)
-		{
-			// FIX: Added '==' operators
-			if (once_value.Re() == value.Re() && once_value.Im() == value.Im())
-			{
-				gl_verbose("Assert skipped with ONCE logic for %s", get_parent()->get_name());
-				return TS_NEVER;
-			}
-			else
-			{
-				once_value = value;
-			}
-		}
-
-		// --- Main assertion logic ---
-		if (status == ASSERT_TRUE)
-		{
-			// FIX: Added '==' operators
-			if (operation == FULL || operation == REAL || operation == IMAGINARY)
-			{
-				complex error = x - value;
-				double real_error = error.Re();
-				double imag_error = error.Im();
-
-				// FIX: Added '==' operator
-				if ((operation == FULL || operation == REAL) && (_isnan(real_error) || fabs(real_error) > within))
-				{
-					gl_error("Assert failed on %s: real part of %s (%g) not within %f of given value %g", get_parent()->get_name(), get_target().c_str(), x.Re(), within, value.Re());
-					if (is_error_test)
-						gl_verbose("Expected failure in error test object %s", get_parent()->get_name());
-					return TS_INVALID;
-				}
-				// FIX: Added '==' operator
-				if ((operation == FULL || operation == IMAGINARY) && (_isnan(imag_error) || fabs(imag_error) > within))
-				{
-					gl_error("Assert failed on %s: imaginary part of %s (%+gi) not within %f of given value %+gi", get_parent()->get_name(), get_target().c_str(), x.Im(), within, value.Im());
-					if (is_error_test)
-						gl_verbose("Expected failure in error test object %s", get_parent()->get_name());
-					return TS_INVALID;
-				}
-			}
-			else if (operation == MAGNITUDE)
-			{
-				double expected_magnitude = value.Re(); // Correct: Use real part to avoid NaN
-				double actual_magnitude = x.Mag();
-				double magnitude_error = fabs(actual_magnitude - expected_magnitude);
-
-				if (_isnan(actual_magnitude) || magnitude_error > within)
-				{
-					gl_error("Assert failed on %s: Magnitude of %s (%g) not within %f of expected value %g", get_parent()->get_name(), get_target().c_str(), actual_magnitude, within, expected_magnitude);
-					if (is_error_test)
-						gl_verbose("Expected failure in error test object %s", get_parent()->get_name());
-					return TS_INVALID;
-				}
-			}
-			else if (operation == ANGLE)
-			{
-				try
-				{
-					double expected_angle = value.Re(); // Correct: Use real part to avoid NaN
-					double actual_angle = x.Arg();
-					double angle_error = fabs(actual_angle - expected_angle);
-
-					if (_isnan(actual_angle) || angle_error > within)
-					{
-						gl_error("Assert failed on %s: Angle of target %s (%g rad) not within %f of expected value %g rad", get_parent()->get_name(), get_target().c_str(), actual_angle, within, expected_angle);
-						if (is_error_test)
-							gl_verbose("Expected failure in error test object %s", get_parent()->get_name());
-						return TS_INVALID;
-					}
-				}
-				catch (const std::exception &e)
-				{
-					gl_error("Exception in ANGLE operation for %s: %s", get_parent()->get_name(), e.what());
-					return TS_INVALID;
-				}
-				catch (...)
-				{
-					gl_error("Unknown exception in ANGLE operation for %s", get_parent()->get_name());
-					return TS_INVALID;
-				}
-			}
-		}
-		else if (status == ASSERT_FALSE)
-		{
-			// For ASSERT_FALSE, we fail if the value IS within the tolerance
-			// FIX: Added '==' operators
-			if (operation == FULL || operation == REAL || operation == IMAGINARY)
-			{
-				complex error = x - value;
-				// FIX: Added '==' operator
-				if ((operation == FULL || operation == REAL) && !(_isnan(error.Re()) || fabs(error.Re()) > within))
-				{
-					gl_error("Assert failed on %s: real part of %s (%g) IS within %f of given value %g", get_parent()->get_name(), get_target().c_str(), x.Re(), within, value.Re());
-					if (is_error_test)
-						gl_verbose("Expected failure in error test object %s", get_parent()->get_name());
-					return TS_INVALID;
-				}
-				// FIX: Added '==' operator
-				if ((operation == FULL || operation == IMAGINARY) && !(_isnan(error.Im()) || fabs(error.Im()) > within))
-				{
-					gl_error("Assert failed on %s: imaginary part of %s (%+gi) IS within %f of given value %+gi", get_parent()->get_name(), get_target().c_str(), x.Im(), within, value.Im());
-					if (is_error_test)
-						gl_verbose("Expected failure in error test object %s", get_parent()->get_name());
-					return TS_INVALID;
-				}
-			}
-			else if (operation == MAGNITUDE)
-			{
-				double expected_magnitude = value.Re();
-				double actual_magnitude = x.Mag();
-				double magnitude_error = fabs(actual_magnitude - expected_magnitude);
-
-				if (!(_isnan(actual_magnitude) || magnitude_error > within))
-				{
-					gl_error("Assert failed on %s: Magnitude of %s (%g) IS within %f of expected value %g", get_parent()->get_name(), get_target().c_str(), actual_magnitude, within, expected_magnitude);
-					if (is_error_test)
-						gl_verbose("Expected failure in error test object %s", get_parent()->get_name());
-					return TS_INVALID;
-				}
-			}
-			else if (operation == ANGLE)
-			{
-				try
-				{
-					double expected_angle = value.Re();
-					double actual_angle = x.Arg();
-					double angle_error = fabs(actual_angle - expected_angle);
-
-					if (!(_isnan(actual_angle) || angle_error > within))
-					{
-						gl_error("Assert failed on %s: Angle of target %s (%g rad) IS within %f of expected value %g rad", get_parent()->get_name(), get_target().c_str(), actual_angle, within, expected_angle);
-						if (is_error_test)
-							gl_verbose("Expected failure in error test object %s", get_parent()->get_name());
-						return TS_INVALID;
-					}
-				}
-				catch (const std::exception &e)
-				{
-					gl_error("Exception in ANGLE operation for %s: %s", get_parent()->get_name(), e.what());
-					return TS_INVALID;
-				}
-				catch (...)
-				{
-					gl_error("Unknown exception in ANGLE operation for %s", get_parent()->get_name());
-					return TS_INVALID;
-				}
-			}
-		}
-
-		gl_verbose("Assert passed on %s", get_parent()->get_name());
-		return TS_NEVER; // Return TS_NEVER on success to disable further checks
-	}
-	catch (const std::exception &e)
-	{
-		if (get_parent() && get_parent()->get_name())
-		{
-			gl_error("Exception in complex_assert::commit for %s: %s", get_parent()->get_name(), e.what());
-		}
-		else
-		{
-			gl_error("Exception in complex_assert::commit: %s", e.what());
-		}
-		return TS_INVALID;
-	}
-	catch (...)
-	{
-		if (get_parent() && get_parent()->get_name())
-		{
-			gl_error("Unknown exception in complex_assert::commit for %s", get_parent()->get_name());
-		}
-		else
-		{
-			gl_error("Unknown exception in complex_assert::commit");
-		}
-		return TS_INVALID;
-	}
 }
+
+
+
+/********************************
+
+Rules:
+
+once = ONCE_TRUE
+
+Evaluate exactly at ts_in.
+If violation and no switching → fail now (TS_INVALID).
+If violation and switching → do not reschedule (stop).
+If pass → stop (no further checks).
+
+
+once = ONCE_FALSE (continuous)
+
+Evaluate continuously inside [ts_in, ts_out) by returning a future timestamp on pass or skip (e.g., t2+1).
+If violation and no switching → fail now.
+If violation and switching → defer (set pending_fail_ts) and reschedule for later resolution.
+**********************************/
+
 
 // int complex_assert::postnotify(PROPERTY *prop, char *value)
 // {
@@ -453,6 +503,449 @@ TIMESTAMP complex_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 // 	}
 // 	return 1;
 // }
+
+
+
+
+
+EvalOutcome complex_assert::evaluate_assert(const complex x, bool switched_now) 
+{
+
+	complex x_local = x;        // local, non-const
+    complex val     = value;    // local, non-const copy of member
+
+    const bool once_true = (once == ONCE_TRUE);
+    const char* op_str = op_to_string((int)operation);
+
+    // Compute deltas
+    const double real_err = x_local.Re() - value.Re();
+    const double imag_err = x_local.Im() - value.Im();
+    const double mag_err  = std::fabs(x.Mag() - value.Mag());
+    const double ang_err  = std::fabs(x.Arg() - value.Arg());
+
+    // Tolerance checks
+    const bool within_real = is_within(real_err, within);
+    const bool within_imag = is_within(imag_err, within);
+    const bool within_mag  = is_within(mag_err, within);
+    const bool within_ang  = is_within(ang_err, within);
+
+    // Format a common head for messages
+    const char* parent_name = (get_parent() && get_parent()->get_name())
+                                ? get_parent()->get_name() : "(null)";
+    char head[256];
+    std::snprintf(head, sizeof(head),
+                  "Assert [%s] parent=%s target=%s op=%s within=%g",
+                  get_name(), parent_name, get_target().c_str(), op_str, within);
+
+    auto fail_immediate = [&] (const char* detail) {
+        gl_error("%s: %s", head, detail);
+        return EvalOutcome::FAIL_IMMEDIATE;
+    };
+    auto fail_turbulence = [&] (const char* detail) {
+        gl_error("%s: %s", head, detail);
+        if (once_true) {
+            // ONCE_TRUE can't defer; treat as immediate failure
+            return EvalOutcome::FAIL_IMMEDIATE;
+        } else {
+            pending_fail_ts = gl_globalclock;
+            gl_debug("complex_assert(%s): deferring failure (turbulence) at %lld",
+                     get_name(), (long long)pending_fail_ts);
+            return EvalOutcome::FAIL_DEFERRED;
+        }
+    };
+
+    if (status == ASSERT_TRUE) {
+        switch (operation) {
+        case FULL:
+            if (within_real && within_imag) return EvalOutcome::PASS;
+            {
+                char msg[256];
+                std::snprintf(msg, sizeof(msg),
+                    "FAIL TRUE(FULL): real_err=%g imag_err=%g", real_err, imag_err);
+                return (!switched_now) ? fail_immediate(msg) : fail_turbulence(msg);
+            }
+        case REAL:
+            if (within_real) return EvalOutcome::PASS;
+            {
+                char msg[256];
+                std::snprintf(msg, sizeof(msg),
+                    "FAIL TRUE(REAL): real=%g not within %g of %g",
+                    x_local.Re(), within, value.Re());
+                return (!switched_now) ? fail_immediate(msg) : fail_turbulence(msg);
+            }
+        case IMAGINARY:
+            if (within_imag) return EvalOutcome::PASS;
+            {
+                char msg[256];
+                std::snprintf(msg, sizeof(msg),
+                    "FAIL TRUE(IMAG): imag=%g not within %g of %g",
+                    x_local.Im(), within, value.Im());
+                return (!switched_now) ? fail_immediate(msg) : fail_turbulence(msg);
+            }
+        case MAGNITUDE:
+            if (within_mag) return EvalOutcome::PASS;
+            {
+                char msg[256];
+                std::snprintf(msg, sizeof(msg),
+                    "FAIL TRUE(MAG): |x|=%g not within %g of |val|=%g (err=%g)",
+                    x.Mag(), within, value.Mag(), mag_err);
+                return (!switched_now) ? fail_immediate(msg) : fail_turbulence(msg);
+            }
+        case ANGLE:
+            if (within_ang) return EvalOutcome::PASS;
+            {
+                char msg[256];
+                std::snprintf(msg, sizeof(msg),
+                    "FAIL TRUE(ANG): arg(x)=%g not within %g of arg(val)=%g (err=%g)",
+                    x.Arg(), within, value.Arg(), ang_err);
+                return (!switched_now) ? fail_immediate(msg) : fail_turbulence(msg);
+            }
+        default:
+            gl_warning("%s: unknown operation in ASSERT_TRUE", head);
+            return EvalOutcome::PASS;
+        }
+    } else { // ASSERT_FALSE
+        switch (operation) {
+        case FULL: {
+            bool inside = within_real && within_imag;
+            if (!inside) return EvalOutcome::PASS;
+            char msg[256];
+            std::snprintf(msg, sizeof(msg),
+                "FAIL FALSE(FULL): inside tolerance (real_err=%g imag_err=%g)", real_err, imag_err);
+            return (!switched_now) ? fail_immediate(msg) : fail_turbulence(msg);
+        }
+        case REAL:
+            if (!within_real) return EvalOutcome::PASS;
+            {
+                char msg[256];
+                std::snprintf(msg, sizeof(msg),
+                    "FAIL FALSE(REAL): |real_err|=%g <= %g (x=%g, val=%g)",
+                    std::fabs(real_err), within, x_local.Re(), value.Re());
+                return (!switched_now) ? fail_immediate(msg) : fail_turbulence(msg);
+            }
+        case IMAGINARY:
+            if (!within_imag) return EvalOutcome::PASS;
+            {
+                char msg[256];
+                std::snprintf(msg, sizeof(msg),
+                    "FAIL FALSE(IMAG): |imag_err|=%g <= %g (x=%g, val=%g)",
+                    std::fabs(imag_err), within, x_local.Im(), value.Im());
+                return (!switched_now) ? fail_immediate(msg) : fail_turbulence(msg);
+            }
+        case MAGNITUDE:
+            if (!within_mag) return EvalOutcome::PASS;
+            {
+                char msg[256];
+                std::snprintf(msg, sizeof(msg),
+                    "FAIL FALSE(MAG): |x|=%g within %g of |val|=%g",
+                    x.Mag(), within, value.Mag());
+                return (!switched_now) ? fail_immediate(msg) : fail_turbulence(msg);
+            }
+        case ANGLE:
+            if (!within_ang) return EvalOutcome::PASS;
+            {
+                char msg[256];
+                std::snprintf(msg, sizeof(msg),
+                    "FAIL FALSE(ANG): arg(x)=%g within %g of arg(val)=%g",
+                    x.Arg(), within, value.Arg());
+                return (!switched_now) ? fail_immediate(msg) : fail_turbulence(msg);
+            }
+        default:
+            gl_warning("%s: unknown operation in ASSERT_FALSE", head);
+            return EvalOutcome::PASS;
+        }
+    }
+}
+
+
+
+TIMESTAMP complex_assert::resched_safe(const char* reason)
+{
+    const TIMESTAMP now = gl_globalclock;
+
+    // If we’re truly done, never schedule again
+    if (done) {
+        gl_debug("ASSERT[%s]: resched (%s) -> TS_NEVER [done]", get_name(), reason);
+        return TS_NEVER;
+    }
+
+    // First-time scheduling
+    if (!prestart_deferral_done) {
+        TIMESTAMP initial = 0;
+        if (ts_in != 0 /* && gl_isvalidtime(ts_in) */) {
+            initial = ts_in;
+        } else {
+            char startbuf[64] = {0};
+            gl_global_getvar("starttime", startbuf, sizeof(startbuf));
+            TIMESTAMP t_start = gl_parsetime(startbuf);
+            initial = (t_start > 0 /* && gl_isvalidtime(t_start) */) ? t_start : (now + 1);
+        }
+        prestart_deferral_done = true;
+
+        // last_to = initial;
+        // char buf[64] = {0}; gl_printtime(initial, buf, sizeof(buf));
+        // gl_debug("ASSERT[%s]: resched (%s) -> %lld (%s) [initial]",
+        //          get_name(), reason, (long long)initial, buf);
+        // return initial;
+
+
+	   // Ensure strictly future scheduling
+       TIMESTAMP next = (initial <= now) ? (now + 1) : initial;
+       last_to = next;
+	   char buf[64] = {0}; gl_printtime(initial, buf, sizeof(buf));
+       gl_debug("ASSERT[%s]: resched (%s) -> %lld (%s) [initial]",
+              get_name(), reason, (long long)initial, buf);
+       return next;
+    }
+
+    // Haven’t reached ts_in yet? Aim at it.
+    if (ts_in != 0 && now < ts_in) {
+        // last_to = ts_in;
+        // char buf[64] = {0}; gl_printtime(ts_in, buf, sizeof(buf));
+        // gl_debug("ASSERT[%s]: resched (%s) -> %lld (%s) [gate to ts_in]",
+        //          get_name(), reason, (long long)ts_in, buf);
+        // return ts_in;
+
+
+
+	   TIMESTAMP next = (ts_in <= now) ? (now + 1) : ts_in;
+       last_to = next;
+	   char buf[64] = {0}; gl_printtime(ts_in, buf, sizeof(buf));
+        gl_debug("ASSERT[%s]: resched (%s) -> %lld (%s) [gate to ts_in]",
+                 get_name(), reason, (long long)ts_in, buf);
+       return next;
+
+    }
+
+    // ONCE_TRUE: after ts_in, commit() will evaluate and then stop; do not go into normal cadence
+    if (once == ONCE_TRUE) {
+        gl_debug("ASSERT[%s]: resched (%s) -> TS_NEVER [ONCE_TRUE post-in]",
+                 get_name(), reason);
+        return TS_NEVER;
+    }
+
+    // Continuous mode (ONCE_FALSE): strictly future monotonic scheduling
+    TIMESTAMP next = std::max(last_to + 1, now + 1);
+    last_to = next;
+
+    char buf[64] = {0}; gl_printtime(next, buf, sizeof(buf));
+    gl_debug("ASSERT[%s]: resched (%s) -> %lld (%s) [normal]",
+             get_name(), reason, (long long)next, buf);
+    return next;
+}
+
+
+TIMESTAMP complex_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
+{
+    // Compute stoptime locally
+    char stopbuf[64] = {0};
+    gl_global_getvar("stoptime", stopbuf, sizeof(stopbuf));
+    TIMESTAMP t_stop = gl_parsetime(stopbuf);
+
+    // Resolve target on first commit (lazy init)
+    if (pComplex == nullptr) {
+        if (resolve_target_property() == 0) {
+            return resched_safe("target unresolved; retry");
+        }
+    }
+
+    // Build switch index if needed
+    if (!switches_index_built) build_switch_index();
+
+    // Record switching for this step
+    bool switched_now = switching_happened_this_step(t2);
+
+    // Hard stoptime guard
+    if (t2 >= t_stop) {
+        gl_debug("complex_assert(%s): skipping at stoptime %s", get_name(), stopbuf);
+        return TS_NEVER;
+    }
+
+    const TIMESTAMP now = gl_globalclock;
+    const bool once_true = (once == ONCE_TRUE);
+
+    // --- ONCE_TRUE gate: enforce evaluation exactly at ts_in ---
+    if (once_true && ts_in != 0) {
+        if (now < ts_in) {
+            // Park at the scheduled 'in' time
+            return resched_safe("ONCE_TRUE: pre-in gate");
+        } else if (now == ts_in) {
+            // Evaluate once at ts_in
+            complex x = *pComplex;  // safe: pComplex resolved earlier
+            if (!std::isfinite(x.Re()) || !std::isfinite(x.Im())) {
+                return resched_safe("ONCE_TRUE: non-finite at ts_in; skip");
+            }
+
+            // Optional plausibility guard for voltages
+            const double mag = x.Mag();
+            if (mag < 1e-3 || mag > 1e5) {
+                return resched_safe("ONCE_TRUE: implausible magnitude at ts_in; skip");
+            }
+
+            EvalOutcome outcome = evaluate_assert(x, switched_now);
+            // Latch one-shot completion
+            once_value = value;
+            once = ONCE_DONE;
+            done = true;
+
+            if (outcome == EvalOutcome::PASS) {
+                gl_debug("Assert [%s]: ONCE_TRUE PASS at ts_in; stopping", get_name());
+                return TS_NEVER;
+            } else {
+                gl_debug("Assert [%s]: ONCE_TRUE FAIL at ts_in; stopping", get_name());
+                // For ONCE_TRUE, treat any failure as immediate (non-zero exit)
+                return TS_INVALID;
+            }
+        } else { // now > ts_in
+            // Missed window; don't keep rescheduling
+            gl_warning("Assert [%s]: ONCE_TRUE missed ts_in (%lld > %lld); stopping",
+                       get_name(), (long long)now, (long long)ts_in);
+            once = ONCE_DONE;
+            done = true;
+            return TS_NEVER;
+        }
+    }
+
+    // --- Engine advisory/sentinel handling (AFTER ONCE_TRUE gate) ---
+    // if (t2 == TS_NEVER) {
+    //     const bool past_out     = (ts_out != 0 && now >= ts_out);
+    //     const bool at_stop      = (t_stop > 0 && now >= t_stop);
+    //     const bool once_is_done = (once == ONCE_DONE);
+    //     if (past_out || at_stop || once_is_done || done) {
+    //         gl_debug("complex_assert(%s): [A] stopping", get_name());
+    //         return TS_NEVER;
+    //     }
+    //     // return resched_safe("engine TS_NEVER -> re-emit");
+	// 	// return resched_safe("engine TS_NEVER -> re-emit (future)");
+
+	// 	// Advisory from engine; evaluate at 'now' and stop
+	// 	complex x = *pComplex;
+	// 	if (!std::isfinite(x.Re()) || !std::isfinite(x.Im())) return TS_NEVER;
+	// 	const double mag = x.Mag();
+	// 	if (mag < 1e-3 || mag > 1e5) return TS_NEVER;
+	// 	EvalOutcome outcome = evaluate_assert(x, /*switched_now=*/false);
+	// 	done = true;
+	// 	return (outcome == EvalOutcome::PASS) ? TS_NEVER : TS_INVALID;
+
+    // }
+
+    // if (t2 <= 0 /* || !gl_isvalidtime(t2) */) {
+    //     // return resched_safe("engine invalid t2 -> re-emit");
+	// 	// return resched_safe("engine invalid t2 -> re-emit (future)");
+
+
+	// 	// Snapshot commit: evaluate at 'now' and stop to avoid busy-loop
+	// 	complex x = *pComplex;
+	// 	if (!std::isfinite(x.Re()) || !std::isfinite(x.Im())) return TS_NEVER;
+	// 	const double mag = x.Mag();
+	// 	if (mag < 1e-3 || mag > 1e5) return TS_NEVER;
+	// 	EvalOutcome outcome = evaluate_assert(x, /*switched_now=*/false);
+	// 	done = true;
+	// 	return (outcome == EvalOutcome::PASS) ? TS_NEVER : TS_INVALID;
+
+    // }
+
+
+	// --- Engine advisory/sentinel handling (AFTER ONCE_TRUE gate) ---
+	if (t2 == TS_NEVER || t2 <= 0) {
+
+		// If it's clearly "one-shot", treat as snapshot
+		bool one_shot = (once == ONCE_TRUE) ||
+						((ts_in == 0) && (ts_out == 0) && !model_is_continuous_like());
+
+		if (one_shot) {
+			// Evaluate once and stop
+			complex x = *pComplex;
+			if (!std::isfinite(x.Re()) || !std::isfinite(x.Im())) return TS_NEVER;
+			double mag = x.Mag();
+			if (mag < 1e-3 || mag > 1e5) return TS_NEVER;
+			EvalOutcome o = evaluate_assert(x, /*switched_now=*/false);
+			done = true;
+			return (o == EvalOutcome::PASS) ? TS_NEVER : TS_INVALID;
+		} else {
+			// Continuous-like model: throttle rescheduling to avoid 1-second treadmill
+			// Pick a conservative cadence (e.g., 900 s = 15 minutes), capped by stoptime
+			const TIMESTAMP now = gl_globalclock;
+			char stopbuf[64] = {0};
+			gl_global_getvar("stoptime", stopbuf, sizeof(stopbuf));
+			TIMESTAMP t_stop = gl_parsetime(stopbuf);
+
+			const TIMESTAMP step = 900; // 15 minutes default
+			TIMESTAMP next = now + step;
+			if (t_stop > 0 && next >= t_stop) {
+				// If we’d hit or exceed stoptime, just stop
+				return TS_NEVER;
+			}
+			last_to = next;
+			return next;
+		}
+	}
+
+
+    // --- Normal gating (non-ONCE_TRUE) ---
+    if (ts_in != 0 && now < ts_in) {
+        return resched_safe("before-in gate");
+    }
+    if (ts_out != 0 && now >= ts_out) {
+        return TS_NEVER;
+    }
+
+    // Deferred failure resolution – if you deferred previously, decide now
+    if (pending_fail_ts != 0) {
+        bool switched_then = ts_had_switch_change[pending_fail_ts];
+        pending_fail_ts = 0;
+        if (!switched_then) {
+            gl_error("Assert failed on %s: deferred failure cleared but no switching at prior step",
+                     get_parent()->get_name());
+            return TS_INVALID;
+        } else {
+            gl_debug("Assert failed on %s: deferred failure cleared with switching at prior step",
+                     get_parent()->get_name());
+            // Continue to current evaluation
+        }
+    }
+
+    // Read target and plausibility checks
+    complex x = *pComplex;
+    if (!std::isfinite(x.Re()) || !std::isfinite(x.Im())) {
+        return resched_safe("non-finite value; skip");
+    }
+    const double mag = x.Mag();
+    if (mag < 1e-3 || mag > 1e5) {
+        return resched_safe("implausible magnitude; skip");
+    }
+
+    // --- Main assertion logic (continuous mode) ---
+    EvalOutcome outcome = evaluate_assert(x, switched_now);
+
+    if (status == ASSERT_TRUE) {
+        switch (outcome) {
+        case EvalOutcome::PASS:
+            gl_debug("Assert [%s]: pass; rescheduling (ONCE_FALSE)", get_name());
+            return resched_safe("pass; rescheduling (ONCE_FALSE)");
+        case EvalOutcome::FAIL_IMMEDIATE:
+            return TS_INVALID;
+        case EvalOutcome::FAIL_DEFERRED:
+            return resched_safe("deferred fail; turbulence");
+        }
+    } else { // ASSERT_FALSE
+        switch (outcome) {
+        case EvalOutcome::PASS:
+            gl_debug("Assert [%s]: ASSERT_FALSE pass (outside tolerance); rescheduling", get_name());
+            return resched_safe("ASSERT_FALSE pass; reschedule");
+        case EvalOutcome::FAIL_IMMEDIATE:
+            return TS_INVALID;
+        case EvalOutcome::FAIL_DEFERRED:
+            return resched_safe("ASSERT_FALSE deferred fail; turbulence");
+        }
+    }
+
+    // Fallback (shouldn't happen)
+    gl_debug("ASSERT[%s]: unexpected fall-through; returning TS_NEVER", get_name());
+    return TS_NEVER;
+}
+
+
 
 EXPORT SIMULATIONMODE update_complex_assert(OBJECT *obj, TIMESTAMP t0, unsigned int64 delta_time, unsigned long dt, unsigned int iteration_count_val)
 {
@@ -837,4 +1330,64 @@ EXPORT SIMULATIONMODE update_complex_assert(OBJECT *obj, TIMESTAMP t0, unsigned 
 	}
 	else // Iteration, so don't care
 		return SM_EVENT;
+}
+
+
+
+// ---- Explicit C exports (create/init/commit) ----
+extern "C"
+{
+	// Create wrapper - constructs the object
+	EXPORT int create_complex_assert(OBJECT **obj, OBJECT *parent)
+	{
+		try {
+			*obj = gl_create_object(complex_assert::oclass);
+			if (*obj == nullptr) return 0;
+			complex_assert *my = object_data<complex_assert>(*obj);
+			if (!my) {
+				gl_error("create_complex_assert: obj->data is null for class 'complex_assert'");
+				return 0;
+			}
+			// Let the core set parent; or call gl_set_parent(*obj, parent) if needed
+			return my->create();
+		}
+		CREATE_CATCHALL(complex_assert);
+	}
+
+	// Init wrapper - calls the C++ init with the parent handle
+	EXPORT int init_complex_assert(OBJECT *obj)
+	{
+		try {
+			complex_assert *my = object_data<complex_assert>(obj);
+			if (!my) {
+				gl_error("init_complex_assert: obj->data is null for complex_assert");
+				return 0;
+			}
+			return my->init(obj->parent);
+		}
+		CREATE_CATCHALL(complex_assert);
+	}
+
+	// Commit wrapper - core calls this; we forward to the C++ method
+	EXPORT TIMESTAMP commit_complex_assert(OBJECT *obj, TIMESTAMP t1, TIMESTAMP t2)
+	{
+		try {
+			complex_assert *my = object_data<complex_assert>(obj);
+			if (!my) {
+				gl_error("commit_complex_assert: obj->data is null for complex_assert");
+				return TS_INVALID;
+			}
+			return my->commit(t1, t2);
+		}
+		catch (const std::exception &ex) {
+			gl_error("commit_complex_assert(obj=%d;%s): %s",
+					obj->id, (obj->name ? obj->name : "unnamed"), ex.what());
+			return TS_INVALID;
+		}
+		catch (...) {
+			gl_error("commit_complex_assert(obj=%d;%s): unhandled exception",
+					obj->id, (obj->name ? obj->name : "unnamed"));
+			return TS_INVALID;
+		}
+	}
 }

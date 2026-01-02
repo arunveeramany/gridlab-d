@@ -160,6 +160,7 @@ int triplex_load::init(OBJECT *parent)
 {
 	int ret_value;
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
 
 	ret_value = triplex_node::init(parent);
 

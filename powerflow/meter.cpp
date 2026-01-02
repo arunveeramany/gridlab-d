@@ -356,6 +356,7 @@ int meter::init(OBJECT *parent)
 {
 	char temp_buff[128];
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
 
 	if(power_market != 0){
 		price_prop = gl_get_property(power_market, "current_market.clearing_price");

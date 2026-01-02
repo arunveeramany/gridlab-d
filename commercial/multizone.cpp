@@ -62,6 +62,7 @@ int multizone::create(void)
 int multizone::init(OBJECT *parent)
 {
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
 	if (from==nullptr)
 		gl_error("%s (multizone:%d): from zone is not specified", obj->name?obj->name:"unnamed",obj->id);
 	else if (!gl_object_isa(from,"office"))

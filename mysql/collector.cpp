@@ -56,6 +56,9 @@ int collector::create(void)
 
 int collector::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	// check the connection
 	if ( get_connection()!=nullptr )
 		db = (database*)(get_connection()+1);

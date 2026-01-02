@@ -154,6 +154,7 @@ int metrics_collector::create(){
 int metrics_collector::init(OBJECT *parent){
 
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
 
 //	int temp = strcmp(parent->oclass->name,"triplex_meter") != 0;
 	if (parent == nullptr)

@@ -150,6 +150,8 @@ int node::init(OBJECT *parent)
 {
 	// check that parent is swing bus
 	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+
 	node *swing = parent?OBJECTDATA(parent,node):this;
 	OBJECT *swing_hdr = OBJECTHDR(swing);
 	if (swing_hdr->oclass!=hdr->oclass || swing->type!=SWING)

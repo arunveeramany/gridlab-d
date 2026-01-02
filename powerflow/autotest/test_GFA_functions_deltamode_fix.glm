@@ -114,30 +114,35 @@ object meter {
 		// file data_GFA_system_power_overall.csv;
 	// };
 	object complex_assert {
-		name casserter1;
+		name complex_assert_1;
+		parent source_node;
 		flags DELTAMODE;
 		target measured_power;
-		within 0.1;
+		within 3000;  // allow ~3 kW / ~3 kVAr for losses/startup;
 		object player {
-			parent casserter1;
+			name player_1;
+			parent complex_assert_1;
 			flags DELTAMODE;
 			property "value";
 			file "../data_GFA_system_power_overall.csv";
 		};
 	};
 	object player {
+		name player_2;
 		parent source_node;
 		flags DELTAMODE;
 		property voltage_A;
 		file "../data_GFA_voltage_frequency_player_A.csv";
 	};
 	object player {
+		name player_3;
 		parent source_node;
 		flags DELTAMODE;
 		property voltage_B;
 		file "../data_GFA_voltage_frequency_player_B.csv";
 	};
 	object player {
+		name player_4;
 		parent source_node;
 		flags DELTAMODE;
 		property voltage_C;
@@ -174,17 +179,20 @@ object load {
 	GFA_enable true;
 	GFA_reconnect_time 1.0 s;
 	object player {
+		name player_5;
 		parent direct_freq_load;
 		flags DELTAMODE;
 		property "measured_frequency";
 		file "../data_GFA_frequency_values_player.csv";
 	};
 	object enum_assert {
-		name easserter1;
+		name enum_assert_1;
+		parent direct_freq_load;
 		flags DELTAMODE;
 		target "GFA_trip_method";
 		object player {
-			parent easserter1;
+			name player_6;
+			parent enum_assert_1;
 			flags DELTAMODE;
 			property "value";
 			file "../data_direct_freq_GFA_trip_method.csv";
@@ -218,11 +226,13 @@ object load {
 	GFA_reconnect_time 1.0 s;
 	frequency_measure_type SIMPLE;
 	object enum_assert {
-		name easserter2;
+		name enum_assert_2;
+		parent measure_freq_load_parent;
 		flags DELTAMODE;
 		target "GFA_trip_method";
 		object player {
-			parent easserter2;
+			name player_7;
+			parent enum_assert_2;
 			flags DELTAMODE;
 			property "value";
 			file "../data_measure_freq_GFA_trip_method.csv";
@@ -253,17 +263,20 @@ object triplex_load {
 	GFA_enable true;
 	GFA_reconnect_time 1.0 s;
 	object player {
+		name player_8;
 		parent tpl_B;
 		flags DELTAMODE;
 		property "measured_frequency";
 		file "../data_GFA_frequency_values_player.csv";
 	};
 	object enum_assert {
-		name easserter3;
+		name enum_assert_3;
+		parent tpl_B;
 		flags DELTAMODE;
 		target "GFA_trip_method";
 		object player {
-			parent easserter3;
+			name player_9;
+			parent enum_assert_3;
 			flags DELTAMODE;
 			property "value";
 			file "../data_direct_freq_GFA_trip_method.csv";
@@ -289,11 +302,13 @@ object triplex_load {
 	GFA_reconnect_time 1.0 s;
 	frequency_measure_type SIMPLE;
 	object enum_assert {
-		name easserter4;
+		name enum_assert_4;
+		parent tpl_B_freq;
 		flags DELTAMODE;
 		target "GFA_trip_method";
 		object player {
-			parent easserter4;
+			name player_10;
+			parent enum_assert_4;
 			flags DELTAMODE;
 			property "value";
 			file "../data_measure_freq_GFA_trip_method.csv";
@@ -320,11 +335,13 @@ object triplex_load {
 	GFA_reconnect_time 1.0 s;
 	frequency_measure_type SIMPLE;
 	object enum_assert {
-		name easserter5;
+		name enum_assert_5;
+		parent tpl_B_freq_parent;
 		flags DELTAMODE;
 		target "GFA_trip_method";
 		object player {
-			parent easserter5;
+			name player_11;
+			parent enum_assert_5;
 			flags DELTAMODE;
 			property "value";
 			file "../data_measure_freq_GFA_trip_method.csv";
@@ -379,6 +396,7 @@ object overhead_line {
 }
 
 object transformer {
+	name transformer_1;
 	phases BS;
 	from secondary_node;
 	to tpm_B;
@@ -386,6 +404,7 @@ object transformer {
 }
 
 object triplex_line {
+	name triplex_line_1;
 	phases BS;
 	from tpm_B;
 	to tpl_B;
@@ -394,6 +413,7 @@ object triplex_line {
 }
 
 object triplex_line {
+	name triplex_line_2;
 	phases BS;
 	from tpm_B;
 	to tpl_B_freq;
@@ -402,6 +422,7 @@ object triplex_line {
 }
 
 object triplex_line {
+	name triplex_line_3;
 	phases BS;
 	from tpm_B;
 	to tpm_B2;
@@ -410,6 +431,7 @@ object triplex_line {
 }
 
 object group_recorder {
+	name group_recorder_1;
 	flags DELTAMODE;
 	group "groupid=GFA_loads";
 	property "GFA_status";

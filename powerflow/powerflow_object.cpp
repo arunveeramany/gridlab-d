@@ -176,6 +176,7 @@ int powerflow_object::create(void)
 int powerflow_object::init(OBJECT *parent)
 {
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
 
 	    // --- FIX FOR PLATFORM-SPECIFIC UNINITIALIZED POINTER BUG ---
     // Any top-level powerflow object (fault_check, configurations, etc.)

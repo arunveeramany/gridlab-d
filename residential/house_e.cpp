@@ -1353,6 +1353,9 @@ and internal gain variables.
 int house_e::init(OBJECT *parent)
 {
 
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+
 	gld_property *temp_gld_property;
 	unsigned int test_rlock = 0;
 	bool temp_bool_val;
@@ -1364,7 +1367,7 @@ int house_e::init(OBJECT *parent)
 			return 2; // defer
 		}
 	}
-	OBJECT *hdr = object_header(this);
+	// OBJECT *hdr = object_header(this);
 	hdr->flags |= OF_SKIPSAFE;
 
 	heat_start = false;

@@ -163,6 +163,8 @@ int eventgen::create(void)
 int eventgen::init(OBJECT *parent)
 {
 	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	int index, comma_count;
 	TIMESTAMP tempTime, globStartTimeVal;
 	FINDLIST *ObjListVals;

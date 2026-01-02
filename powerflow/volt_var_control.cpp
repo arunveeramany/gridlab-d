@@ -118,6 +118,9 @@ int volt_var_control::create(void)
 
 int volt_var_control::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	int retval = powerflow_object::init(parent);
 
 	int index, indexa;

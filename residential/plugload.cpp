@@ -70,6 +70,7 @@ int plugload::create()
 int plugload::init(OBJECT *parent)
 {
 	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
 	hdr->flags |= OF_SKIPSAFE;
 
 	load.breaker_amps = 40;

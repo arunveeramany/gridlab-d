@@ -106,6 +106,7 @@ int group_recorder::init(OBJECT *obj)
 {
 	OBJECT *gr_obj = 0;
 	OBJECT *thisobj = object_header(this);
+	
 	gld_global min_ts_value("minimum_timestep");
 	int32 temp_min_ts_value;
 	int retvalue;

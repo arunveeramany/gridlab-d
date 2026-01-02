@@ -1784,8 +1784,10 @@ EXPORT int init_solar(OBJECT *obj, OBJECT *parent)
 {
 	try
 	{
-		if (obj != nullptr)
+		if (obj != nullptr){
+			parent = obj->parent;
 			return /*OBJECTDATA(obj,<>)*/ object_data<solar>(obj)->init(parent);
+		}
 		else
 			return 0;
 	}

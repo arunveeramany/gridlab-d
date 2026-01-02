@@ -159,6 +159,9 @@ int refrigerator::create()
 
 int refrigerator::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+
 
 	if(parent != nullptr){
 		if((parent->flags & OF_INIT) != OF_INIT){
@@ -167,7 +170,7 @@ int refrigerator::init(OBJECT *parent)
 			return 2; // defer
 		}
 	}
-	OBJECT *hdr = object_header(this);
+	
 	hdr->flags |= OF_SKIPSAFE;
 
 	// defaults for unset values */

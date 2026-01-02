@@ -122,6 +122,8 @@ int regulator_configuration::create(void)
 }
 int regulator_configuration::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
 
 	if (Control == LINE_DROP_COMP) 
 	{

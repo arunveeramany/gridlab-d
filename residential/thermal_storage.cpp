@@ -140,6 +140,9 @@ int thermal_storage::create(void)
 
 int thermal_storage::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+
 	if(parent != nullptr){
 		if((parent->flags & OF_INIT) != OF_INIT){
 			char objname[256];
@@ -147,7 +150,7 @@ int thermal_storage::init(OBJECT *parent)
 			return 2; // defer
 		}
 	}
-	OBJECT *hdr = object_header(this);
+	
 	hdr->flags |= OF_SKIPSAFE;
 	gld_property *design_cooling_capacity_prop;
 	double design_cooling_capacity;

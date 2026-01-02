@@ -78,6 +78,9 @@ int sectionalizer::create()
 //Initialization routine
 int sectionalizer::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	//Nothing to see here, just init it
 	return switch_object::init(parent);
 }

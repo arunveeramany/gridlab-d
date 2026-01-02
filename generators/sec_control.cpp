@@ -127,6 +127,8 @@ int sec_control::create(void)
 int sec_control::init(OBJECT *parent)
 {
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
+
 	STATUS fxn_return_status;
 
 	// Deferred initialization code

@@ -179,6 +179,8 @@ int bus::init(OBJECT *parent)
 {
 	/* TODO: set the context-dependent initial value of properties */
 	OBJECT *obj_this = object_header(this);
+	parent = obj_this->parent;
+
 	bus *bus_this;
 	bus_this = OBJECTDATA(obj_this,bus);
 

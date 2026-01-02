@@ -100,6 +100,7 @@ int loadshape::create()
 int loadshape::init(OBJECT *parent)
 {
 	OBJECT *hdr = object_header(this);
+	parent = obj->parent;
 	
 	state = TS_INIT;
 

@@ -156,6 +156,8 @@ void substation::fetch_double(double **prop, const char *name, OBJECT *parent){
 int substation::init(OBJECT *parent)
 {
 	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+
 	int i,n;
 
 	//Base check higher so can be used below

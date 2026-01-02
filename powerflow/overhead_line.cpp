@@ -67,6 +67,9 @@ int overhead_line::create(void)
 
 int overhead_line::init(OBJECT *parent)
 {
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	double *temp_rating_value = nullptr;
 	double temp_rating_continuous = 10000.0;
 	double temp_rating_emergency = 20000.0;

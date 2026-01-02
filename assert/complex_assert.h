@@ -7,6 +7,8 @@
 #include <stdarg.h>
 #include <mutex>
 #include <shared_mutex>
+#include <cstddef>
+
 
 #include "gridlabd.h"
 #include "object.h"
@@ -15,6 +17,9 @@ using gld::complex;
 #ifndef _isnan
 #define _isnan isnan
 #endif
+
+enum class EvalOutcome { PASS, FAIL_IMMEDIATE, FAIL_DEFERRED };
+
 
 class complex_assert : public gld_object
 {
@@ -87,6 +92,14 @@ protected:
     gld::complex *pComplex = nullptr;
  
     int resolve_target_property();
+
+    bool seen_finite = false;
+    TIMESTAMP pending_fail_ts = 0;
+
+private:
+    TIMESTAMP ts_in = 0;
+    TIMESTAMP ts_out = 0;
+
 
 
 public:
@@ -387,6 +400,43 @@ public:
         auto &mtx = SharedMutexManager::get_mutex(my());
         std::unique_lock<std::shared_mutex> lock(mtx);
         once_value = p;
+    }
+
+private:
+
+private:
+    bool init_guard_done = false;
+    bool prestart_deferral_done = false;  // only allow one pre-start deferral
+    inline TIMESTAMP resched_safe(const char* reason);
+    TIMESTAMP last_to  = 0 ;
+    bool done = false;
+
+
+    static inline bool is_within(double err, double tol) {return std::fabs(err) <= tol;}
+
+    EvalOutcome evaluate_assert(const complex x, bool switched_now);
+
+
+public:
+
+    inline TIMESTAMP next_check(TIMESTAMP now){ return now + 1; } // 1 second later
+    // inline TIMESTAMP resched(TIMESTAMP t2, const char* reason, TIMESTAMP now, TIMESTAMP ts_in, TIMESTAMP ts_out, bool switched_now);
+
+
+    // Static inline method to get the byte offset of the member `status`.
+    static inline size_t get_ts_in_offset(void)
+    {
+        return offsetof(complex_assert, ts_in);
+        // double_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->status)) - reinterpret_cast<const char *>(current_defaults);
+    }
+
+    // Static inline method to get the byte offset of the member `status`.
+    static inline size_t get_ts_out_offset(void)
+    {
+        return offsetof(complex_assert, ts_out);
+        // double_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->status)) - reinterpret_cast<const char *>(current_defaults);
     }
 
 public:

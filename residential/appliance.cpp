@@ -45,6 +45,9 @@ int appliance::create()
 int appliance::init(OBJECT *parent)
 {
 
+	OBJECT *hdr = object_header(this);
+	parent = hdr->parent;
+	
 	pTarget=nullptr;
 
 	gl_warning("This device, %s, is considered very experimental and has not been validated.", get_name());

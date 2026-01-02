@@ -304,7 +304,9 @@ int link_object::create(void)
 
 int link_object::init(OBJECT *parent)
 {
-	OBJECT *obj = GETOBJECT(this);
+	// OBJECT *obj = GETOBJECT(this);
+	OBJECT *obj = object_header(this);
+	parent = obj->parent;
 
 	/* check link from node */
 	if (from == nullptr)

@@ -100,6 +100,8 @@ int stubauction::create(void)
 int stubauction::init(OBJECT *parent)
 {
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
+
 	market_id = 0;
 	if (period == 0)
 		period = 300;
@@ -279,7 +281,7 @@ extern "C" TIMESTAMP sync_stubauction(void *object, ...)
 {
     va_list args;
     va_start(args, object);
-    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    TIMESTAMP t1 = va_arg(args, TIMESTAMP);
     PASSCONFIG pass = va_arg(args, PASSCONFIG);
     va_end(args);
 

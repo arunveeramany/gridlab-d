@@ -5,10 +5,10 @@
 N=${1:-1}  # Default to 1st E line if no argument is provided
 
 suite="climate"
-err_type="E"   #manually change ^X
+err_type="X"   #manually change ^X
 
 # Loop through N = 1 to 10
-for N in {1..5}; do
+for N in {1..140}; do
   echo "🔁 Starting iteration N=$N"
 
   echo "🔍 Step 1: Reading validate.txt to find the ${N}th line starting with '${err_type}'..."
@@ -16,7 +16,7 @@ for N in {1..5}; do
   VALIDATE_FILE="/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/${suite}/validate.txt"
 
   # Use awk to get the nth line starting with 'E' and extract the .glm path
-  GLM_PATH=$(awk -v n="$N" '/^E/ {count++; if (count == n) print $3}' "$VALIDATE_FILE")
+  GLM_PATH=$(awk -v n="$N" '/^X/ {count++; if (count == n) print $3}' "$VALIDATE_FILE")
 
   if [ -z "$GLM_PATH" ]; then
     echo "❌ Error: Could not find the ${N}th .glm path in validate.txt."

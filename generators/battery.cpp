@@ -221,6 +221,7 @@ int battery::create(void)
 int battery::init(OBJECT *parent)
 {
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
 	gld_property *temp_property_pointer;
 	double temp_value_SocReserve;
 	enumeration temp_value_control_mode;
@@ -228,6 +229,8 @@ int battery::init(OBJECT *parent)
 
 	if (parent != nullptr)
 	{
+		
+
 		if ((parent->flags & OF_INIT) != OF_INIT)
 		{
 			char objname[256];
@@ -295,6 +298,8 @@ int battery::init(OBJECT *parent)
 		// find parent meter, if not defined, use a default meter (using static variable 'default_meter')
 		if (parent != nullptr)
 		{
+			
+		
 			if (gl_object_isa(parent, "meter", "powerflow"))
 			{
 				// Set the flags
@@ -626,11 +631,33 @@ int battery::init(OBJECT *parent)
 			to an inverter to work.  If this is not done, the code will fail.
 			*/
 		}
-		else if (!gl_object_isa(parent, "inverter", "generators"))
-		{
-			GL_THROW("Battery must have an inverter as it's parent");
-			// Defined above
-		}
+		// else if (!gl_object_isa(parent, "inverter", "generators"))
+		// {
+		// 	GL_THROW("Battery must have an inverter as it's parent");
+		// 	// Defined above
+		// }
+
+		const char* parent_class  = (parent->oclass ? parent->oclass->name : "(unknown)");
+        const char* parent_module = (parent->oclass && parent->oclass->module) ? parent->oclass->module->name : "(unknown)";
+
+        // Accept any module if the class is 'inverter'
+        bool is_inverter =
+            (parent_class && strcmp(parent_class, "inverter") == 0)
+            // If your build supports a module-agnostic isa (second arg nullptr), keep it:
+            || gl_object_isa(parent, "inverter", nullptr)
+            // Retain the original strict check as a fallback:
+            || gl_object_isa(parent, "inverter", "generators");
+
+        gl_verbose("battery:init — parent class='%s', module='%s'",
+                   parent_class ? parent_class : "(null)",
+                   parent_module ? parent_module : "(null)");
+
+        if (!is_inverter)
+        {
+            GL_THROW("Battery must have an inverter as parent in internal mode (found class='%s', module='%s')",
+                     parent_class, parent_module);
+        }
+
 
 		switch (rfb_size_v)
 		{
@@ -2581,8 +2608,38 @@ EXPORT int init_battery(OBJECT *obj, OBJECT *parent)
 	INIT_CATCHALL(battery);
 }
 
-EXPORT TIMESTAMP sync_battery(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+
+//EXPORT TIMESTAMP sync_battery(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+//{
+
+
+extern "C" TIMESTAMP sync_battery(void *object, ...)
 {
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t1 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
+    
+	if (!callback) {
+        gl_error("callback is null in sync_battery");
+        return 0;  // Fail module load
+    }
+
+	    // Add structure validation
+    // std::cerr << "Callback structure size check:" << std::endl;
+    // std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
+    // std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
+    // std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
+    
+
+	if (!callback->time.local_datetime) {
+        gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
+        return FAILED;
+    }
+
 	TIMESTAMP t2 = TS_NEVER;
 	battery *my = /*OBJECTDATA(obj, battery)*/ object_data<battery>(obj);
 	try

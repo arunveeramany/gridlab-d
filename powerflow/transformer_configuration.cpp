@@ -157,6 +157,7 @@ int transformer_configuration::init(OBJECT *parent)
 {
 
 	OBJECT *obj = object_header(this);
+	parent = obj->parent;
 
 	// if aggregate rating is not set and 3 phase is specified
 	if (kVA_rating==0)
