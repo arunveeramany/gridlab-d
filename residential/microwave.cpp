@@ -162,7 +162,9 @@ int microwave::isa(char *classname)
 //	lock-step behavior across uniform devices
 // start ....... on .. off
 TIMESTAMP microwave::update_state_cycle(TIMESTAMP t0, TIMESTAMP t1){
-	double ti0 = (double)t0, ti1 = (double)t1;
+	//double ti0 = (double)t0;
+	// On first call, t0 (obj->clock) may be 0; use t1 as the reference time
+    TIMESTAMP now = (t1 > t0) ? t1 : t0;
 
 	if(shape.load == 0){
 		state = OFF;
@@ -178,7 +180,7 @@ TIMESTAMP microwave::update_state_cycle(TIMESTAMP t0, TIMESTAMP t1){
 
 	if(cycle_start == 0){
 		double off = gl_random_uniform(RNGSTATE,0, this->cycle_time);
-		cycle_start = (TIMESTAMP)(ti1 + off);
+		cycle_start = now + (TIMESTAMP)off;
 		cycle_on = (TIMESTAMP)((1 - shape.load) * cycle_time) + cycle_start;
 		cycle_off = (TIMESTAMP)cycle_time + cycle_start;
 		state = OFF;
@@ -198,10 +200,19 @@ TIMESTAMP microwave::update_state_cycle(TIMESTAMP t0, TIMESTAMP t1){
 		cycle_off = (TIMESTAMP)cycle_time + cycle_start;
 	}
 
-	if(state == ON)
-		return (TIMESTAMP)cycle_off;
-	if(state == OFF)
-		return (TIMESTAMP)cycle_on;
+	// if(state == ON)
+	// 	return (TIMESTAMP)cycle_off;
+	// if(state == OFF)
+	// 	return (TIMESTAMP)cycle_on;
+
+
+	// Validate before returning
+    if(state == ON)
+        return cycle_off > t1 ? cycle_off : TS_NEVER;
+    if(state == OFF)
+        return cycle_on > t1 ? cycle_on : TS_NEVER;
+    
+
 	return TS_NEVER; // from ambiguous state
 }
 
@@ -308,8 +319,11 @@ TIMESTAMP microwave::sync(TIMESTAMP t0, TIMESTAMP t1)
 	if(shape.type == MT_UNKNOWN){
 		if(cycle_time == 0)
 			return dt>0?-(TIMESTAMP)(t1 + dt*TS_SECOND) : TS_NEVER; // negative time means soft transition
-		else
+		else{
+			gl_debug("microwave::sync returning: cycle_time=%f, dt=%f, ct=%lld, t1=%lld", 
+         cycle_time, dt, (long long)ct, (long long)t1);
 			return ct == TS_NEVER ? TS_NEVER : -ct;
+		}
 	} else {
 		return t2;
 	}

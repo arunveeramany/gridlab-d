@@ -588,8 +588,31 @@ EXPORT int init_histogram(OBJECT *obj)
 	}
 }
 
-EXPORT TIMESTAMP sync_histogram(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+// EXPORT TIMESTAMP sync_histogram(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+// {
+extern "C" TIMESTAMP sync_histogram(void *object, ...)
 {
+
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_histogram: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_histogram: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object; 
+
+
 	histogram *pObj = object_data<histogram>(obj);
 	try {
 		if (pass == PC_PRETOPDOWN)

@@ -279,8 +279,32 @@ EXPORT int init_voltdump(OBJECT *obj)
 	INIT_CATCHALL(voltdump);
 }
 
-EXPORT TIMESTAMP sync_voltdump(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+// EXPORT TIMESTAMP sync_voltdump(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+// {
+extern "C" TIMESTAMP sync_voltdump(void *object, ...)
 {
+
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_voltdump: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_voltdump: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t1 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object; 
+
+
+
 	try
 	{
 		voltdump *my = object_data<voltdump>(obj);

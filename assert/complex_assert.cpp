@@ -12,6 +12,12 @@
 #include <cstdlib>
 #include <cstddef> // Required for offsetof
 
+
+#include <unordered_map>
+#include <vector>
+#include <algorithm>
+
+
 #include "gridlabd.h"
 #include "gld_complex.h"
 
@@ -854,13 +860,17 @@ TIMESTAMP complex_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 						((ts_in == 0) && (ts_out == 0) && !model_is_continuous_like());
 
 		if (one_shot) {
+
+            // If we're not at/near stoptime, reschedule to stoptime
+            if (t_stop > 0 && now < t_stop - 1) {
+                return t_stop - 1;  // Evaluate just before stop
+            }
 			// Evaluate once and stop
 			complex x = *pComplex;
 			if (!std::isfinite(x.Re()) || !std::isfinite(x.Im())) return TS_NEVER;
 			double mag = x.Mag();
 			if (mag < 1e-3 || mag > 1e5) return TS_NEVER;
 			EvalOutcome o = evaluate_assert(x, /*switched_now=*/false);
-			done = true;
 			return (o == EvalOutcome::PASS) ? TS_NEVER : TS_INVALID;
 		} else {
 			// Continuous-like model: throttle rescheduling to avoid 1-second treadmill
@@ -1008,7 +1018,7 @@ EXPORT SIMULATIONMODE update_complex_assert(OBJECT *obj, TIMESTAMP t0, unsigned 
 					complex error = *x - da->get_value();
 					double real_error = error.Re();
 					double imag_error = error.Im();
-					if ((_isnan(real_error) || fabs(real_error) > da->get_within()) && (da->get_operation() == da->FULL || da->get_operation() == da->REAL))
+					if ((std::isnan(real_error) || fabs(real_error) > da->get_within()) && (da->get_operation() == da->FULL || da->get_operation() == da->REAL))
 					{
 						// Calculate time
 						if (delta_time >= dt) // After first iteration
@@ -1043,7 +1053,7 @@ EXPORT SIMULATIONMODE update_complex_assert(OBJECT *obj, TIMESTAMP t0, unsigned 
 
 						return SM_ERROR;
 					}
-					if ((_isnan(imag_error) || fabs(imag_error) > da->get_within()) && (da->get_operation() == da->FULL || da->get_operation() == da->IMAGINARY))
+					if ((std::isnan(imag_error) || fabs(imag_error) > da->get_within()) && (da->get_operation() == da->FULL || da->get_operation() == da->IMAGINARY))
 					{
 						// Calculate time
 						if (delta_time >= dt) // After first iteration
@@ -1082,7 +1092,7 @@ EXPORT SIMULATIONMODE update_complex_assert(OBJECT *obj, TIMESTAMP t0, unsigned 
 				else if (da->get_operation() == da->MAGNITUDE)
 				{
 					double magnitude_error = (*x).Mag() - da->get_value().Mag();
-					if (_isnan(magnitude_error) || fabs(magnitude_error) > da->get_within())
+					if (std::isnan(magnitude_error) || fabs(magnitude_error) > da->get_within())
 					{
 						// Calculate time
 						if (delta_time >= dt) // After first iteration
@@ -1121,7 +1131,7 @@ EXPORT SIMULATIONMODE update_complex_assert(OBJECT *obj, TIMESTAMP t0, unsigned 
 				else if (da->get_operation() == da->ANGLE)
 				{
 					double angle_error = (*x).Arg() - da->get_value().Arg();
-					if (_isnan(angle_error) || fabs(angle_error) > da->get_within())
+					if (std::isnan(angle_error) || fabs(angle_error) > da->get_within())
 					{
 						// Calculate time
 						if (delta_time >= dt) // After first iteration
@@ -1167,7 +1177,7 @@ EXPORT SIMULATIONMODE update_complex_assert(OBJECT *obj, TIMESTAMP t0, unsigned 
 					complex error = *x - da->get_value();
 					double real_error = error.Re();
 					double imag_error = error.Im();
-					if ((_isnan(real_error) || fabs(real_error) < da->get_within()) && (da->get_operation() == da->FULL || da->get_operation() == da->REAL))
+					if ((std::isnan(real_error) || fabs(real_error) < da->get_within()) && (da->get_operation() == da->FULL || da->get_operation() == da->REAL))
 					{
 						// Calculate time
 						if (delta_time >= dt) // After first iteration
@@ -1202,7 +1212,7 @@ EXPORT SIMULATIONMODE update_complex_assert(OBJECT *obj, TIMESTAMP t0, unsigned 
 
 						return SM_ERROR;
 					}
-					if ((_isnan(imag_error) || fabs(imag_error) < da->get_within()) && (da->get_operation() == da->FULL || da->get_operation() == da->IMAGINARY))
+					if ((std::isnan(imag_error) || fabs(imag_error) < da->get_within()) && (da->get_operation() == da->FULL || da->get_operation() == da->IMAGINARY))
 					{
 						// Calculate time
 						if (delta_time >= dt) // After first iteration
@@ -1241,7 +1251,7 @@ EXPORT SIMULATIONMODE update_complex_assert(OBJECT *obj, TIMESTAMP t0, unsigned 
 				else if (da->get_operation() == da->MAGNITUDE)
 				{
 					double magnitude_error = (*x).Mag() - da->get_value().Mag();
-					if (_isnan(magnitude_error) || fabs(magnitude_error) < da->get_within())
+					if (std::isnan(magnitude_error) || fabs(magnitude_error) < da->get_within())
 					{
 						// Calculate time
 						if (delta_time >= dt) // After first iteration
@@ -1280,7 +1290,7 @@ EXPORT SIMULATIONMODE update_complex_assert(OBJECT *obj, TIMESTAMP t0, unsigned 
 				else if (da->get_operation() == da->ANGLE)
 				{
 					double angle_error = (*x).Arg() - da->get_value().Arg();
-					if (_isnan(angle_error) || fabs(angle_error) < da->get_within())
+					if (std::isnan(angle_error) || fabs(angle_error) < da->get_within())
 					{
 						// Calculate time
 						if (delta_time >= dt) // After first iteration

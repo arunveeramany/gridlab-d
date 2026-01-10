@@ -103,7 +103,9 @@ EXPORT int create_line_spacing(OBJECT **obj, OBJECT *parent)
 	CREATE_CATCHALL(line_spacing);
 }
 
-EXPORT TIMESTAMP sync_line_spacing(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+// EXPORT TIMESTAMP sync_line_spacing(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+// {
+extern "C" TIMESTAMP sync_line_spacing(void *object, ...)
 {
 	return TS_NEVER;
 }

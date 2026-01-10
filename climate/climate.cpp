@@ -699,8 +699,10 @@ climate *climate::defaults = &defaults_storage;
 EXPORT CLASS* init(CALLBACKS *fntable, MODULE *mod, int argc, char *argv[])
 {
 
+
 	// Save the callback table pointer
     callback = fntable;
+
 
 	// Validate the callback structure before storing it
     if (!callback) {
@@ -718,6 +720,10 @@ EXPORT CLASS* init(CALLBACKS *fntable, MODULE *mod, int argc, char *argv[])
     // set the global callback table
     // callback = fntable;
 
+
+
+	gl_output("CLIMATE_INIT_ENTRY_SENTINEL: %s %s",
+          __DATE__, __TIME__);
 
 	
 
@@ -741,9 +747,38 @@ EXPORT CLASS* init(CALLBACKS *fntable, MODULE *mod, int argc, char *argv[])
 }
 
 
+// C-style wrapper for the C++ init method
+EXPORT int init_climate(OBJECT *obj)
+{
+
+	// gl_output("CLIMATE_CLASS_INIT_WRAPPER: id=%d name=%s",
+            //   obj->id, obj->name ? obj->name : "(unnamed)");
+
+    try {
+        climate *my = object_data<climate>(obj);
+        return my->init(obj->parent);
+    }
+    catch (const char *msg) {
+        gl_error("init_climate_object(obj=%d; %s) error: %s", obj->id, obj->name, msg);
+        return 0;
+    }
+}
+
+
+
+EXPORT int create_climate_object(OBJECT *obj)
+{
+    // gl_output("CLIMATE_CLASS_CREATE_WRAPPER: id=%d name=%s",
+            //   obj->id, obj->name ? obj->name : "(unnamed)");
+    climate *my = object_data<climate>(obj); // or your allocation pattern
+    return (my != nullptr) ? 1 : 0;
+}
+
 
 climate::climate(MODULE *module)
 {
+	// gl_output("CLIMATE_OBJECT_CTOR_SENTINEL: constructing climate object");
+
 	// memset(this, 0, sizeof(climate));
 	if (oclass == nullptr)
 	{
@@ -757,7 +792,9 @@ climate::climate(MODULE *module)
             oclass->trl = TRL_PROVEN;
 		
 
-        oclass->init = (FUNCTIONADDR)init_climate_object;
+        oclass->init = (FUNCTIONADDR)init_climate;
+		gl_output("CLIMATE_CLASS_POINTERS: init=%p", (void*)oclass->init);
+		oclass->create  = (FUNCTIONADDR)create_climate_object;
 
 
 		if (gl_publish_variable(oclass,
@@ -920,6 +957,10 @@ int climate::isa(char *classname)
 
 int climate::init(OBJECT *parent)
 {
+
+	// gl_output("CLIMATE_CLASS_INIT_SENTINEL: entering init; tmyfile='%s'",
+            //   tmyfile.get_string());
+
 	char *dot = 0;
 	OBJECT *obj = object_header(this);
 	parent = obj->parent;
@@ -927,22 +968,68 @@ int climate::init(OBJECT *parent)
 	double meter_to_feet = 1.0;
 	double tz_num_offset;
 
+	
+
 	reader_type = (enumeration)RT::RT_NONE;
 
-	// ignore "" files ~ manual climate control is a feature
-	if (strcmp(tmyfile, "") == 0)
+	if (strstr(tmyfile, ".tmy2") || strstr(tmyfile, ".tmy"))
 	{
-		gl_verbose("Manual or FNCS/HELICS climate control; initializing to the starttime");
-		presync(gl_globalclock);
-		return 1;
+		reader_type = (enumeration)RT::RT_TMY2;
+	}
+	else if (strstr(tmyfile, ".csv"))
+	{
+		reader_type = (enumeration)RT::RT_CSV;
+	}
+	else
+	{
+		gl_warning("climate: unrecognized filetype, assuming RT_NONE");
 	}
 
-	// open access to the TMY file
-	char found_file[1024];
-	if (gl_findfile(tmyfile.get_string(), nullptr, R_OK, found_file, sizeof(found_file)) == nullptr) // TODO: get proper values for solar
-	{
-		gl_error("weather file '%s' access failed", tmyfile.get_string());
+
+	if (reader_type == (enumeration)RT::RT_NONE) {
+		// No TMY reader selected. If no file specified, treat as manual climate.
+		const char* tf = tmyfile.get_string();
+		if (tf == nullptr || strcmp(tf, "") == 0) {
+			gl_verbose("Manual or FNCS/HELICS climate control; initializing to the starttime");
+			presync(gl_globalclock);
+			return 1;
+		}
+
+		gl_error("climate:%s: unsupported or unrecognized weather file type '%s'",
+				obj->name ? obj->name : "(unnamed)", tf);
 		return 0;
+	}
+
+
+	if(reader_type == (enumeration)RT::RT_TMY2)
+	{
+		// ignore "" files ~ manual climate control is a feature
+		if (strcmp(tmyfile, "") == 0)
+		{
+			gl_verbose("Manual or FNCS/HELICS climate control; initializing to the starttime");
+			presync(gl_globalclock);
+			return 1;
+		}
+
+		// open access to the TMY file
+		char found_file[1024];
+		if (gl_findfile(tmyfile.get_string(), nullptr, R_OK, found_file, sizeof(found_file)) == nullptr) // TODO: get proper values for solar
+		{
+			gl_error("weather file '%s' access failed", tmyfile.get_string());
+			return 0;
+		}
+
+		gl_output("climate:%s: weather file resolved to '%s'", obj->name ? obj->name : "(unnamed)", found_file);
+
+
+		
+		if (file.open(found_file) < 3) {
+			gl_error("climate:%s: weather file header improperly formed: '%s'",
+					obj->name ? obj->name : "(unnamed)", found_file);
+			return 0;
+		}
+		gl_output("climate:%s: TMY header parsed OK: '%s'", obj->name ? obj->name : "(unnamed)", found_file);
+		
 	}
 
 	if (cloud_model != (enumeration)CLOUDMODEL::CM_NONE)
@@ -995,19 +1082,6 @@ int climate::init(OBJECT *parent)
 		// write_out_cloud_pattern('B');
 		convert_to_fuzzy_cloud(EMPTY_VALUE, cloud_num_layers, cloud_alpha);
 		prev_NTime = t0 - 60;
-	}
-
-	if (strstr(tmyfile, ".tmy2") || strstr(tmyfile, ".tmy"))
-	{
-		reader_type = (enumeration)RT::RT_TMY2;
-	}
-	else if (strstr(tmyfile, ".csv"))
-	{
-		reader_type = (enumeration)RT::RT_CSV;
-	}
-	else
-	{
-		gl_warning("climate: unrecognized filetype, assuming TMY2");
 	}
 
 	if (reader_type == (enumeration)RT::RT_CSV)
@@ -1081,11 +1155,11 @@ int climate::init(OBJECT *parent)
 	}
 
 	// implicit if(reader_type == RT_TMY2) ~ do the following
-	if (file.open(found_file) < 3)
-	{
-		gl_error("climate::init() -- weather file header improperly formed");
-		return 0;
-	}
+	// if (file.open(found_file) < 3)
+	// {
+	// 	gl_error("climate::init() -- weather file header improperly formed");
+	// 	return 0;
+	// }
 
 	// begin parsing the TMY file
 	int line = 0;
@@ -1284,20 +1358,6 @@ int climate::init(OBJECT *parent)
 	return 1;
 }
 
-// In climate.cpp, near your create_climate function
-
-// C-style wrapper for the C++ init method
-EXPORT int init_climate_object(OBJECT *obj)
-{
-    try {
-        climate *my = object_data<climate>(obj);
-        return my->init(obj->parent);
-    }
-    catch (const char *msg) {
-        gl_error("init_climate_object(obj=%d; %s) error: %s", obj->id, obj->name, msg);
-        return 0;
-    }
-}
 
 int climate::get_solar_for_location(double latitude, double longitude, double *direct, double *global, double *diffuse)
 {

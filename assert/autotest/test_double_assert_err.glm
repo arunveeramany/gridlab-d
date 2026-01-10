@@ -1,14 +1,20 @@
 // test_double_assert_err
 
+#set verbose=1
+
 module assert;
 module climate;
 
 object climate {
+	name climate_1;
 	temperature 50;
 	object double_assert {
+		name double_assert_1;
+		parent climate_1;
 		target "temperature";
 		value 55;
 		within 1;
 	};
 };
 	
+

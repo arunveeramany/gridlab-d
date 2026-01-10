@@ -189,8 +189,31 @@ static TIMESTAMP shaper_update(OBJECT *obj, TIMESTAMP t0, unsigned int n)
 	return t1;
 }
 
-EXPORT TIMESTAMP sync_shaper(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+// EXPORT TIMESTAMP sync_shaper(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+// {
+extern "C" TIMESTAMP sync_shaper(void *object, ...)
 {
+
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_shaper: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_shaper: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object; 
+
+
 	struct shaper *my = object_data<struct shaper>(obj);
 	TIMESTAMP t1 = TS_NEVER;
 	if (my->status==TS_INIT)

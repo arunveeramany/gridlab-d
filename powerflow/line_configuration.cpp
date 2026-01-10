@@ -121,8 +121,15 @@ EXPORT int create_line_configuration(OBJECT **obj, OBJECT *parent)
 	}
 	CREATE_CATCHALL(line_configuration);
 }
-EXPORT TIMESTAMP sync_line_configuration(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+// EXPORT TIMESTAMP sync_line_configuration(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+// {
+
+extern "C" TIMESTAMP sync_line_configuration(void *object, ...)
 {
+
+
+
+
 	return TS_NEVER;
 }
 

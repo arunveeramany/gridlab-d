@@ -18,6 +18,20 @@ endif()
 message(STATUS "Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_SYSTEM_PROCESSOR}")
 
 
+#if(APPLE AND CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64")
+#  if(CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
+#	# Recommended common flags
+#	add_compile_options(-O2)                    # Avoid -O3 for numerical tests
+#	add_compile_options(-fno-vectorize)         # Disable loop vectorization (Clang)
+#	add_compile_options(-fno-slp-vectorize)     # Disable SLP vectorization (Clang)
+# 	If you use LTO anywhere, turn it off for these targets:
+#	set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+#  endif()
+#endif()
+
+
+
+
 
 set(CMAKE_BUILD_TYPE Debug)
 

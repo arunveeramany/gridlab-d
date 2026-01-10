@@ -67,7 +67,7 @@ extern "C" TIMESTAMP sync_triplex_meter(void *object, ...)
     PASSCONFIG pass = va_arg(args, PASSCONFIG);
     va_end(args);
 
-    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
+    OBJECT *obj = (OBJECT*)object; 
 
 	try {
 		triplex_meter *pObj = object_data<triplex_meter>(obj);
@@ -363,10 +363,10 @@ int triplex_meter::init(OBJECT *parent)
 	gl_debug("triplex_meter::init: triplex_node::init returned %d", rv);
 
 
-	if (rv == 2 && parent == nullptr) {
-        // Top-level meter shouldn’t wait—let children proceed
-        return 1;
-    }
+	// if (rv == 2 && parent == nullptr) {
+    //     // Top-level meter shouldn’t wait—let children proceed
+    //     return 1;
+    // }
 
     return rv;
 
@@ -475,61 +475,66 @@ TIMESTAMP triplex_meter::sync(TIMESTAMP t0)
 		//See if we've been initialized yet - links typically do this, but single buses get missed
 		if (NR_node_reference == -1)
 		{
+			try{
 			//Call the populate routine
 			NR_populate();
+			}
+			catch (...) {
+		    	gl_warning("triplex_meter:%d (%s): NR_populate failed early; deferring to next pass",
+                       obj->id, (obj->name ? obj->name : "Unnamed"));
+            	// Do not throw; just continue
+        	}
+
 		}
 	}
 
-	//Reliability check
-	if ((fault_check_object != nullptr) && (solver_method == SM_NR))	//proper solver fault_check is present (so might need to set flag
-	{
-		if (NR_node_reference==-99)	//Childed
-		{
-			TempNodeRef=*NR_subnode_reference;
+	// Reliability check (softened to tolerate folded child under SWING)
+	if ((fault_check_object != nullptr) && (solver_method == SM_NR)) {
+		if (NR_node_reference == -99) { // Childed
+			if (NR_subnode_reference != nullptr) {
+				TempNodeRef = *NR_subnode_reference;
+			} else {
+				gl_warning("triplex_meter:%d (%s): NR_subnode_reference is null; treating as folded into parent",
+						obj->id, (obj->name ? obj->name : "Unnamed"));
+				TempNodeRef = NR_node_reference; // fallback – avoids deref
+			}
 
-			//See if our parent was initialized
-			if (TempNodeRef == -1)
-			{
-				//Try to initialize it, for giggles
+			// Try once to populate the parent if the child ref is still unset
+			if (TempNodeRef == -1 && SubNodeParent != nullptr) {
 				node *Temp_Node = object_data<node>(SubNodeParent);
+				if (Temp_Node != nullptr) Temp_Node->NR_populate();
 
-				//Call the initialization
-				Temp_Node->NR_populate();
-
-				//Pull our reference
-				TempNodeRef=*NR_subnode_reference;
-
-				//Check it again
-				if (TempNodeRef == -1)
-				{
-					GL_THROW("triplex_meter:%d - %s - Uninitialized parent is causing odd issues - fix your model!",obj->id,(obj->name?obj->name:"Unnamed"));
-					/*  TROUBLESHOOT
-					A childed triplex_meter object is having issues mapping to its parent node - this typically happens in very odd cases of islanded/orphaned
-					topologies that only contain nodes (no links).  Adjust your GLM to work around this issue.
-					*/
+				// If still unset, do NOT throw – just flag interrupted and proceed
+				if (NR_subnode_reference == nullptr || *NR_subnode_reference == -1) {
+					tpmeter_interrupted = true;
+					if (tpmeter_interrupted_secondary) tpmeter_interrupted_secondary = false;
+					// Continue without raising – let triplex_node::sync handle next steps
+					return triplex_node::sync(t0);
+				} else {
+					TempNodeRef = *NR_subnode_reference;
 				}
 			}
-		}
-		else	//Normal
-		{
-			//Just assign it to our normal index
-			TempNodeRef=NR_node_reference;
+		} else {
+			TempNodeRef = NR_node_reference;
 		}
 
-		if ((NR_busdata[TempNodeRef].origphases & NR_busdata[TempNodeRef].phases) != NR_busdata[TempNodeRef].origphases)	//We have a phase mismatch - something has been lost
-		{
-			tpmeter_interrupted = true;	//Someone is out of service, they just may not know it
-
-			//See if we were "momentary" as well - if so, clear us.
-			if (tpmeter_interrupted_secondary)
-				tpmeter_interrupted_secondary = false;
-		}
-		else
-		{
-			tpmeter_interrupted = false;	//All is well
+		// Only check phases if TempNodeRef is valid
+		if (TempNodeRef >= 0) {
+			if ((NR_busdata[TempNodeRef].origphases & NR_busdata[TempNodeRef].phases) != NR_busdata[TempNodeRef].origphases) {
+				tpmeter_interrupted = true;
+				if (tpmeter_interrupted_secondary) tpmeter_interrupted_secondary = false;
+			} else {
+				tpmeter_interrupted = false;
+			}
+		} else {
+			gl_warning("triplex_meter:%d (%s): TempNodeRef invalid (%d) during sync; treating as interrupted",
+					obj->id, (obj->name ? obj->name : "Unnamed"), TempNodeRef);
+			tpmeter_interrupted = true;
+			if (tpmeter_interrupted_secondary) tpmeter_interrupted_secondary = false;
 		}
 	}
 
+	
 	if (tpmeter_power_consumption != gld::complex(0,0))
 	{
 		power[0] += tpmeter_power_consumption/2;

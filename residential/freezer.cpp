@@ -315,8 +315,32 @@ EXPORT int create_freezer(OBJECT **obj, OBJECT *parent)
 	CREATE_CATCHALL(freezer);
 }
 
-EXPORT TIMESTAMP sync_freezer(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+// EXPORT TIMESTAMP sync_freezer(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+// {
+extern "C" TIMESTAMP sync_freezer(void *object, ...)
 {
+
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_freezer: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_freezer: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object; 
+
+
+
 	try {
 		freezer *my = object_data<freezer>(obj);
 		TIMESTAMP t1 = TS_NEVER;

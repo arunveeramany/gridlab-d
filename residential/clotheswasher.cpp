@@ -796,8 +796,31 @@ EXPORT int isa_clotheswasher(OBJECT *obj, char *classname)
 	}
 }
 
-EXPORT TIMESTAMP sync_clotheswasher(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+//EXPORT TIMESTAMP sync_clotheswasher(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+//{
+
+extern "C" TIMESTAMP sync_clotheswasher(void *object, ...)
 {
+
+	// Add early validation of callback
+    if (!callback) {
+        gl_error("sync_clotheswasher: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_clotheswasher: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+	OBJECT *obj = (OBJECT*)object; 
+
 	clotheswasher *my = object_data<clotheswasher>(obj);
 	if (obj->clock <= ROUNDOFF)
 		obj->clock = t0;  //set the object clock if it has not been set yet

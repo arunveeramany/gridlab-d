@@ -110,8 +110,33 @@ EXPORT int init_powerflow_library(OBJECT *obj)
 * @param pass the current pass for this sync call
 * @return t1, where t1>t0 on success, t1=t0 for retry, t1<t0 on failure
 */
-EXPORT TIMESTAMP sync_powerflow_library(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+// EXPORT TIMESTAMP sync_powerflow_library(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+// {
+
+extern "C" TIMESTAMP sync_powerflow_library(void *object, ...)
 {
+
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_powerflow_library: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_powerflow_library: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object; 
+
+
+
 	powerflow_library *pObj = object_data<powerflow_library>(obj);
 	gl_error("%s (powerflow_library:%d): sync should never be called", pObj->get_name(), pObj->get_id());
 	return TS_INVALID;

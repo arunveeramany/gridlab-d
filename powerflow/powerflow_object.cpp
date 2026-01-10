@@ -335,8 +335,33 @@ EXPORT int init_powerflow_object(OBJECT *obj)
 * @param pass the current pass for this sync call
 * @return t1, where t1>t0 on success, t1=t0 for retry, t1<t0 on failure
 */
-EXPORT TIMESTAMP sync_powerflow_object(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+// EXPORT TIMESTAMP sync_powerflow_object(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+// {
+
+extern "C" TIMESTAMP sync_powerflow_object(void *object, ...)
 {
+
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_powerflow_object: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_powerflow_object: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object; 
+
+
+
 	powerflow_object *pObj = object_data<powerflow_object>(obj);
 	try {
 		TIMESTAMP t1 = TS_NEVER;

@@ -25,6 +25,7 @@
 
 class csv_reader : public weather_reader {
 private:
+	std::vector<std::string> pending_headers;
 protected:
 	int read_prop(char *);
 	int read_header(char *);

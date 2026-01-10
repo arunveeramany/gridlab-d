@@ -240,8 +240,32 @@ EXPORT int init_currdump(OBJECT *obj)
 	}
 }
 
-EXPORT TIMESTAMP sync_currdump(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+// EXPORT TIMESTAMP sync_currdump(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+// {
+extern "C" TIMESTAMP sync_currdump(void *object, ...)
 {
+
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_currdump: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_currdump: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t1 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object; 
+
+
+
 	currdump *my = /*OBJECTDATA(obj,<>)*/ object_data<currdump>(obj);
 	TIMESTAMP rv;
 	obj->clock = t1;

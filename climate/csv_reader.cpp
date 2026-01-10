@@ -20,9 +20,126 @@
 
 //extern enum class RANDOMTYPE;
 
+#include <string>
+#include <cctype>
+#include <algorithm>
 
 
 CLASS *csv_reader::oclass = nullptr;
+
+
+
+static void ltrim(std::string& x) {
+    x.erase(x.begin(), std::find_if(x.begin(), x.end(), [](unsigned char ch) {
+        return !std::isspace(ch);
+    }));
+}
+
+
+static void rtrim(std::string& x) {
+    x.erase(std::find_if(x.rbegin(), x.rend(),
+       [](unsigned char ch) { return !std::isspace(ch); }).base(), x.end());
+}
+
+static std::string normalize_prop_name(const char* name) {
+    if (!name) return {};
+    std::string s(name);
+
+    // Erase from the first '[' onward (unit token)
+    if (auto pos = s.find('['); pos != std::string::npos) {
+        s.erase(pos);
+    }
+
+    // Trim whitespace
+    ltrim(s);
+    rtrim(s);
+
+   // Lowercase (cast to unsigned char to avoid UB for non-ASCII)
+    std::transform(s.begin(), s.end(), s.begin(),
+        [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
+
+    return s;
+}
+
+
+
+
+
+
+
+// Case-insensitive equality
+static bool iequals(const std::string& a, const std::string& b) {
+    if (a.size() != b.size()) return false;
+    for (size_t i=0;i<a.size();++i) {
+        if ((unsigned char)std::tolower(a[i]) != (unsigned char)std::tolower(b[i])) return false;
+    }
+    return true;
+}
+
+// Small synonym map for known pairs the reader already supports in read_line()
+static const std::vector<std::pair<std::string,std::string>> k_synonyms = {
+    {"solar_direct", "solar_dir"},
+    {"solar_diffuse","solar_diff"},
+    // You can add more if needed
+};
+
+// Try exact; else match normalized property names; else try synonyms.
+static PROPERTY* find_weather_property_relaxed(const char* token) {
+    if (token == nullptr || weather::oclass == nullptr) return nullptr;
+
+    // 1) Try exact published name first
+    PROPERTY* p = gl_find_property(weather::oclass, token);
+    if (p) return p;
+
+    // 2) Try normalized name against normalized published names
+    std::string want = token;
+    // trim and to-lower
+   // 1. Defining the trim lambda to handle both ends
+	auto trim = [](std::string& x) {
+		// Left trim: remove leading whitespace
+		x.erase(x.begin(), std::find_if(x.begin(), x.end(), [](unsigned char ch) {
+			return !std::isspace(ch);
+		}));
+		// Right trim: remove trailing whitespace
+		x.erase(std::find_if(x.rbegin(), x.rend(), [](unsigned char ch) {
+			return !std::isspace(ch);
+		}).base(), x.end());
+	};
+
+	// 2. Usage
+	trim(want);
+
+	// 3. Lowercase conversion using std::transform
+	std::transform(want.begin(), want.end(), want.begin(), [](unsigned char ch) {
+		return std::tolower(ch);
+	});
+
+	
+    // iterate properties in weather class
+    for (PROPERTY* it = weather::oclass->pmap ; it != nullptr ; it = it->next) {
+        std::string normalized = normalize_prop_name(it->name);
+        if (iequals(normalized, want)) return it;
+    }
+
+    // 3) Try synonyms: map token to an alternate name and search again
+    for (const auto& kv : k_synonyms) {
+        if (iequals(want, kv.first)) {
+            // user wrote "solar_direct" ; published may be "solar_dir[W/sf]"
+            for (PROPERTY* it = weather::oclass->pmap ; it != nullptr ; it = it->next) {
+                std::string normalized = normalize_prop_name(it->name);
+                if (iequals(normalized, kv.second)) return it;
+            }
+        } else if (iequals(want, kv.second)) {
+            // user wrote "solar_dir" ; published may be "solar_direct[W/sf]"
+            for (PROPERTY* it = weather::oclass->pmap ; it != nullptr ; it = it->next) {
+                std::string normalized = normalize_prop_name(it->name);
+                if (iequals(normalized, kv.first)) return it;
+            }
+        }
+    }
+    return nullptr;
+}
+
 
 EXPORT int create_csv_reader(OBJECT **obj, OBJECT *parent){
 	csv_reader *my = 0;
@@ -79,10 +196,38 @@ csv_reader::csv_reader(MODULE *module){
 	}
 }
 
+
+
+
 /**
 	Open a CSV file and parse it as
  **/
 int csv_reader::open(const char *file){
+
+
+	gl_debug("CSV: before resolution weather::oclass=%p pending_headers=%zu column_ct=%d",
+         weather::oclass, pending_headers.size(), column_ct);
+
+
+	if (!pending_headers.empty() && weather::oclass != nullptr) {
+		
+		columns.resize(column_ct);
+		for (size_t i = 0; i < pending_headers.size(); ++i) {
+			PROPERTY* colprop = find_weather_property_relaxed(pending_headers[i].c_str());
+			if (!colprop) {
+				gl_warning("Deferred resolution: unrecognized column '%s'", pending_headers[i].c_str());
+				columns[i] = nullptr;
+			} else {
+				columns[i] = colprop;
+			}
+		}
+		pending_headers.clear();
+	}
+
+
+	gl_debug("CSV: after resolution pending_headers=%zu", pending_headers.size());
+
+
 	char line[1024];
 	char filename[128];
 	int has_cols = 0;
@@ -124,6 +269,23 @@ int csv_reader::open(const char *file){
 			return 0;
 		} else {
 			has_cols = 1;
+
+			// Resolve deferred headers now that weather::oclass should be ready
+			gl_debug("CSV: explicit headers read; weather::oclass=%p pending_headers=%zu column_ct=%d",
+					weather::oclass, pending_headers.size(), column_ct);
+
+			if (!pending_headers.empty() && weather::oclass != nullptr) {
+				columns.resize(column_ct);
+				for (size_t i = 0; i < pending_headers.size(); ++i) {
+					PROPERTY* colprop = find_weather_property_relaxed(pending_headers[i].c_str());
+					gl_debug("CSV: resolving header '%s' -> %s",
+							pending_headers[i].c_str(),
+							colprop ? colprop->name : "<unmapped>");
+					columns[i] = colprop;
+				}
+				pending_headers.clear();
+			}
+
 		}
 	}
 	while(fgets(line, 1024, infile) != nullptr){
@@ -151,6 +313,24 @@ int csv_reader::open(const char *file){
 				return 0;
 			} else {
 				has_cols = 1;
+
+
+				// Resolve deferred headers now
+				gl_debug("CSV: file header read at line %d; weather::oclass=%p pending_headers=%zu column_ct=%d",
+						linenum, weather::oclass, pending_headers.size(), column_ct);
+
+				if (!pending_headers.empty() && weather::oclass != nullptr) {
+					columns.resize(column_ct);
+					for (size_t i = 0; i < pending_headers.size(); ++i) {
+						PROPERTY* colprop = find_weather_property_relaxed(pending_headers[i].c_str());
+						gl_debug("CSV: resolving header '%s' -> %s",
+								pending_headers[i].c_str(),
+								colprop ? colprop->name : "<unmapped>");
+						columns[i] = colprop;
+					}
+					pending_headers.clear();
+				}
+
 			}
 		} else {
 			int line_rv = read_line(line, linenum);
@@ -159,6 +339,10 @@ int csv_reader::open(const char *file){
 				return 0;
 			} else if (1 == line_rv){ // good read
 				++sample_ct;
+				gl_debug("CSV: ingested sample at line %d (sample_ct=%d)", linenum, sample_ct);
+
+
+				
 			} else if (2 == line_rv){ // read went 'backwards' or was blank, line discarded.
 				;
 			}
@@ -199,6 +383,9 @@ int csv_reader::open(const char *file){
 	// calculate object lat/long
 	obj->latitude = lat_deg + (lat_deg > 0 ? lat_min : -lat_min) / 60;
 	obj->longitude = long_deg + (long_deg > 0 ? long_min : -long_min) / 60;
+
+
+	gl_debug("CSV: open() complete, sample_ct=%d", sample_ct);
 
 	return 1;
 }
@@ -281,6 +468,9 @@ int csv_reader::read_prop(char *line){ // already pulled the '$' off the front
 }
 
 int csv_reader::read_header(char *line){
+
+
+
 	struct cmnlist {
 		char *name;
 		PROPERTY *column;
@@ -338,23 +528,46 @@ int csv_reader::read_header(char *line){
 	}
 
 	//	find properties for each column header
-	temp = std::move(first);
+	//temp = std::move(first);
+	cmnlist* iter = first.get();
 	//columns = (PROPERTY **)malloc(sizeof(PROPERTY *) * (size_t)column_ct);
 	columns.resize(column_ct);
 
-	while(temp != 0 && i < column_ct){
-		temp->column = gl_find_property(weather::oclass, temp->name);
-		if(temp->column == 0){
-			gl_error("csv_reader::read_header ~ unable to find column property \'%s\''", temp->name);
-			/* TROUBLESHOOT
-				The specified property in the header was not found published by the weather
-				class.  Please check the column header input and re-run GridLAB-D.
-			*/
-			return 0;
+		if (weather::oclass == nullptr) {
+			gl_warning("Weather class not initialized yet; deferring header resolution");
+			pending_headers.clear();
+
+			//temp = std::move(first);
+			cmnlist* p = iter;
+			while (p && i < column_ct) {
+				pending_headers.push_back(p->name ? std::string(p->name) : "");
+				// temp = std::move(temp->next);
+				p = p->next.get();
+				++i;
+			}
+
+			return 1; // Don't fail; we'll resolve later
 		}
-		columns[i] = temp->column; // Move ownership to the vector
+
+
+		
+	i = 0;
+	while (iter && i < column_ct) {
+
+		
+		PROPERTY* colprop = find_weather_property_relaxed(iter->name);
+        if (!colprop) {
+            // Don't fail hard; just warn and mark this column as ignored
+            gl_warning("csv_reader::read_header ~ unrecognized column header '%s' (ignored)", iter->name);
+            columns[i] = nullptr;
+        } else {
+            columns[i] = colprop;
+        }
+
+		//columns[i] = temp->column; // Move ownership to the vector
 		//columns[i] = temp->column;
-		temp = std::move(temp->next);
+		// temp = std::move(temp->next);
+		iter = iter->next.get();
 		++i;
 	}
 	return 1;
@@ -473,44 +686,136 @@ int csv_reader::read_line(char* line, int linenum) {
 		}
 
 		// Process remaining columns
+		// for (size_t col = 1; col < tokens.size() && col <= column_ct; ++col) {
+
+
+		// 	PROPERTY* p = columns[col - 1];
+		// 		if (!p) {
+		// 			// header not recognized in relaxed mode; skip
+		// 			continue;
+		// 		}
+
+		// 	if (columns[col - 1]->ptype == PT_double) {
+		// 		const std::string& name = columns[col - 1]->name;
+		// 		double value;
+		// 		if (sscanf(tokens[col].c_str(), "%lg", &value) != 1) {
+		// 			gl_error("Unable to set value '%s' to double property '%s'",
+		// 				tokens[col].c_str(), name.c_str());
+		// 			//delete sample;  // Clean up on error
+		// 			return 0;
+		// 		}
+
+		// 		// Property mapping
+		// 		if (name == "temperature")
+		// 			sample->temperature = value;
+		// 		else if (name == "humidity")
+		// 			sample->humidity = value;
+		// 		else if (name == "solar_direct" || name == "solar_dir")
+		// 			sample->solar_dir = value;
+		// 		else if (name == "solar_diffuse" || name == "solar_diff")
+		// 			sample->solar_diff = value;
+		// 		else if (name == "pressure")
+		// 			sample->pressure = value;
+		// 		else if (name == "wind_speed")
+		// 			sample->wind_speed = value;
+		// 		else if (name == "solar_global")
+		// 			sample->solar_global = value;
+		// 		else {
+		// 			gl_error("Unknown property name '%s'", name.c_str());
+		// 			//delete sample;  // Clean up on error.  Important to handle this correctly.
+		// 			return 0;
+		// 		}
+		// 	}
+		// }
+
+
+		// Process remaining columns
 		for (size_t col = 1; col < tokens.size() && col <= column_ct; ++col) {
-			if (columns[col - 1]->ptype == PT_double) {
-				const std::string& name = columns[col - 1]->name;
-				double value;
-				if (sscanf(tokens[col].c_str(), "%lg", &value) != 1) {
-					gl_error("Unable to set value '%s' to double property '%s'",
-						tokens[col].c_str(), name.c_str());
-					//delete sample;  // Clean up on error
-					return 0;
+			PROPERTY* p = columns[col - 1];
+
+			// Parse the numeric value once (used in both normal and fallback paths)
+			double value;
+			if (sscanf(tokens[col].c_str(), "%lg", &value) != 1) {
+				gl_error("Unable to parse value '%s' for column %zu", tokens[col].c_str(), col);
+				return 0;
+			}
+
+			if (!p) {
+				// Fallback: header was deferred or not resolved; use the raw header name
+				const char* hdr = (col - 1 < pending_headers.size())
+								? pending_headers[col - 1].c_str()
+								: nullptr;
+				if (!hdr) {
+					// No header available for this position; skip safely
+					gl_warning("CSV: missing header for column %zu; skipping", col);
+					continue;
 				}
 
-				// Property mapping
-				if (name == "temperature")
+				// Normalize header token: strip "[...]", trim, lowercase
+				std::string norm = normalize_prop_name(hdr);
+
+				// Map normalized header to sample fields (same names your code recognizes)
+				if (norm == "temperature") {
 					sample->temperature = value;
-				else if (name == "humidity")
+				} else if (norm == "humidity") {
 					sample->humidity = value;
-				else if (name == "solar_direct" || name == "solar_dir")
+				} else if (norm == "solar_direct" || norm == "solar_dir") {
 					sample->solar_dir = value;
-				else if (name == "solar_diffuse" || name == "solar_diff")
+				} else if (norm == "solar_diffuse" || norm == "solar_diff") {
 					sample->solar_diff = value;
-				else if (name == "pressure")
+				} else if (norm == "pressure") {
 					sample->pressure = value;
-				else if (name == "wind_speed")
+				} else if (norm == "wind_speed") {
 					sample->wind_speed = value;
-				else if (name == "solar_global")
+				} else if (norm == "solar_global") {
 					sample->solar_global = value;
-				else {
-					gl_error("Unknown property name '%s'", name.c_str());
-					//delete sample;  // Clean up on error.  Important to handle this correctly.
-					return 0;
+				} else {
+					gl_warning("CSV: unsupported header '%s' (normalized '%s'); skipping", hdr, norm.c_str());
+				}
+				continue; // Done for this column
+			}
+
+			// Normal path: PROPERTY* available — use normalized published name (robust to units)
+			if (p->ptype == PT_double) {
+				std::string norm = normalize_prop_name(p->name);
+
+				if (norm == "temperature") {
+					sample->temperature = value;
+				} else if (norm == "humidity") {
+					sample->humidity = value;
+				} else if (norm == "solar_direct" || norm == "solar_dir") {
+					sample->solar_dir = value;
+				} else if (norm == "solar_diffuse" || norm == "solar_diff") {
+					sample->solar_diff = value;
+				} else if (norm == "pressure") {
+					sample->pressure = value;
+				} else if (norm == "wind_speed") {
+					sample->wind_speed = value;
+				} else if (norm == "solar_global") {
+					sample->solar_global = value;
+				} else {
+					gl_warning("Unknown/unsupported property '%s' (normalized '%s')", p->name, norm.c_str());
 				}
 			}
+
+
+		
+
 		}
+
 	}
 	catch (const std::exception& e) {
 		gl_error("Parsing error: %s", e.what());
 		//delete sample;  // Clean up on exception
 		return 0;
+	}
+
+	// After assigning properties (in either the fallback or normal branch), add:
+	static bool logged_first_sample = false;
+	if (!logged_first_sample) {
+		gl_debug("CSV: first sample temp=%.3f humid=%.3f",
+				sample->temperature, sample->humidity);
+		logged_first_sample = true;
 	}
 
 	add_weather(std::move(sample));

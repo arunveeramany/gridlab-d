@@ -230,7 +230,7 @@ EXPORT int init_regulator_configuration(OBJECT *obj)
 	INIT_CATCHALL(regulator_configuration);
 }
 
-EXPORT TIMESTAMP sync_regulator_configuration(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+EXPORT TIMESTAMP sync_regulator_configuration(void* object, ...)
 {
 	return TS_NEVER;
 }

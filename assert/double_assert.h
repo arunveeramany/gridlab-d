@@ -79,9 +79,21 @@ protected:
     double within;           // Member variable of type `double`.
 
 private:
-    TIMESTAMP ts_in = 0;
-    TIMESTAMP ts_out = 0;
+    TIMESTAMP ts_in = TS_INVALID;
+    TIMESTAMP ts_out = TS_NEVER;
 
+    bool      skip_uninitialized = true;
+    bool      tried_uninit_once  = false; // prevent hammering if something truly is 0
+    unsigned  uninit_retries     = 0;       // how many retries so far
+    unsigned  uninit_max_retries = 60;      // cap retries (e.g., 60 attempts)
+    TIMESTAMP uninit_retry_step  = 60;      // retry cadence in seconds (default 60 s)
+
+public:
+
+    // publish "skip_uninitialized"
+    inline size_t get_skip_uninitialized_offset() const { return offsetof(double_assert, skip_uninitialized); }
+    inline size_t get_uninit_retry_step_offset()  const { return offsetof(double_assert, uninit_retry_step);  }
+    inline size_t get_uninit_max_retries_offset() const { return offsetof(double_assert, uninit_max_retries); }
 
 public:
     // Static inline method to get the byte offset of the member `status`.

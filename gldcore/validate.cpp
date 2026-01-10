@@ -1273,6 +1273,41 @@ int validate(int argc, char *argv[])
 	final.print();
 	double dt = (double)exec_clock() / global_ms_per_second;
 	output_message("Total validation elapsed time: %.1f seconds", dt);
+
+	if (report_fp)
+	{
+		// Recompute the same values printed by final.print()
+		const unsigned int n_files      = final.get_nfiles();
+		const unsigned int n_success    = final.get_nsuccess();
+		const unsigned int n_failed     = final.get_nfailed();
+		const unsigned int n_exceptions = final.get_nexceptions();
+		const unsigned int n_access     = final.get_naccess();
+		const unsigned int n_ok         = (n_files >= (n_success + n_failed + n_exceptions))
+											? (n_files - n_success - n_failed - n_exceptions)
+											: 0;
+		const double rate = (n_files != 0) ? (100.0 * n_ok / n_files) : 0.0;
+
+		// Mirror the terminal summary into validate.txt
+		fprintf(report_fp, "\nValidation report:\n");
+		if (n_access)
+			fprintf(report_fp, "%u directory access failures\n", n_access);
+		fprintf(report_fp, "%u models tested\n", n_files);
+		if (n_files != 0)
+		{
+			if (n_success)
+				fprintf(report_fp, "%u unexpected successes\n", n_success);
+			if (n_failed)
+				fprintf(report_fp, "%u unexpected errors\n", n_failed);
+			if (n_exceptions)
+				fprintf(report_fp, "%u unexpected exceptions\n", n_exceptions);
+			fprintf(report_fp, "%u tests succeeded\n", n_ok);
+			fprintf(report_fp, "%.0f%% success rate\n", rate);
+		}
+		// Also include elapsed time like stdout
+		fprintf(report_fp, "Total validation elapsed time: %.1f seconds\n", dt);
+		fflush(report_fp);
+	}
+
 	if (report_fp)
 		output_message("See '%s/%s' for details", global_workdir, report_file);
 	if (final.get_nerrors() == 0)

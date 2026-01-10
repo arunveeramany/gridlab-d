@@ -843,8 +843,31 @@ EXPORT int init_controller_dg(OBJECT *obj, OBJECT *parent)
 	INIT_CATCHALL(controller_dg);
 }
 
-EXPORT TIMESTAMP sync_controller_dg(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+// EXPORT TIMESTAMP sync_controller_dg(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+// {
+
+extern "C" TIMESTAMP sync_controller_dg(void *object, ...)
 {
+
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_controller_dg: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_controller_dg: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object; 
+
 	TIMESTAMP t1 = TS_INVALID;
 	controller_dg *my = /*OBJECTDATA(obj,controller_dg)*/ object_data<controller_dg>(obj);
 	try

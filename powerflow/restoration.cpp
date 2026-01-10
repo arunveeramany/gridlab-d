@@ -6218,7 +6218,7 @@ EXPORT int init_restoration(OBJECT *obj, OBJECT *parent)
  * @param pass the current pass for this sync call
  * @return t1, where t1>t0 on success, t1=t0 for retry, t1<t0 on failure
  */
-EXPORT TIMESTAMP sync_restoration(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+EXPORT TIMESTAMP sync_restoration(void* object, ...)
 {
 	return TS_NEVER;
 }

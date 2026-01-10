@@ -474,8 +474,33 @@ EXPORT int init_energy_storage(OBJECT *obj, OBJECT *parent)
 	INIT_CATCHALL(energy_storage);
 }
 
-EXPORT TIMESTAMP sync_energy_storage(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+// EXPORT TIMESTAMP sync_energy_storage(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+// {
+
+extern "C" TIMESTAMP sync_energy_storage(void *object, ...)
 {
+
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_energy_storage: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_energy_storage: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t1 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object; 
+
+
+
 	TIMESTAMP t2 = TS_NEVER;
 	energy_storage *my = /*OBJECTDATA(obj, energy_storage)*/ object_data<energy_storage>(obj);
 	try

@@ -128,7 +128,7 @@ EXPORT int init_triplex_line_conductor(OBJECT *obj)
 	INIT_CATCHALL(triplex_line_conductor);
 }
 
-EXPORT TIMESTAMP sync_triplex_line_conductor(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+EXPORT TIMESTAMP sync_triplex_line_conductor(void* object, ...)
 {
 	return TS_NEVER;
 }

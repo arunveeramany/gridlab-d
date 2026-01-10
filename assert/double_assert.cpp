@@ -30,6 +30,18 @@ CLASS *double_assert::oclass = nullptr;
 
 
 
+// Helper: treat aggregates under "record.*" as uninitialized when exactly zero
+static inline bool looks_uninitialized(const std::string& target, double x)
+{
+    if (!std::isfinite(x)) return true;        // NaN/Inf => not ready
+    if (x == 0.0) {
+        if (target.rfind("record.", 0) == 0)   // starts_with("record.")
+            return true;
+    }
+    return false;
+ }
+
+
 // --- Heuristic: decide SNAPSHOT vs CONTINUOUS without any GLM changes ---
 static bool model_is_continuous_like()
 {
@@ -73,7 +85,12 @@ double_assert::double_assert(MODULE *module)
 	once = ONCE_FALSE;
 	once_value = 0;
 	target.erase();
+	skip_uninitialized = true;
 	
+	uninit_retries       = 0;
+    uninit_max_retries   = 60;  // default: up to 60 tries
+    uninit_retry_step    = 60;  // default: retry every 60 seconds
+
 	
 	if (oclass == nullptr)
 	{
@@ -108,6 +125,9 @@ double_assert::double_assert(MODULE *module)
 								PT_char1024, "target", get_target_offset(), PT_DESCRIPTION, "Property to perform the assert upon",
 								PT_timestamp, "in",  get_ts_in_offset(),  PT_DESCRIPTION, "Earliest time to evaluate",
 								PT_timestamp, "out", get_ts_out_offset(), PT_DESCRIPTION, "Latest time to evaluate",
+                                PT_bool, "skip_uninitialized", get_skip_uninitialized_offset(),PT_DESCRIPTION, "Skip and re-check if aggregate looks uninitialized (e.g., record.* == 0)",
+                                PT_int32,     "uninit_retry_step", get_uninit_retry_step_offset(),PT_DESCRIPTION, "Retry cadence in seconds when skipping uninitialized aggregates",
+                                PT_int32,     "uninit_max_retries",  get_uninit_max_retries_offset(),PT_DESCRIPTION, "Maximum number of retries when aggregate looks uninitialized",
 								nullptr) < 1)
 		{
 			char msg[256];
@@ -132,8 +152,15 @@ int double_assert::create(void)
     once = ONCE_FALSE;
     once_value = 0;
     target.erase();
-	ts_in  = 0;   // means "no earliest time"
-	ts_out = 0;     // means "no latest time"
+	ts_in  = TS_INVALID;
+	ts_out = TS_NEVER;
+
+	skip_uninitialized = true;
+    tried_uninit_once  = false;
+    uninit_retries       = 0;
+    uninit_max_retries   = 60;
+    uninit_retry_step    = 60;
+
 
 
 	gl_output("double_assert defaults: status=%d value=%g within=%g within_mode=%d once=%d target='%s' once_value=%g",
@@ -164,8 +191,16 @@ TIMESTAMP double_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 
 	// Time-gating before evaluation
 	const TIMESTAMP now = gl_globalclock;
-	if ((ts_in != TS_INVALID && now < ts_in) || (ts_out != TS_NEVER && now > ts_out)) {
-		// Outside the window: do nothing
+	// if ((ts_in != TS_INVALID && now < ts_in) || (ts_out != TS_NEVER && now > ts_out)) {
+	// 	// Outside the window: do nothing
+	// 	return TS_NEVER;
+	// }
+
+
+	if (((ts_in  != TS_INVALID) && (now < ts_in)) ||
+	      ((ts_out != TS_NEVER)   && (now > ts_out))) {
+
+	    // Outside the evaluation window – skip silently
 		return TS_NEVER;
 	}
 
@@ -196,28 +231,23 @@ TIMESTAMP double_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
         }
 
         // 3. Get and cache the direct memory address
-        pDouble = (double*)gl_get_addr(parent, get_target().c_str());
-        if (pDouble == nullptr) {
-            gl_error("double_assert:%d: unable to get address of target property '%s'", get_id(), get_target().c_str());
-            return TS_INVALID; // Stop simulation
-        }
+        // pDouble = (double*)gl_get_addr(parent, get_target().c_str());
+        // if (pDouble == nullptr) {
+        //     gl_error("double_assert:%d: unable to get address of target property '%s'", get_id(), get_target().c_str());
+        //     return TS_INVALID; // Stop simulation
+        // }
+
+
+		// Re-fetch the value every time; avoid cached pDouble
+		pDouble = (double*)gl_get_double_by_name(parent, get_target().c_str());
+		if (pDouble == nullptr) {
+			gl_error("double_assert:%d: target '%s' not found in parent '%s'", get_id(), get_target().c_str(), parent->name);
+			return TS_INVALID;
+		}
+
+
     }
 
-
-	// gl_output("DEBUG double_assert(%s): parent=%s target=%s x=%g value=%g within=%g mode=%d",
-	// 		get_name(),
-	// 		get_parent()->get_name(),
-	// 		get_target().c_str(),
-	// 		*pDouble, value, within, (int)within_mode);
-
-
-	// Check if this is an error test based on parent name
-	// bool is_error_test = false;
-	// if (get_parent() && get_parent()->get_name())
-	// {
-	// 	const char *parent_name = get_parent()->get_name();
-	// 	is_error_test = strstr(parent_name, "_err") != nullptr;
-	// }
 
 	// handle once mode
 	if (once == ONCE_TRUE)
@@ -238,19 +268,6 @@ TIMESTAMP double_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 		}
 	}
 
-	// get the target property
-	// gld_property target_prop(get_parent(), get_target().c_str());
-	// if (!target_prop.is_valid() || target_prop.get_type() != PT_double)
-	// {
-		// gl_error("Specified target %s for %s is not valid.", get_target().c_str(), get_parent()->get_name());
-		/*  TROUBLESHOOT
-		Check to make sure the target you are specifying is a published variable of type double for the object
-		that you are pointing to.  Refer to the documentation of the command flag --modhelp, or
-		check the wiki page to determine which variables can be published within the object you
-		are pointing to with the assert function.
-		*/
-		// return TS_INVALID; // Changed from 0 to TS_INVALID
-	// }
 
 	// get the within range
 	double range = 0.0;
@@ -266,50 +283,42 @@ TIMESTAMP double_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 	{
 		range = within;
 	}
+
+    // --- Always evaluate ---
+    double x = *pDouble;
+
 	
-    // --- Advisory/invalid t2: choose snapshot vs continuous behavior ---
-    if (t2 == TS_NEVER || t2 <= 0) {
-        bool continuous = model_is_continuous_like();
-        if (!continuous) {
-            // Snapshot-like: evaluate once and stop
-            double x = *pDouble;
-            if (!std::isfinite(x)) return TS_NEVER;
-            if (status == ASSERT_TRUE) {
-                double m = std::fabs(x - value);
-                if (std::isnan(m) || m > range) {
-                    gl_error("Assert failed on %s: %s %g not within %f of given value %g",
-                             get_parent()->get_name(), get_target().c_str(), x, range, value);
-                    return TS_INVALID;
-                }
-                gl_verbose("Assert passed on %s", get_parent()->get_name());
-                return TS_NEVER;
-            } else if (status == ASSERT_FALSE) {
-                double m = std::fabs(x - value);
-                if (std::isnan(m) || m < range) {
-                    gl_error("Assert failed on %s: %s %g is within %f of given value %g",
-                             get_parent()->get_name(), get_target().c_str(), x, range, value);
-                    return TS_INVALID;
-                }
-                gl_verbose("Assert passed on %s", get_parent()->get_name());
-                return TS_NEVER;
-            } else {
-                gl_verbose("Assert test is not being run on %s", get_parent()->get_name());
-                return TS_NEVER;
-            }
+    // Smarter defer: aggregate fields (record.*) without explicit windows
+    // may read as 0.0 at starttime. Retry on a bounded cadence until initialized.
+    if (skip_uninitialized
+        && ts_in == TS_INVALID && ts_out == TS_NEVER
+        && looks_uninitialized(get_target(), x))
+    {
+        // Get stoptime (to avoid scheduling beyond it)
+        char stopbuf[64] = {0};
+        gl_global_getvar("stoptime", stopbuf, sizeof(stopbuf));
+        TIMESTAMP t_stop = gl_parsetime(stopbuf);
+
+        // Decide next retry time
+        TIMESTAMP next = gl_globalclock + uninit_retry_step;
+        if (t_stop > 0 && next >= t_stop) {
+            // If we're too close to stoptime, just stop rescheduling and proceed to evaluation
+            gl_verbose("double_assert(%s): '%s' near stoptime; proceeding despite uninitialized (%g)",
+                       get_name(), get_target().c_str(), x);
+        } else if (uninit_retries < uninit_max_retries) {
+            uninit_retries++;
+            gl_verbose("double_assert(%s): deferring '%s' (current=%g), retry %u/%u in %u s",
+                       get_name(), get_target().c_str(), x,
+                       uninit_retries, uninit_max_retries, (unsigned)uninit_retry_step);
+            return schedule_future(gl_globalclock, next);
         } else {
-            // Continuous-like: throttle cadence (e.g., 900 s) and respect stoptime
-            char stopbuf[64] = {0};
-            gl_global_getvar("stoptime", stopbuf, sizeof(stopbuf));
-            TIMESTAMP t_stop = gl_parsetime(stopbuf);
-            const TIMESTAMP step = 900; // 15 minutes default
-            TIMESTAMP next = now + step;
-            if (t_stop > 0 && next >= t_stop) return TS_NEVER;
-            return schedule_future(now, next);
+            gl_verbose("double_assert(%s): '%s' still uninitialized after %u retries (%g), proceeding",
+                       get_name(), get_target().c_str(), uninit_max_retries, x);
         }
     }
 
-    // --- Normal path ---
-    double x = *pDouble;
+
+
     if (!std::isfinite(x)) {
         // Skip, but do not fail due to non-finite read
         return TS_NEVER;
@@ -324,7 +333,7 @@ TIMESTAMP double_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
                       get_parent()->get_name(), get_target().c_str(), x, range, value);
             return TS_INVALID;
          }
-         gl_verbose("Assert passed on %s", get_parent()->get_name());
+        //  gl_verbose("Assert passed on %s", get_parent()->get_name());
          return TS_NEVER;
      }
      else if (status == ASSERT_FALSE)
@@ -336,7 +345,7 @@ TIMESTAMP double_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
                       get_parent()->get_name(), get_target().c_str(), x, range, value);
             return TS_INVALID;
          }
-         gl_verbose("Assert passed on %s", get_parent()->get_name());
+        //  gl_verbose("Assert passed on %s", get_parent()->get_name());
          return TS_NEVER;
      }
      else
@@ -462,7 +471,7 @@ EXPORT SIMULATIONMODE update_double_assert(OBJECT *obj, TIMESTAMP t0, unsigned i
 
 					return SM_ERROR;
 				}
-				gl_verbose("Assert passed on %s", gl_name(obj->parent, buff, 64));
+				// gl_verbose("Assert passed on %s", gl_name(obj->parent, buff, 64));
 				return SM_EVENT;
 			}
 			else if (da->get_status() == da->ASSERT_FALSE)
@@ -503,7 +512,7 @@ EXPORT SIMULATIONMODE update_double_assert(OBJECT *obj, TIMESTAMP t0, unsigned i
 
 					return SM_ERROR;
 				}
-				gl_verbose("Assert passed on %s", gl_name(obj->parent, buff, 64));
+				// gl_verbose("Assert passed on %s", gl_name(obj->parent, buff, 64));
 				return SM_EVENT;
 			}
 			else

@@ -29,9 +29,6 @@ EXPORT CLASS *init(CALLBACKS *fntable, MODULE *module, int argc, char *argv[])
 	new csv_reader(module);
 
 
-
-
-
 	/* always return the first class registered */
 	return climate::oclass;
 }

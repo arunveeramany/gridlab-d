@@ -133,7 +133,7 @@ EXPORT int init_overhead_line_conductor(OBJECT *obj)
 	INIT_CATCHALL(overhead_line_conductor);
 }
 
-EXPORT TIMESTAMP sync_overhead_line_conductor(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+EXPORT TIMESTAMP sync_overhead_line_conductor(void* object, ...)
 {
 	return TS_NEVER;
 }

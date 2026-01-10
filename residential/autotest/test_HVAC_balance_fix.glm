@@ -50,7 +50,7 @@ object triplex_meter{
 		object recorder{
 			name recorder_1;
 			parent house_1;
-			property panel.energy;
+			property energy;
 			file "test_HVAC_balance.csv";
 			interval 1;
 			limit 86444;
@@ -58,7 +58,7 @@ object triplex_meter{
 		object complex_assert{
 			name complex_assert_1;
 			parent house_1;
-			target "panel.energy";
+			target energy;
 			in '2001-05-6 5:00:00';
 			once ONCE_TRUE;
 			value 0+0i;

@@ -1,7 +1,7 @@
 #sample weather CSV file,,
-$state_name=California,,
-$city_name=Berkeley,,
-temperature,humidity,
+$state_name=California
+$city_name=Berkeley
+temperature,humidity
 #month:day:hour:minute:second,,
 2000-07-01 00:00:00 PDT,50,0.05
 2000-07-01 01:00:00 PDT,62,0.16

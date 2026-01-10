@@ -536,7 +536,7 @@ EXPORT int init_power_metrics(OBJECT *obj, OBJECT *parent)
 * @param pass the current pass for this sync call
 * @return t1, where t1>t0 on success, t1=t0 for retry, t1<t0 on failure
 */
-EXPORT TIMESTAMP sync_power_metrics(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+EXPORT TIMESTAMP sync_power_metrics(void* object, ...)
 {
 	return TS_NEVER;
 }

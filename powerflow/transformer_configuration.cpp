@@ -345,7 +345,7 @@ EXPORT int init_transformer_configuration(OBJECT *obj, OBJECT *parent)
 	INIT_CATCHALL(transformer_configuration);
 }
 
-EXPORT TIMESTAMP sync_transformer_configuration(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+EXPORT TIMESTAMP sync_transformer_configuration(void *object, ...)
 {
 	return TS_NEVER;
 }

@@ -329,6 +329,25 @@ static int compare_property_alt(OBJECT *obj, char *propname, FINDOP op, void *va
 	return -1;
 }
 
+
+// find.cpp (top or static region)
+static const char* findtype_to_string(FINDTYPE ft) {
+    switch (ft) {
+        case FT_ID:       return "FT_ID";
+        case FT_SIZE:     return "FT_SIZE";
+        case FT_CLASS:    return "FT_CLASS";
+        case FT_ISA:      return "FT_ISA";
+        case FT_MODULE:   return "FT_MODULE";
+        case FT_GROUPID:  return "FT_GROUPID";
+        case FT_RANK:     return "FT_RANK";
+        case FT_CLOCK:    return "FT_CLOCK";
+        case FT_PROPERTY: return "FT_PROPERTY";
+        case FT_NAME:     return "FT_NAME";
+        default:          return "FT_UNKNOWN";
+    }
+}
+
+
 static int compare(OBJECT *obj, FINDTYPE ftype, FINDOP op, void *value, char *propname)
 {
 	switch (ftype)
@@ -353,7 +372,7 @@ static int compare(OBJECT *obj, FINDTYPE ftype, FINDOP op, void *value, char *pr
 	case FT_PROPERTY:
 		return compare_property(obj, propname, op, value);
 	default:
-		output_error("findtype %s not supported", ftype);
+		output_error("findtype %s not supported", findtype_to_string( ftype ) );
 		/* TROUBLESHOOT
 			This error is caused when an object find procedure uses a comparison operator
 			that isn't allowed on a that header item.  Make sure the header item
