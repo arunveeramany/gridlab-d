@@ -1,6 +1,6 @@
 SET(GLD_MODULE_NAME generators)
 
-add_library(${GLD_MODULE_NAME}
+add_library(${GLD_MODULE_NAME} SHARED
         battery.cpp
         battery.h
         central_dg_control.cpp
@@ -28,32 +28,42 @@ add_library(${GLD_MODULE_NAME}
         sync_ctrl.h
         windturb_dg.cpp
         windturb_dg.h
-	cblock.cpp
-	cblock.h
-        )
+        cblock.cpp
+        cblock.h
+)
 
+target_compile_options(${GLD_MODULE_NAME} PRIVATE ${GLD_COMPILE_OPTIONS})
 set_target_properties(${GLD_MODULE_NAME} PROPERTIES PREFIX "")
 
+target_include_directories(${GLD_MODULE_NAME} PRIVATE
+    "${CMAKE_SOURCE_DIR}/gldcore"
+    "${CMAKE_CURRENT_BINARY_DIR}/headers"
+    "${CMAKE_BINARY_DIR}/headers"
+)
+
+# Link against the reusable core library (not the gridlabd executable) + OS libs
+target_link_libraries(${GLD_MODULE_NAME} PRIVATE gldapi ${OS_SPECIFIC_LIBRARIES})
 
 if (GLD_USE_EIGEN)
     target_include_directories(${GLD_MODULE_NAME} PRIVATE
             "${CMAKE_SOURCE_DIR}/third_party/Eigen"
-            )
+    )
     target_link_libraries(${GLD_MODULE_NAME} PRIVATE
             Eigen3::Eigen
-            )
+    )
 else ()
     target_link_libraries(${GLD_MODULE_NAME} PRIVATE
             ${SUPERLU_LIB}
-            )
+    )
 endif ()
 
-target_compile_options(${GLD_MODULE_NAME} PRIVATE ${GLD_COMPILE_OPTIONS})
-set_target_properties(${GLD_MODULE_NAME} PROPERTIES PREFIX "")
-target_include_directories(${GLD_MODULE_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/gldcore")
-target_link_libraries(${GLD_MODULE_NAME} PRIVATE ${OS_SPECIFIC_LIBRARIES})
+if(APPLE)
+    # Useful for plugin-style modules on macOS (late-bound symbol resolution)
+    target_link_options(${GLD_MODULE_NAME} PRIVATE -Wl,-undefined,dynamic_lookup)
+endif()
+
 if (GLD_USE_CLANG_TIDY)
     set_target_properties(${GLD_MODULE_NAME} PROPERTIES
             CXX_CLANG_TIDY "${CMAKE_CXX_CLANG_TIDY}"
-            )
+    )
 endif ()

@@ -21,7 +21,7 @@ inverter_dyn::inverter_dyn(MODULE *module)
 {
 	if (oclass == nullptr)
 	{
-		oclass = gl_register_class(module, "inverter_dyn", sizeof(inverter_dyn), PC_PRETOPDOWN | PC_BOTTOMUP | PC_POSTTOPDOWN | PC_AUTOLOCK);
+		oclass = gld_class::create(module, "inverter_dyn", sizeof(inverter_dyn), PC_PRETOPDOWN | PC_BOTTOMUP | PC_POSTTOPDOWN | PC_AUTOLOCK);
 		if (oclass == nullptr)
 			throw "unable to register class inverter_dyn";
 		else

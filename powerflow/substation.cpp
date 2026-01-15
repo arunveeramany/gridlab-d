@@ -43,7 +43,7 @@ substation::substation(MODULE *mod) : node(mod)
 		pclass = node::oclass;
 
 		// register the class definition
-		oclass = gl_register_class(mod,"substation",sizeof(substation),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_UNSAFE_OVERRIDE_OMIT|PC_AUTOLOCK);
+		oclass = gld_class::create(mod,"substation",sizeof(substation),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_UNSAFE_OVERRIDE_OMIT|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			throw "unable to register class substation";
 		else

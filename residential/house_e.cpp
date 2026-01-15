@@ -199,13 +199,13 @@ double house_e::system_dwell_time = 1; // seconds
 /** House object constructor:  Registers the class and publishes the variables that can be set by the user. 
 Sets default randomized values for published variables.
 **/
-house_e::house_e(MODULE *mod) : residential_enduse(mod)
+house_e::house_e(MODULE *mod) 
 {
 	// first time init
 	if (oclass==nullptr)
 	{
 		// register the class definition
-		oclass = gl_register_class(mod,"house",sizeof(house_e),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_AUTOLOCK);
+		oclass = gld_class::create(mod,"house",sizeof(house_e),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			throw "unable to register class house";
 		else
@@ -458,6 +458,12 @@ house_e::house_e(MODULE *mod) : residential_enduse(mod)
 			PT_complex,"hvac_power[kVA]",PADDR(hvac_power),PT_DESCRIPTION,"describes hvac load complex power consumption",
 			PT_double,"total_load[kVA]",PADDR(total_load),
 			PT_enduse,"panel",PADDR(total),PT_DESCRIPTION,"total panel enduse load",
+			PT_enduse, "load", PADDR(total), PT_DESCRIPTION, "legacy alias for panel enduse load",			
+
+			PT_complex, "load.total",  PADDR(total.total),  PT_DESCRIPTION, "alias to panel/total enduse total",
+			PT_complex, "load.demand", PADDR(total.demand), PT_DESCRIPTION, "alias to panel/total enduse demand",
+			PT_complex, "load.energy", PADDR(total.energy), PT_DESCRIPTION, "alias to panel/total enduse energy",
+			
 			// PT_complex,"panel.energy[kVAh]",PADDR(total.energy),PT_DESCRIPTION,"total energy consumed by the panel", 
 			
 			//PT_complex, "panel.power[kVA]", PADDR(total.power), PT_DESCRIPTION, "The total power consumption of the load (complex)",
@@ -674,10 +680,37 @@ int house_e::create()
 						gl_error("error creating schedule for enduse \'%s\'", eu->schedule_name);
 						return FAILED;
 					}
-					IMPLICITENDUSE *item = (IMPLICITENDUSE*)gl_malloc(sizeof(IMPLICITENDUSE));
-					memset(item,0,sizeof(IMPLICITENDUSE));
-					gl_enduse_create(&(item->load));
-					item->load.shape = gl_loadshape_create(sched);
+					// IMPLICITENDUSE *item = (IMPLICITENDUSE*)gl_malloc(sizeof(IMPLICITENDUSE));
+					// memset(item,0,sizeof(IMPLICITENDUSE));
+					// gl_enduse_create(&(item->load));
+
+					// IMPLICITENDUSE *item = new IMPLICITENDUSE();
+
+					MODULE *mod = object_header(this)->oclass->module;
+					IMPLICITENDUSE *item = new IMPLICITENDUSE(mod);
+
+					if (!item)
+					{
+						gl_error("memory allocation failed for implicit enduse");
+						return FAILED;
+					}
+					item->load.create(); // Call the C++ create method
+
+					// item->load.shape = gl_loadshape_create(sched);
+
+					item->load.shape = new loadshape();
+					if (item->load.shape)
+					{
+						item->load.shape->schedule = sched;
+					}
+					else
+					{
+						gl_error("memory allocation failed for implicit loadshape");
+						delete item;
+						return FAILED;
+					}
+
+
 					if (gl_set_value_by_type(PT_loadshape,item->load.shape, strdup(eu->shape))==0)
 					{
 						gl_error("loadshape '%s' could not be created", name);
@@ -3596,7 +3629,8 @@ TIMESTAMP house_e::sync_enduses(TIMESTAMP t0, TIMESTAMP t1)
 	for (eu=implicit_enduse_list; eu!=nullptr; eu=eu->next)
 	{
 		TIMESTAMP t = 0;
-		t = gl_enduse_sync(&(eu->load),t1);
+		// t = gl_enduse_sync(&(eu->load),t1);
+		t = eu->load.postsync(gl_globalclock, t1);
 		if (t<t2) t2 = t;
 	}
 	//DATETIME dt1, dt2;

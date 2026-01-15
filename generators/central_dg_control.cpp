@@ -33,7 +33,7 @@ central_dg_control::central_dg_control(MODULE *module)
 {	
 	if (oclass==nullptr)
 	{
-		oclass = gl_register_class(module,"central_dg_control",sizeof(central_dg_control),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_AUTOLOCK);
+		oclass = gld_class::create(module,"central_dg_control",sizeof(central_dg_control),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			throw "unable to register class central_dg_control";
 		else

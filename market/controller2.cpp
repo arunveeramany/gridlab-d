@@ -79,7 +79,7 @@ static double tc_erf(double x)
 
 controller2::controller2(MODULE *mod){
 	if(oclass == nullptr){
-		oclass = gl_register_class(mod,"controller2",sizeof(controller2),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN);
+		oclass = gld_class::create(mod,"controller2",sizeof(controller2),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN);
 		if(oclass == nullptr){
 			GL_THROW("unable to register object class implemented by %s", __FILE__);
 		}
@@ -451,7 +451,7 @@ EXPORT int isa_controller2(OBJECT *obj, char *classname)
 // EXPORT TIMESTAMP sync_controller2(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 // {
 
-	extern "C" TIMESTAMP sync_controller2(void *object, ...)
+extern "C" TIMESTAMP sync_controller2(void *object, ...)
 {
     va_list args;
     va_start(args, object);
@@ -459,7 +459,7 @@ EXPORT int isa_controller2(OBJECT *obj, char *classname)
     PASSCONFIG pass = va_arg(args, PASSCONFIG);
     va_end(args);
 
-    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
+    OBJECT *obj = (OBJECT*)object;  
     
 	if (!callback) {
         gl_error("callback is null in sync_controller2");

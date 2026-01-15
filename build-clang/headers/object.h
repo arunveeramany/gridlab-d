@@ -24,7 +24,7 @@
 #include "gldrandom.h"
 #include "schedule.h"
 #include "transform.h"
-#include "enduse.h"
+// #include "enduse.h"
 
 /* this must match property_type list in object.c */
 typedef int OBJECTRANK;			   /**< Object rank number */
@@ -159,7 +159,7 @@ public:
 	int (*output_fatal)(const char *format, ...);
 	int (*output_debug)(const char *format, ...);
 	int (*output_test)(const char *format, ...);
-	CLASS *(*register_class)(MODULE *, const CLASSNAME, unsigned int, PASSCONFIG);
+	// TIMESTAMP object_sync(void *object, ...);
 	struct
 	{
 		OBJECT *(*single)(CLASS *);
@@ -453,7 +453,10 @@ extern "C"
 
 	int object_get_oflags(KEYWORD **extflags);
 
-	TIMESTAMP object_sync(OBJECT *obj, TIMESTAMP to, PASSCONFIG pass);
+	// TIMESTAMP object_sync(OBJECT *obj, TIMESTAMP to, PASSCONFIG pass);
+	TIMESTAMP object_sync(void *object, ...);
+
+	
 	OBJECT **object_get_object(OBJECT *obj, PROPERTY *prop);
 	OBJECT **object_get_object_by_name(OBJECT *obj, const char *name);
 	enumeration *object_get_enum(OBJECT *obj, PROPERTY *prop);

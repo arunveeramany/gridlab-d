@@ -33,7 +33,7 @@ mpi_network::mpi_network(MODULE *mod)
 	if (oclass==nullptr)
 	{
 		// register the class definition
-		oclass = gl_register_class(mod,"mpi_network",sizeof(mpi_network),PC_BOTTOMUP);
+		oclass = gld_class::create(mod,"mpi_network",sizeof(mpi_network),PC_BOTTOMUP);
 		if (oclass==nullptr)
 			GL_THROW("unable to register object class implemented by %s",__FILE__);
 			/* TROUBLESHOOT

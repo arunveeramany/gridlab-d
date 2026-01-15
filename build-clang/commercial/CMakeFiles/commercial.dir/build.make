@@ -175,6 +175,7 @@ lib/commercial.dylib: commercial/CMakeFiles/commercial.dir/multizone.cpp.o
 lib/commercial.dylib: commercial/CMakeFiles/commercial.dir/office.cpp.o
 lib/commercial.dylib: commercial/CMakeFiles/commercial.dir/solvers.cpp.o
 lib/commercial.dylib: commercial/CMakeFiles/commercial.dir/build.make
+lib/commercial.dylib: lib/libgldapi.dylib
 lib/commercial.dylib: commercial/CMakeFiles/commercial.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX shared library ../lib/commercial.dylib"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/commercial.dir/link.txt --verbose=$(VERBOSE)

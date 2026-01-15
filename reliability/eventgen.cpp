@@ -43,7 +43,7 @@ eventgen::eventgen(MODULE *module)
 {
 	if (oclass == nullptr)
 	{
-		oclass = gl_register_class(module, "eventgen", sizeof(eventgen), PC_PRETOPDOWN | PC_POSTTOPDOWN | PC_AUTOLOCK);
+		oclass = gld_class::create(module, "eventgen", sizeof(eventgen), PC_PRETOPDOWN | PC_POSTTOPDOWN | PC_AUTOLOCK);
 		if (oclass == nullptr)
 			throw "unable to register class eventgen";
 		else

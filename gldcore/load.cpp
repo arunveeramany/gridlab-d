@@ -155,6 +155,8 @@ object <class>[:<spec>] { // spec may be <id>, or <startid>..<endid>, or ..<coun
 #include "exec.h"
 
 #include "output.h"
+#include "loadshape.h"
+#include "enduse.h"
 
 /* define this to use # for comment and % for macros (the way Version 1.x works) */
 /* #define OLDSTYLE	*/

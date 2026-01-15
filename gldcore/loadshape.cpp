@@ -27,6 +27,9 @@
 
 **/
 
+#include "gridlabd.h"
+#include "loadshape.h"
+
 #include <cctype>
 #include <cstdarg>
 #include <cstdlib>
@@ -41,7 +44,6 @@
 
 #include "platform.h"
 #include "output.h"
-#include "loadshape.h"
 #include "exception.h"
 #include "convert.h"
 #include "globals.h"
@@ -1004,7 +1006,7 @@ void loadshape_syncproc(LOADSHAPESYNCDATA* data) {
 //}
 
 
-TIMESTAMP loadshape_syncall(TIMESTAMP t1) {
+extern "C" TIMESTAMP loadshape_syncall(TIMESTAMP t1) {
 	static unsigned int n_threads_ls = 0;
 	static std::vector<LOADSHAPESYNCDATA> thread_ls;
 	clock_t ts = (clock_t)exec_clock();

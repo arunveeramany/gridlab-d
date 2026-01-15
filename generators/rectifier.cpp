@@ -28,7 +28,7 @@ rectifier::rectifier(MODULE *module)
 {
 	if (oclass==nullptr)
 	{
-		oclass = gl_register_class(module, "rectifier",sizeof(rectifier),PC_BOTTOMUP|PC_AUTOLOCK);
+		oclass = gld_class::create(module, "rectifier",sizeof(rectifier),PC_BOTTOMUP|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			throw "unable to register class rectifier";
 		else

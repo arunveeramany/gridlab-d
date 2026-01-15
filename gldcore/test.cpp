@@ -14,7 +14,8 @@
 #include "find.h"
 #include "test.h"
 
-
+extern int loadshape_test(void);
+extern int enduse_test(void);
 
 typedef struct s_testlist {
 	char name[64];

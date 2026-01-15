@@ -8,11 +8,12 @@ clock {
 
 object house {
 	name myhouse;
-	load {
-		total 7;
-		demand 12;
-		energy 24;
-	};
+	//load {
+		load.total 7;
+		load.demand 12;
+		load.energy 24;
+	//};
+
 	object recorder {
 		parent myhouse;
 		property energy;

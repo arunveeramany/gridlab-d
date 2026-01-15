@@ -13,6 +13,7 @@
 
 #include "auction.h"
 #include "gridlabd.h"
+#include "enduse.h"
 
 #undef CM_NONE
 

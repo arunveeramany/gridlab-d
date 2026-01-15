@@ -319,6 +319,7 @@ lib/generators.dylib: generators/CMakeFiles/generators.dir/sync_ctrl.cpp.o
 lib/generators.dylib: generators/CMakeFiles/generators.dir/windturb_dg.cpp.o
 lib/generators.dylib: generators/CMakeFiles/generators.dir/cblock.cpp.o
 lib/generators.dylib: generators/CMakeFiles/generators.dir/build.make
+lib/generators.dylib: lib/libgldapi.dylib
 lib/generators.dylib: lib/static/libsuperlu.a
 lib/generators.dylib: lib/static/libblas.a
 lib/generators.dylib: generators/CMakeFiles/generators.dir/link.txt

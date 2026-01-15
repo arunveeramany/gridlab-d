@@ -19,6 +19,7 @@
 // CLASS FUNCTIONS
 //////////////////////////////////////////////////////////////////////////
 CLASS* residential_enduse::oclass = nullptr;
+residential_enduse* residential_enduse::defaults = nullptr;
 
 // the constructor registers the class and properties and sets the defaults
 residential_enduse::residential_enduse(MODULE *mod)
@@ -35,6 +36,10 @@ residential_enduse::residential_enduse(MODULE *mod)
 				by a coding error in the core implementation of classes or the module implementation.
 				Please report this error to the developers.
 			 */
+
+
+		// Needed by PADDR(...) to compute member offsets
+		residential_enduse* self = nullptr;
 
 		// publish the class properties
 		if (gl_publish_variable(oclass,
@@ -55,13 +60,18 @@ residential_enduse::residential_enduse(MODULE *mod)
 				Please report this error to the developers.
 			 */
 	}
+
+
+	re_override = OV_NORMAL;
+    power_state = PS_UNKNOWN;
+
 }
 
 // create is called every time a new object is loaded
 int residential_enduse::create(bool connect_shape) 
 {
 	// attach loadshape 
-	load.end_obj = my();
+	// load.end_obj = my();
 	if (connect_shape) load.shape = &shape;
 	load.breaker_amps = 20;
 	load.config = 0;
@@ -116,7 +126,7 @@ int residential_enduse::isa(char *classname){
 
 TIMESTAMP residential_enduse::sync(TIMESTAMP t0, TIMESTAMP t1) 
 {
-	gl_debug("%s shape load = %8g", get_name(), gl_get_loadshape_value(&shape));
+	gl_debug("%s shape load = %8g", get_name(), shape.load);
 	if (load.voltage_factor>1.2 || load.voltage_factor<0.8)
 		gl_verbose("%s voltage is out of normal +/- 20%% range of nominal (vf=%.2f)", get_name(), load.voltage_factor);
 		/* TROUBLESHOOT

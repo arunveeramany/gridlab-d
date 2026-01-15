@@ -27,7 +27,7 @@ int_assert::int_assert(MODULE *module)
 	if (oclass==nullptr)
 	{
 		// register to receive notice for first top down. bottom up, and second top down synchronizations
-		oclass = gl_register_class(module,"int_assert",sizeof(int_assert),PC_AUTOLOCK|PC_OBSERVER);
+		oclass = gld_class::create(module,"int_assert",sizeof(int_assert),PC_AUTOLOCK|PC_OBSERVER);
 		if (oclass==nullptr)
 			throw "unable to register class int_assert";
 		else

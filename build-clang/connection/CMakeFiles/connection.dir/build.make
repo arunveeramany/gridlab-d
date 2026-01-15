@@ -303,6 +303,7 @@ lib/connection.dylib: connection/CMakeFiles/connection.dir/varmap.cpp.o
 lib/connection.dylib: connection/CMakeFiles/connection.dir/init.cpp.o
 lib/connection.dylib: connection/CMakeFiles/connection.dir/main.cpp.o
 lib/connection.dylib: connection/CMakeFiles/connection.dir/build.make
+lib/connection.dylib: lib/libgldapi.dylib
 lib/connection.dylib: connection/CMakeFiles/connection.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Linking CXX shared library ../lib/connection.dylib"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/connection && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/connection.dir/link.txt --verbose=$(VERBOSE)

@@ -55,7 +55,7 @@ server::server(MODULE *module)
 #endif
 	if (oclass==nullptr)
 	{
-		oclass = gl_register_class(module,"server",sizeof(server),passconfig);
+		oclass = gld_class::create(module,"server",sizeof(server),passconfig);
 		if (oclass==nullptr)
 			GL_THROW("unable to register object class implemented by %s", __FILE__);
 

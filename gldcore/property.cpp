@@ -67,8 +67,7 @@ PROPERTYSPEC property_type[_PT_LAST] = {
 		{"enduse",        "string",  sizeof(enduse),        0,                  convert_from_enduse,         reinterpret_cast<int (*)(
 				const char *,
 				void *,
-				PROPERTY *)>(convert_to_enduse),                                                                                       reinterpret_cast<int (*)(
-				void *)>(enduse_create),                                                                                                      nullptr, {TCOPS(double)}, enduse_get_part},
+				PROPERTY *)>(convert_to_enduse),                                                                                       nullptr,                                                                                                      nullptr, {TCOPS(double)}, enduse_get_part},
 		{"randomvar",     "string",  sizeof(randomvar_struct),     24,                 convert_from_randomvar,      reinterpret_cast<int (*)(
 				const char *, void *,
 				PROPERTY *)>(convert_to_randomvar),                                                                                    reinterpret_cast<int (*)(

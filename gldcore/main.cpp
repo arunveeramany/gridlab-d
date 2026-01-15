@@ -5,7 +5,7 @@
 
  @{
  **/
-#define _MAIN_C
+// #define _MAIN_C
 
 #define WIN32_LEAN_AND_MEAN // <--- ADD THIS AT THE VERY TOP OF THE FILE
 
@@ -54,6 +54,8 @@
 #include "kill.h"
 #include "threadpool.h"
 #include "cpp_threadpool.h"
+
+// CALLBACKS *callback = nullptr;
 
 #if defined WIN32 && _DEBUG
 #include <crtdbg.h>

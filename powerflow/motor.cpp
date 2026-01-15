@@ -33,7 +33,7 @@ motor::motor(MODULE *mod):node(mod)
 	{
 		pclass = node::oclass;
 		
-		oclass = gl_register_class(mod,"motor",sizeof(motor),passconfig|PC_UNSAFE_OVERRIDE_OMIT|PC_AUTOLOCK);
+		oclass = gld_class::create(mod,"motor",sizeof(motor),passconfig|PC_UNSAFE_OVERRIDE_OMIT|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			throw "unable to register class motor";
 		else

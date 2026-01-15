@@ -9,7 +9,7 @@ load_tracker::load_tracker(MODULE *mod)
 	if (oclass==nullptr)
 	{
 		// register the class definition
-		oclass = gl_register_class(mod,"load_tracker",sizeof(load_tracker),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_UNSAFE_OVERRIDE_OMIT|PC_AUTOLOCK);
+		oclass = gld_class::create(mod,"load_tracker",sizeof(load_tracker),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_UNSAFE_OVERRIDE_OMIT|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			GL_THROW("unable to register object class implemented by %s",__FILE__);
 		else

@@ -27,7 +27,7 @@ network_message::network_message(MODULE *mod)
 	if (oclass==nullptr)
 	{
 		// register the class definition
-		oclass = gl_register_class(mod,"network_message",sizeof(network_message),PC_BOTTOMUP);
+		oclass = gld_class::create(mod,"network_message",sizeof(network_message),PC_BOTTOMUP);
 		if (oclass==nullptr)
 			GL_THROW("unable to register object class implemented by %s",__FILE__);
 			/* TROUBLESHOOT

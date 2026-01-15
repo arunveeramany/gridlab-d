@@ -27,7 +27,7 @@ metrics_collector_writer::metrics_collector_writer(MODULE *mod)
 {
 	if (oclass == nullptr)
 	{
-		oclass = gl_register_class(mod, const_cast<char *>("metrics_collector_writer"), sizeof(metrics_collector_writer), PC_POSTTOPDOWN);
+		oclass = gld_class::create(mod, const_cast<char *>("metrics_collector_writer"), sizeof(metrics_collector_writer), PC_POSTTOPDOWN);
 		if (oclass == nullptr)
 			throw "unable to register class metrics_collector_writer";
 

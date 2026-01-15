@@ -43,7 +43,6 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/loadshape.cpp" "gldcore/CMakeFiles/gldapi.dir/loadshape.cpp.o" "gcc" "gldcore/CMakeFiles/gldapi.dir/loadshape.cpp.o.d"
   "/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/local.cpp" "gldcore/CMakeFiles/gldapi.dir/local.cpp.o" "gcc" "gldcore/CMakeFiles/gldapi.dir/local.cpp.o.d"
   "/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/lock.cpp" "gldcore/CMakeFiles/gldapi.dir/lock.cpp.o" "gcc" "gldcore/CMakeFiles/gldapi.dir/lock.cpp.o.d"
-  "/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/main.cpp" "gldcore/CMakeFiles/gldapi.dir/main.cpp.o" "gcc" "gldcore/CMakeFiles/gldapi.dir/main.cpp.o.d"
   "/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/match.cpp" "gldcore/CMakeFiles/gldapi.dir/match.cpp.o" "gcc" "gldcore/CMakeFiles/gldapi.dir/match.cpp.o.d"
   "/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/matlab.cpp" "gldcore/CMakeFiles/gldapi.dir/matlab.cpp.o" "gcc" "gldcore/CMakeFiles/gldapi.dir/matlab.cpp.o.d"
   "/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/module.cpp" "gldcore/CMakeFiles/gldapi.dir/module.cpp.o" "gcc" "gldcore/CMakeFiles/gldapi.dir/module.cpp.o.d"

@@ -38,6 +38,28 @@
 CLASS *recorder_class = nullptr;
 static OBJECT *last_recorder = nullptr;
 
+
+
+// Identify trailing .real / .imag (optionally extend to .mag / .ang later)
+enum COMPLEX_PART { CP_NONE, CP_REAL, CP_IMAG /*, CP_MAG, CP_ANG*/ };
+
+static COMPLEX_PART detect_complex_part(const char* name, char* base_out, size_t base_out_sz)
+{
+    if (!name) return CP_NONE;
+    // Copy full name and find final dot segment
+    strncpy(base_out, name, base_out_sz-1);
+    base_out[base_out_sz-1] = '\0';
+
+    char* lastdot = strrchr(base_out, '.');
+    if (!lastdot) return CP_NONE;
+
+    if (strcmp(lastdot+1, "real") == 0) { *lastdot = '\0'; return CP_REAL; }
+    if (strcmp(lastdot+1, "imag") == 0) { *lastdot = '\0'; return CP_IMAG; }
+
+    return CP_NONE;
+}
+
+
 EXPORT int create_recorder(OBJECT **obj, OBJECT *parent)
 {
 	*obj = gl_create_object	(recorder_class);
@@ -724,55 +746,115 @@ int read_properties(struct recorder *my, OBJECT *obj, PROPERTY *prop, char *buff
             if (offset > 0)
                 strcpy(buffer + offset++, ",");
 
-            // The original logic for handling units and types is preserved here.
-            PROPERTY *p2 = 0;
-            PROPERTY fake;
-            double value;
-            memset(&fake, 0, sizeof(PROPERTY));
-            fake.ptype = PT_double;
-            fake.unit = 0;
+			
+			// Guard against null property address resolution
+			void *addr = get_addr(obj, p);
+			if (addr == nullptr) {
+				gl_error("recorder:%d: get_addr failed for '%s' on '%s' (id=%d)",
+						obj->id, p->name, obj->oclass->name, obj->id);
+				return 0;
+			}
 
-            if (p->ptype == PT_double)
-            {
-                switch (my->line_units)
-                {
-                case LU_ALL:
-                case LU_DEFAULT:
-                    offset += gl_get_value(obj, get_addr(obj, p), buffer + offset, size - offset - 1, p);
-                    break;
-                case LU_NONE:
-                    value = *gl_get_double(obj, p);
-                    p2 = gl_get_property(obj, p->name, nullptr);
-                    if (p2 == 0)
-                    {
-                        gl_error("unable to locate %s.%s for LU_NONE", obj->name, p->name);
-                        return 0;
-                    }
-                    if (p->unit != 0 && p2->unit != 0)
-                    {
-                        if (0 == gl_convert_ex(p2->unit, p->unit, &value))
-                        {
-                            gl_error("unable to convert %s to %s for LU_NONE", p->unit->name, p2->unit->name);
-                            return 0;
-                        }
-                        else
-                        {
-                            offset += gl_get_value(obj, &value, buffer + offset, size - offset - 1, &fake);
-                        }
-                    }
-                    else
-                    {
-                        offset += gl_get_value(obj, get_addr(obj, p), buffer + offset, size - offset - 1, p);
-                    }
-                    break;
-                default:
-                    break;
-                }
-            }
-            else
-            {
-                offset += gl_get_value(obj, get_addr(obj, p), buffer + offset, size - offset - 1, p);
-            }
+            // The original logic for handling units and types is preserved here.
+            // PROPERTY *p2 = 0;
+            // PROPERTY fake;
+            // double value;
+            // memset(&fake, 0, sizeof(PROPERTY));
+            // fake.ptype = PT_double;
+            // fake.unit = 0;
+
+            // if (p->ptype == PT_double)
+            // {
+            //     switch (my->line_units)
+            //     {
+            //     case LU_ALL:
+            //     case LU_DEFAULT:
+            //         // offset += gl_get_value(obj, get_addr(obj, p), buffer + offset, size - offset - 1, p);
+			// 		offset += gl_get_value(obj, addr, buffer + offset, size - offset - 1, p);
+            //         break;
+            //     case LU_NONE:
+            //         value = *gl_get_double(obj, p);
+            //         p2 = gl_get_property(obj, p->name, nullptr);
+            //         if (p2 == 0)
+            //         {
+            //             gl_error("unable to locate %s.%s for LU_NONE", obj->name, p->name);
+            //             return 0;
+            //         }
+            //         if (p->unit != 0 && p2->unit != 0)
+            //         {
+            //             if (0 == gl_convert_ex(p2->unit, p->unit, &value))
+            //             {
+            //                 gl_error("unable to convert %s to %s for LU_NONE", p->unit->name, p2->unit->name);
+            //                 return 0;
+            //             }
+            //             else
+            //             {
+            //                 offset += gl_get_value(obj, &value, buffer + offset, size - offset - 1, &fake);
+            //             }
+            //         }
+            //         else
+            //         {
+            //             // offset += gl_get_value(obj, get_addr(obj, p), buffer + offset, size - offset - 1, p);
+			// 			offset += gl_get_value(obj, addr, buffer + offset, size - offset - 1, p);
+            //         }
+            //         break;
+            //     default:
+            //         break;
+            //     }
+            // }
+            // else
+            // {
+            //     // offset += gl_get_value(obj, get_addr(obj, p), buffer + offset, size - offset - 1, p);
+		    //     offset += gl_get_value(obj, addr, buffer + offset, size - offset - 1, p);
+
+            // }
+
+
+			// Resolve potential complex subparts by name
+			char base_name[256];
+			COMPLEX_PART part = detect_complex_part(p->name, base_name, sizeof(base_name));
+
+			if (part == CP_NONE) {
+			// Normal path: use the property's own addr/ptype
+			void* addr = get_addr(obj, p);
+			if (!addr) {
+				gl_error("recorder:%d: get_addr failed for '%s' on '%s' (id=%d)",
+						obj->id, p->name, obj->oclass->name, obj->id);
+				return 0;
+			}
+			offset += gl_get_value(obj, addr, buffer + offset, size - offset - 1, p);
+			} else {
+			// Complex subpart requested: look up the base property on the same target object
+			PROPERTY* p_base = gl_get_property(obj, base_name, nullptr);
+			if (!p_base) {
+				gl_error("recorder:%d: base property '%s' not found for subpart on '%s' (id=%d)",
+						obj->id, base_name, obj->oclass->name, obj->id);
+				return 0;
+			}
+			if (p_base->ptype != PT_complex) {
+				gl_error("recorder:%d: property '%s' is not complex; cannot use '.%s'",
+						obj->id, base_name, (part == CP_REAL ? "real" : "imag"));
+				return 0;
+			}
+			// Get complex value address and compute subpart
+			void* caddr = get_addr(obj, p_base);
+			if (!caddr) {
+				gl_error("recorder:%d: get_addr failed for base '%s' on '%s' (id=%d)",
+						obj->id, base_name, obj->oclass->name, obj->id);
+				return 0;
+			}
+			// 'complex' is GridLAB-D's complex type; interpret memory directly
+			complex* cptr = static_cast<complex*>(caddr);
+			double dval   = (part == CP_REAL) ? cptr->Re() : cptr->Im();
+
+			// Emit the double using a fake PROPERTY descriptor
+			PROPERTY fake{};
+			fake.ptype = PT_double;
+			fake.unit  = nullptr;
+			offset += gl_get_value(obj, &dval, buffer + offset, size - offset - 1, &fake);
+			}
+
+
 
             buffer[offset] = '\0';
             count++;
@@ -820,109 +902,87 @@ extern "C" TIMESTAMP sync_recorder(void *object, ...)
 	TIMESTAMP return_value;
 	struct recorder *my = object_data<struct recorder>(obj);
 
-	// --- "LAZY LINKING" BLOCK ---
-	if (my->target_obj == nullptr) // Use target_obj as a flag for one-time linking
-	{
-		// This block now correctly handles single or multiple comma-separated properties.
-		char *item;
-		PROPERTY *first = nullptr, *last = nullptr;
-		PROPERTY *prop_copy;
-		PROPERTY *original_prop;
-		char1024 property_list_copy;
 
-		// Default target object is the recorder's parent.
-		OBJECT *target_obj = obj->parent;
-		if (target_obj == nullptr)
-		{
-			gl_error("recorder:%d: has no parent object to record from", obj->id);
-			my->status = TS_ERROR;
-			return TS_INVALID;
-		}
+    // --- "LAZY LINKING" BLOCK (fixed to resolve FULL dotted paths, with trailing .real/.imag support) ---
+    if (my->target_obj == nullptr) // link once, lazily
+    {
+        char *item;
+        PROPERTY *first = nullptr, *last = nullptr;
+        PROPERTY *prop_copy;
+        PROPERTY *original_prop;
+        char1024 property_list_copy;
+        OBJECT *target_obj = obj->parent;
+        if (target_obj == nullptr) {
+            gl_error("recorder:%d: has no parent object to record from", obj->id);
+            my->status = TS_ERROR;
+            return TS_INVALID;
+        }
+        strcpy(property_list_copy, my->property.get_string());
+        for (item = strtok(property_list_copy, ","); item != nullptr; item = strtok(nullptr, ",")) {
+            while (isspace(*item)) item++; // trim leading spaces
+            // Work on a full copy (preserve the dotted chain)
+            char full_path[1024];
+            strncpy(full_path, item, sizeof(full_path)-1);
+            full_path[sizeof(full_path)-1] = '\0';
 
-		// strtok modifies the string, so we must use a copy.
-		strcpy(property_list_copy, my->property.get_string());
+            // Detect ONLY trailing ".real"/".imag" and strip that final segment
+            bool use_real = false, use_imag = false;
+            char *lastdot = strrchr(full_path, '.');
+            if (lastdot != nullptr) {
+                if (strcmp(lastdot+1, "real") == 0) { use_real = true; *lastdot = '\0'; }
+                else if (strcmp(lastdot+1, "imag") == 0) { use_imag = true; *lastdot = '\0'; }
+            }
 
-		// Iterate through each comma-separated property name.
-		for (item = strtok(property_list_copy, ","); item != nullptr; item = strtok(nullptr, ","))
-		{
-			// Trim leading whitespace from the item.
-			while (isspace(*item))
-				item++;
+            // Resolve the ENTIRE dotted path (e.g., "current_market.clearing_quantity")
+            original_prop = gl_get_property(target_obj, full_path, nullptr);
+            if (original_prop == nullptr) {
+                my->status = TS_ERROR;
+                gl_debug("Returning TS_INVALID: property lookup failed for '%s'", item);
+                // cleanup partial list
+                while (first != nullptr) { prop_copy = first; first = first->next; free(prop_copy); }
+                return TS_INVALID;
+            }
 
-			// Create a working copy of the item to parse
-			char base_prop_name[256];
-			strncpy(base_prop_name, item, sizeof(base_prop_name)-1);
-			base_prop_name[sizeof(base_prop_name)-1] = '\0'; // Ensure null termination
 
-			// Trim trailing whitespace
-			char *end = base_prop_name + strlen(base_prop_name) - 1;
-			while (end > base_prop_name && isspace((unsigned char)*end))
-				*end-- = '\0';
-			
-			// Find if there's a sub-property accessor like .real or .imag
-			char *part = strchr(base_prop_name, '.');
-			if (part != nullptr)
-			{
-				// Terminate the string at the dot to get the base property name.
-				*part = '\0'; 
-			}
-
-			// Now, find the original property using the corrected base name.
-			original_prop = gl_get_property(target_obj, base_prop_name, nullptr);
-			if (original_prop == nullptr)
-			{
-				// gl_get_property already prints a "not found" error.
+			// If a complex part was requested, verify the base property really is complex
+			if ((use_real || use_imag) && original_prop->ptype != PT_complex) {
 				my->status = TS_ERROR;
-				// Clean up any partially created list before returning.
-				while (first != nullptr) {
-					prop_copy = first;
-					first = first->next;
-					free(prop_copy);
-				}
-				gl_debug("Returning TS_INVALID: property lookup failed for base property of '%s'", item);
+				gl_error("recorder:%d: property '%s' is not complex; cannot use '.%s'",
+						obj->id, full_path, use_real ? "real" : "imag");
+				// cleanup partial list
+				while (first != nullptr) { prop_copy = first; first = first->next; free(prop_copy); }
 				return TS_INVALID;
 			}
 
-			// Create a copy of the property to build our own clean linked list.
-			// The recorder's internal logic will use the full name (item) later to get the correct part.
-			prop_copy = (PROPERTY *)malloc(sizeof(PROPERTY));
-			if (prop_copy == nullptr)
-			{
-				gl_error("recorder:%d: memory allocation failed", obj->id);
-				my->status = TS_ERROR;
-				return TS_INVALID;
-			}
-			memcpy(prop_copy, original_prop, sizeof(PROPERTY));
 
-			// Store the full, original name (e.g., "measured_power_A.real") in the copied property's name field.
-			// This is what the recorder uses later to extract the data.
-			strncpy(prop_copy->name, item, sizeof(prop_copy->name)-1);
-			prop_copy->name[sizeof(prop_copy->name)-1] = '\0';
+            // Copy the resolved PROPERTY node
+            prop_copy = (PROPERTY *)malloc(sizeof(PROPERTY));
+            if (!prop_copy) { gl_error("recorder:%d: memory allocation failed", obj->id); my->status = TS_ERROR; return TS_INVALID; }
+            memcpy(prop_copy, original_prop, sizeof(PROPERTY));
+            prop_copy->next = nullptr;
 
-			prop_copy->next = nullptr; // Explicitly terminate this new node.
+            // Preserve full path in name (helpful later for re-resolution/unit handling)
+            strncpy(prop_copy->name, full_path, sizeof(prop_copy->name)-1);
+            prop_copy->name[sizeof(prop_copy->name)-1] = '\0';
 
-			// Append the new property copy to our list.
-			if (first == nullptr)
-				first = prop_copy; // This is the first item in the list.
-			else
-				last->next = prop_copy; // Link the previous item to this one.
-			last = prop_copy; // This is now the last item.
-		}
-		
-		// Linking is complete. Store the head of our new property list and the target object.
-		my->target = first;
-		my->target_obj = target_obj;
+            // If trailing .real/.imag was requested, expose complex component as double via address offset
+            // if (use_real || use_imag) {
+            //     complex dummy;
+            //     int64 cid = (int64)((use_real ? &dummy.Re() : &dummy.Im()) - (int64) &dummy);
+            //     prop_copy->ptype = PT_double;
+            //     prop_copy->addr  = (PROPERTYADDR)((int64)prop_copy->addr + cid);
+            // }
 
-		// Final check to ensure at least one property was linked.
-		if (my->target == nullptr)
-		{
-			gl_error("recorder:%d: failed to link any properties from '%s'", obj->id, my->property.get_string());
-			my->status = TS_ERROR;
-			return TS_INVALID;
-		}
+            // Link into our lazy list
+            if (first == nullptr) first = prop_copy; else last->next = prop_copy;
+            last = prop_copy;
+        }
+        my->target     = first;
+        my->target_obj = target_obj;
+        if (my->target == nullptr) { my->status = TS_ERROR; return TS_INVALID; }
 	}
 	// --- END OF LINKING BLOCK ---
-	
+
 
 	typedef enum
 	{

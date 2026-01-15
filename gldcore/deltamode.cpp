@@ -18,6 +18,10 @@
 #include "output.h"
 #include "realtime.h"
 
+// Forward declarations for legacy syncall functions
+extern "C" TIMESTAMP loadshape_syncall(TIMESTAMP t1);
+extern "C" TIMESTAMP enduse_syncall(TIMESTAMP t1);
+
 static OBJECT **delta_objectlist = nullptr; /* qualified object list */
 static int delta_objectcount = 0; /* qualified object count */
 static MODULE **delta_modulelist = nullptr; /* qualified module list */

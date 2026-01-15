@@ -69,7 +69,7 @@ link::link(MODULE *mod)
 	if (oclass==nullptr)
 	{
 		// register the class definition
-		link_class = oclass = gl_register_class(mod,"link",sizeof(link),PC_BOTTOMUP|PC_UNSAFE_OVERRIDE_OMIT);
+		link_class = oclass = gld_class::create(mod,"link",sizeof(link),PC_BOTTOMUP|PC_UNSAFE_OVERRIDE_OMIT);
 		if (oclass==nullptr)
 			throw "unable to register class link";
 		else

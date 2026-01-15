@@ -590,24 +590,10 @@ gldcore/CMakeFiles/gldapi.dir/lock.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/gldapi.dir/lock.cpp.s"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/lock.cpp -o CMakeFiles/gldapi.dir/lock.cpp.s
 
-gldcore/CMakeFiles/gldapi.dir/main.cpp.o: gldcore/CMakeFiles/gldapi.dir/flags.make
-gldcore/CMakeFiles/gldapi.dir/main.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/main.cpp
-gldcore/CMakeFiles/gldapi.dir/main.cpp.o: gldcore/CMakeFiles/gldapi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_38) "Building CXX object gldcore/CMakeFiles/gldapi.dir/main.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT gldcore/CMakeFiles/gldapi.dir/main.cpp.o -MF CMakeFiles/gldapi.dir/main.cpp.o.d -o CMakeFiles/gldapi.dir/main.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/main.cpp
-
-gldcore/CMakeFiles/gldapi.dir/main.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/gldapi.dir/main.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/main.cpp > CMakeFiles/gldapi.dir/main.cpp.i
-
-gldcore/CMakeFiles/gldapi.dir/main.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/gldapi.dir/main.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/main.cpp -o CMakeFiles/gldapi.dir/main.cpp.s
-
 gldcore/CMakeFiles/gldapi.dir/match.cpp.o: gldcore/CMakeFiles/gldapi.dir/flags.make
 gldcore/CMakeFiles/gldapi.dir/match.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/match.cpp
 gldcore/CMakeFiles/gldapi.dir/match.cpp.o: gldcore/CMakeFiles/gldapi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_39) "Building CXX object gldcore/CMakeFiles/gldapi.dir/match.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_38) "Building CXX object gldcore/CMakeFiles/gldapi.dir/match.cpp.o"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT gldcore/CMakeFiles/gldapi.dir/match.cpp.o -MF CMakeFiles/gldapi.dir/match.cpp.o.d -o CMakeFiles/gldapi.dir/match.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/match.cpp
 
 gldcore/CMakeFiles/gldapi.dir/match.cpp.i: cmake_force
@@ -621,7 +607,7 @@ gldcore/CMakeFiles/gldapi.dir/match.cpp.s: cmake_force
 gldcore/CMakeFiles/gldapi.dir/matlab.cpp.o: gldcore/CMakeFiles/gldapi.dir/flags.make
 gldcore/CMakeFiles/gldapi.dir/matlab.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/matlab.cpp
 gldcore/CMakeFiles/gldapi.dir/matlab.cpp.o: gldcore/CMakeFiles/gldapi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_40) "Building CXX object gldcore/CMakeFiles/gldapi.dir/matlab.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_39) "Building CXX object gldcore/CMakeFiles/gldapi.dir/matlab.cpp.o"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT gldcore/CMakeFiles/gldapi.dir/matlab.cpp.o -MF CMakeFiles/gldapi.dir/matlab.cpp.o.d -o CMakeFiles/gldapi.dir/matlab.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/matlab.cpp
 
 gldcore/CMakeFiles/gldapi.dir/matlab.cpp.i: cmake_force
@@ -635,7 +621,7 @@ gldcore/CMakeFiles/gldapi.dir/matlab.cpp.s: cmake_force
 gldcore/CMakeFiles/gldapi.dir/module.cpp.o: gldcore/CMakeFiles/gldapi.dir/flags.make
 gldcore/CMakeFiles/gldapi.dir/module.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/module.cpp
 gldcore/CMakeFiles/gldapi.dir/module.cpp.o: gldcore/CMakeFiles/gldapi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_41) "Building CXX object gldcore/CMakeFiles/gldapi.dir/module.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_40) "Building CXX object gldcore/CMakeFiles/gldapi.dir/module.cpp.o"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT gldcore/CMakeFiles/gldapi.dir/module.cpp.o -MF CMakeFiles/gldapi.dir/module.cpp.o.d -o CMakeFiles/gldapi.dir/module.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/module.cpp
 
 gldcore/CMakeFiles/gldapi.dir/module.cpp.i: cmake_force
@@ -649,7 +635,7 @@ gldcore/CMakeFiles/gldapi.dir/module.cpp.s: cmake_force
 gldcore/CMakeFiles/gldapi.dir/output.cpp.o: gldcore/CMakeFiles/gldapi.dir/flags.make
 gldcore/CMakeFiles/gldapi.dir/output.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/output.cpp
 gldcore/CMakeFiles/gldapi.dir/output.cpp.o: gldcore/CMakeFiles/gldapi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_42) "Building CXX object gldcore/CMakeFiles/gldapi.dir/output.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_41) "Building CXX object gldcore/CMakeFiles/gldapi.dir/output.cpp.o"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT gldcore/CMakeFiles/gldapi.dir/output.cpp.o -MF CMakeFiles/gldapi.dir/output.cpp.o.d -o CMakeFiles/gldapi.dir/output.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/output.cpp
 
 gldcore/CMakeFiles/gldapi.dir/output.cpp.i: cmake_force
@@ -663,7 +649,7 @@ gldcore/CMakeFiles/gldapi.dir/output.cpp.s: cmake_force
 gldcore/CMakeFiles/gldapi.dir/property.cpp.o: gldcore/CMakeFiles/gldapi.dir/flags.make
 gldcore/CMakeFiles/gldapi.dir/property.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/property.cpp
 gldcore/CMakeFiles/gldapi.dir/property.cpp.o: gldcore/CMakeFiles/gldapi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_43) "Building CXX object gldcore/CMakeFiles/gldapi.dir/property.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_42) "Building CXX object gldcore/CMakeFiles/gldapi.dir/property.cpp.o"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT gldcore/CMakeFiles/gldapi.dir/property.cpp.o -MF CMakeFiles/gldapi.dir/property.cpp.o.d -o CMakeFiles/gldapi.dir/property.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/property.cpp
 
 gldcore/CMakeFiles/gldapi.dir/property.cpp.i: cmake_force
@@ -677,7 +663,7 @@ gldcore/CMakeFiles/gldapi.dir/property.cpp.s: cmake_force
 gldcore/CMakeFiles/gldapi.dir/random.cpp.o: gldcore/CMakeFiles/gldapi.dir/flags.make
 gldcore/CMakeFiles/gldapi.dir/random.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/random.cpp
 gldcore/CMakeFiles/gldapi.dir/random.cpp.o: gldcore/CMakeFiles/gldapi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_44) "Building CXX object gldcore/CMakeFiles/gldapi.dir/random.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_43) "Building CXX object gldcore/CMakeFiles/gldapi.dir/random.cpp.o"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT gldcore/CMakeFiles/gldapi.dir/random.cpp.o -MF CMakeFiles/gldapi.dir/random.cpp.o.d -o CMakeFiles/gldapi.dir/random.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/random.cpp
 
 gldcore/CMakeFiles/gldapi.dir/random.cpp.i: cmake_force
@@ -691,7 +677,7 @@ gldcore/CMakeFiles/gldapi.dir/random.cpp.s: cmake_force
 gldcore/CMakeFiles/gldapi.dir/realtime.cpp.o: gldcore/CMakeFiles/gldapi.dir/flags.make
 gldcore/CMakeFiles/gldapi.dir/realtime.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/realtime.cpp
 gldcore/CMakeFiles/gldapi.dir/realtime.cpp.o: gldcore/CMakeFiles/gldapi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_45) "Building CXX object gldcore/CMakeFiles/gldapi.dir/realtime.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_44) "Building CXX object gldcore/CMakeFiles/gldapi.dir/realtime.cpp.o"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT gldcore/CMakeFiles/gldapi.dir/realtime.cpp.o -MF CMakeFiles/gldapi.dir/realtime.cpp.o.d -o CMakeFiles/gldapi.dir/realtime.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/realtime.cpp
 
 gldcore/CMakeFiles/gldapi.dir/realtime.cpp.i: cmake_force
@@ -705,7 +691,7 @@ gldcore/CMakeFiles/gldapi.dir/realtime.cpp.s: cmake_force
 gldcore/CMakeFiles/gldapi.dir/sanitize.cpp.o: gldcore/CMakeFiles/gldapi.dir/flags.make
 gldcore/CMakeFiles/gldapi.dir/sanitize.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/sanitize.cpp
 gldcore/CMakeFiles/gldapi.dir/sanitize.cpp.o: gldcore/CMakeFiles/gldapi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_46) "Building CXX object gldcore/CMakeFiles/gldapi.dir/sanitize.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_45) "Building CXX object gldcore/CMakeFiles/gldapi.dir/sanitize.cpp.o"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT gldcore/CMakeFiles/gldapi.dir/sanitize.cpp.o -MF CMakeFiles/gldapi.dir/sanitize.cpp.o.d -o CMakeFiles/gldapi.dir/sanitize.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/sanitize.cpp
 
 gldcore/CMakeFiles/gldapi.dir/sanitize.cpp.i: cmake_force
@@ -719,7 +705,7 @@ gldcore/CMakeFiles/gldapi.dir/sanitize.cpp.s: cmake_force
 gldcore/CMakeFiles/gldapi.dir/save.cpp.o: gldcore/CMakeFiles/gldapi.dir/flags.make
 gldcore/CMakeFiles/gldapi.dir/save.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/save.cpp
 gldcore/CMakeFiles/gldapi.dir/save.cpp.o: gldcore/CMakeFiles/gldapi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_47) "Building CXX object gldcore/CMakeFiles/gldapi.dir/save.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_46) "Building CXX object gldcore/CMakeFiles/gldapi.dir/save.cpp.o"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT gldcore/CMakeFiles/gldapi.dir/save.cpp.o -MF CMakeFiles/gldapi.dir/save.cpp.o.d -o CMakeFiles/gldapi.dir/save.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/save.cpp
 
 gldcore/CMakeFiles/gldapi.dir/save.cpp.i: cmake_force
@@ -733,7 +719,7 @@ gldcore/CMakeFiles/gldapi.dir/save.cpp.s: cmake_force
 gldcore/CMakeFiles/gldapi.dir/server.cpp.o: gldcore/CMakeFiles/gldapi.dir/flags.make
 gldcore/CMakeFiles/gldapi.dir/server.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/server.cpp
 gldcore/CMakeFiles/gldapi.dir/server.cpp.o: gldcore/CMakeFiles/gldapi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_48) "Building CXX object gldcore/CMakeFiles/gldapi.dir/server.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_47) "Building CXX object gldcore/CMakeFiles/gldapi.dir/server.cpp.o"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT gldcore/CMakeFiles/gldapi.dir/server.cpp.o -MF CMakeFiles/gldapi.dir/server.cpp.o.d -o CMakeFiles/gldapi.dir/server.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/server.cpp
 
 gldcore/CMakeFiles/gldapi.dir/server.cpp.i: cmake_force
@@ -747,7 +733,7 @@ gldcore/CMakeFiles/gldapi.dir/server.cpp.s: cmake_force
 gldcore/CMakeFiles/gldapi.dir/setup.cpp.o: gldcore/CMakeFiles/gldapi.dir/flags.make
 gldcore/CMakeFiles/gldapi.dir/setup.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/setup.cpp
 gldcore/CMakeFiles/gldapi.dir/setup.cpp.o: gldcore/CMakeFiles/gldapi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_49) "Building CXX object gldcore/CMakeFiles/gldapi.dir/setup.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_48) "Building CXX object gldcore/CMakeFiles/gldapi.dir/setup.cpp.o"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT gldcore/CMakeFiles/gldapi.dir/setup.cpp.o -MF CMakeFiles/gldapi.dir/setup.cpp.o.d -o CMakeFiles/gldapi.dir/setup.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/setup.cpp
 
 gldcore/CMakeFiles/gldapi.dir/setup.cpp.i: cmake_force
@@ -761,7 +747,7 @@ gldcore/CMakeFiles/gldapi.dir/setup.cpp.s: cmake_force
 gldcore/CMakeFiles/gldapi.dir/stream.cpp.o: gldcore/CMakeFiles/gldapi.dir/flags.make
 gldcore/CMakeFiles/gldapi.dir/stream.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/stream.cpp
 gldcore/CMakeFiles/gldapi.dir/stream.cpp.o: gldcore/CMakeFiles/gldapi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_50) "Building CXX object gldcore/CMakeFiles/gldapi.dir/stream.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_49) "Building CXX object gldcore/CMakeFiles/gldapi.dir/stream.cpp.o"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT gldcore/CMakeFiles/gldapi.dir/stream.cpp.o -MF CMakeFiles/gldapi.dir/stream.cpp.o.d -o CMakeFiles/gldapi.dir/stream.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/stream.cpp
 
 gldcore/CMakeFiles/gldapi.dir/stream.cpp.i: cmake_force
@@ -775,7 +761,7 @@ gldcore/CMakeFiles/gldapi.dir/stream.cpp.s: cmake_force
 gldcore/CMakeFiles/gldapi.dir/test.cpp.o: gldcore/CMakeFiles/gldapi.dir/flags.make
 gldcore/CMakeFiles/gldapi.dir/test.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/test.cpp
 gldcore/CMakeFiles/gldapi.dir/test.cpp.o: gldcore/CMakeFiles/gldapi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_51) "Building CXX object gldcore/CMakeFiles/gldapi.dir/test.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_50) "Building CXX object gldcore/CMakeFiles/gldapi.dir/test.cpp.o"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT gldcore/CMakeFiles/gldapi.dir/test.cpp.o -MF CMakeFiles/gldapi.dir/test.cpp.o.d -o CMakeFiles/gldapi.dir/test.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/test.cpp
 
 gldcore/CMakeFiles/gldapi.dir/test.cpp.i: cmake_force
@@ -789,7 +775,7 @@ gldcore/CMakeFiles/gldapi.dir/test.cpp.s: cmake_force
 gldcore/CMakeFiles/gldapi.dir/test_framework.cpp.o: gldcore/CMakeFiles/gldapi.dir/flags.make
 gldcore/CMakeFiles/gldapi.dir/test_framework.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/test_framework.cpp
 gldcore/CMakeFiles/gldapi.dir/test_framework.cpp.o: gldcore/CMakeFiles/gldapi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_52) "Building CXX object gldcore/CMakeFiles/gldapi.dir/test_framework.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_51) "Building CXX object gldcore/CMakeFiles/gldapi.dir/test_framework.cpp.o"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT gldcore/CMakeFiles/gldapi.dir/test_framework.cpp.o -MF CMakeFiles/gldapi.dir/test_framework.cpp.o.d -o CMakeFiles/gldapi.dir/test_framework.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/test_framework.cpp
 
 gldcore/CMakeFiles/gldapi.dir/test_framework.cpp.i: cmake_force
@@ -803,7 +789,7 @@ gldcore/CMakeFiles/gldapi.dir/test_framework.cpp.s: cmake_force
 gldcore/CMakeFiles/gldapi.dir/threadpool.cpp.o: gldcore/CMakeFiles/gldapi.dir/flags.make
 gldcore/CMakeFiles/gldapi.dir/threadpool.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/threadpool.cpp
 gldcore/CMakeFiles/gldapi.dir/threadpool.cpp.o: gldcore/CMakeFiles/gldapi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_53) "Building CXX object gldcore/CMakeFiles/gldapi.dir/threadpool.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_52) "Building CXX object gldcore/CMakeFiles/gldapi.dir/threadpool.cpp.o"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT gldcore/CMakeFiles/gldapi.dir/threadpool.cpp.o -MF CMakeFiles/gldapi.dir/threadpool.cpp.o.d -o CMakeFiles/gldapi.dir/threadpool.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/threadpool.cpp
 
 gldcore/CMakeFiles/gldapi.dir/threadpool.cpp.i: cmake_force
@@ -817,7 +803,7 @@ gldcore/CMakeFiles/gldapi.dir/threadpool.cpp.s: cmake_force
 gldcore/CMakeFiles/gldapi.dir/timestamp.cpp.o: gldcore/CMakeFiles/gldapi.dir/flags.make
 gldcore/CMakeFiles/gldapi.dir/timestamp.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/timestamp.cpp
 gldcore/CMakeFiles/gldapi.dir/timestamp.cpp.o: gldcore/CMakeFiles/gldapi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_54) "Building CXX object gldcore/CMakeFiles/gldapi.dir/timestamp.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_53) "Building CXX object gldcore/CMakeFiles/gldapi.dir/timestamp.cpp.o"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT gldcore/CMakeFiles/gldapi.dir/timestamp.cpp.o -MF CMakeFiles/gldapi.dir/timestamp.cpp.o.d -o CMakeFiles/gldapi.dir/timestamp.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/timestamp.cpp
 
 gldcore/CMakeFiles/gldapi.dir/timestamp.cpp.i: cmake_force
@@ -831,7 +817,7 @@ gldcore/CMakeFiles/gldapi.dir/timestamp.cpp.s: cmake_force
 gldcore/CMakeFiles/gldapi.dir/transform.cpp.o: gldcore/CMakeFiles/gldapi.dir/flags.make
 gldcore/CMakeFiles/gldapi.dir/transform.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/transform.cpp
 gldcore/CMakeFiles/gldapi.dir/transform.cpp.o: gldcore/CMakeFiles/gldapi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_55) "Building CXX object gldcore/CMakeFiles/gldapi.dir/transform.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_54) "Building CXX object gldcore/CMakeFiles/gldapi.dir/transform.cpp.o"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT gldcore/CMakeFiles/gldapi.dir/transform.cpp.o -MF CMakeFiles/gldapi.dir/transform.cpp.o.d -o CMakeFiles/gldapi.dir/transform.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/transform.cpp
 
 gldcore/CMakeFiles/gldapi.dir/transform.cpp.i: cmake_force
@@ -845,7 +831,7 @@ gldcore/CMakeFiles/gldapi.dir/transform.cpp.s: cmake_force
 gldcore/CMakeFiles/gldapi.dir/ufile.cpp.o: gldcore/CMakeFiles/gldapi.dir/flags.make
 gldcore/CMakeFiles/gldapi.dir/ufile.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/ufile.cpp
 gldcore/CMakeFiles/gldapi.dir/ufile.cpp.o: gldcore/CMakeFiles/gldapi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_56) "Building CXX object gldcore/CMakeFiles/gldapi.dir/ufile.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_55) "Building CXX object gldcore/CMakeFiles/gldapi.dir/ufile.cpp.o"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT gldcore/CMakeFiles/gldapi.dir/ufile.cpp.o -MF CMakeFiles/gldapi.dir/ufile.cpp.o.d -o CMakeFiles/gldapi.dir/ufile.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/ufile.cpp
 
 gldcore/CMakeFiles/gldapi.dir/ufile.cpp.i: cmake_force
@@ -859,7 +845,7 @@ gldcore/CMakeFiles/gldapi.dir/ufile.cpp.s: cmake_force
 gldcore/CMakeFiles/gldapi.dir/unit.cpp.o: gldcore/CMakeFiles/gldapi.dir/flags.make
 gldcore/CMakeFiles/gldapi.dir/unit.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/unit.cpp
 gldcore/CMakeFiles/gldapi.dir/unit.cpp.o: gldcore/CMakeFiles/gldapi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_57) "Building CXX object gldcore/CMakeFiles/gldapi.dir/unit.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_56) "Building CXX object gldcore/CMakeFiles/gldapi.dir/unit.cpp.o"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT gldcore/CMakeFiles/gldapi.dir/unit.cpp.o -MF CMakeFiles/gldapi.dir/unit.cpp.o.d -o CMakeFiles/gldapi.dir/unit.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/unit.cpp
 
 gldcore/CMakeFiles/gldapi.dir/unit.cpp.i: cmake_force
@@ -873,7 +859,7 @@ gldcore/CMakeFiles/gldapi.dir/unit.cpp.s: cmake_force
 gldcore/CMakeFiles/gldapi.dir/validate.cpp.o: gldcore/CMakeFiles/gldapi.dir/flags.make
 gldcore/CMakeFiles/gldapi.dir/validate.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/validate.cpp
 gldcore/CMakeFiles/gldapi.dir/validate.cpp.o: gldcore/CMakeFiles/gldapi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_58) "Building CXX object gldcore/CMakeFiles/gldapi.dir/validate.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_57) "Building CXX object gldcore/CMakeFiles/gldapi.dir/validate.cpp.o"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT gldcore/CMakeFiles/gldapi.dir/validate.cpp.o -MF CMakeFiles/gldapi.dir/validate.cpp.o.d -o CMakeFiles/gldapi.dir/validate.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/validate.cpp
 
 gldcore/CMakeFiles/gldapi.dir/validate.cpp.i: cmake_force
@@ -887,7 +873,7 @@ gldcore/CMakeFiles/gldapi.dir/validate.cpp.s: cmake_force
 gldcore/CMakeFiles/gldapi.dir/version.cpp.o: gldcore/CMakeFiles/gldapi.dir/flags.make
 gldcore/CMakeFiles/gldapi.dir/version.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/version.cpp
 gldcore/CMakeFiles/gldapi.dir/version.cpp.o: gldcore/CMakeFiles/gldapi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_59) "Building CXX object gldcore/CMakeFiles/gldapi.dir/version.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_58) "Building CXX object gldcore/CMakeFiles/gldapi.dir/version.cpp.o"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT gldcore/CMakeFiles/gldapi.dir/version.cpp.o -MF CMakeFiles/gldapi.dir/version.cpp.o.d -o CMakeFiles/gldapi.dir/version.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/version.cpp
 
 gldcore/CMakeFiles/gldapi.dir/version.cpp.i: cmake_force
@@ -937,7 +923,6 @@ gldapi_OBJECTS = \
 "CMakeFiles/gldapi.dir/loadshape.cpp.o" \
 "CMakeFiles/gldapi.dir/local.cpp.o" \
 "CMakeFiles/gldapi.dir/lock.cpp.o" \
-"CMakeFiles/gldapi.dir/main.cpp.o" \
 "CMakeFiles/gldapi.dir/match.cpp.o" \
 "CMakeFiles/gldapi.dir/matlab.cpp.o" \
 "CMakeFiles/gldapi.dir/module.cpp.o" \
@@ -1000,7 +985,6 @@ lib/libgldapi.dylib: gldcore/CMakeFiles/gldapi.dir/load_xml_handle.cpp.o
 lib/libgldapi.dylib: gldcore/CMakeFiles/gldapi.dir/loadshape.cpp.o
 lib/libgldapi.dylib: gldcore/CMakeFiles/gldapi.dir/local.cpp.o
 lib/libgldapi.dylib: gldcore/CMakeFiles/gldapi.dir/lock.cpp.o
-lib/libgldapi.dylib: gldcore/CMakeFiles/gldapi.dir/main.cpp.o
 lib/libgldapi.dylib: gldcore/CMakeFiles/gldapi.dir/match.cpp.o
 lib/libgldapi.dylib: gldcore/CMakeFiles/gldapi.dir/matlab.cpp.o
 lib/libgldapi.dylib: gldcore/CMakeFiles/gldapi.dir/module.cpp.o
@@ -1026,7 +1010,7 @@ lib/libgldapi.dylib: gldcore/CMakeFiles/gldapi.dir/build.make
 lib/libgldapi.dylib: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib/libcurses.tbd
 lib/libgldapi.dylib: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib/libform.tbd
 lib/libgldapi.dylib: gldcore/CMakeFiles/gldapi.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_60) "Linking CXX shared library ../lib/libgldapi.dylib"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_59) "Linking CXX shared library ../lib/libgldapi.dylib"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/gldapi.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

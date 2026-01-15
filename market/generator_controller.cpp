@@ -17,7 +17,7 @@ generator_controller::generator_controller(MODULE *module)
 {
 	if (oclass == nullptr)
 	{
-		oclass = gl_register_class(module, "generator_controller", sizeof(generator_controller), PC_BOTTOMUP | PC_AUTOLOCK);
+		oclass = gld_class::create(module, "generator_controller", sizeof(generator_controller), PC_BOTTOMUP | PC_AUTOLOCK);
 		if (oclass == nullptr)
 			GL_THROW("unable to register object class implemented by %s", __FILE__);
 

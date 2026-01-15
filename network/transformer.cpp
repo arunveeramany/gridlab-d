@@ -32,7 +32,7 @@ transformer::transformer(MODULE *mod) : link(mod)
 	if (oclass==nullptr)
 	{
 		// register the class definition
-		transformer_class = oclass = gl_register_class(mod,"transformer",sizeof(transformer),PC_BOTTOMUP);
+		transformer_class = oclass = gld_class::create(mod,"transformer",sizeof(transformer),PC_BOTTOMUP);
 		if (oclass==nullptr)
 			throw "unable to register class transformer";
 		else

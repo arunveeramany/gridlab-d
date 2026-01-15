@@ -129,11 +129,15 @@ schedule zip_power {
 	
 
 object triplex_meter {
+	name PHASE_A;
 	phases AS;
 	nominal_voltage 120;
-	object house {
-		object ZIPload {
-			name zipload;
+object house {
+name auto_house_135;
+parent PHASE_A;
+object ZIPload {
+			name auto_zipload_136;
+			parent auto_house_135;
 			heat_fraction 1;
 			base_power zip_power*1+1;		
 			power_pf 1;
@@ -142,30 +146,27 @@ object triplex_meter {
 			current_fraction 0;
 			impedance_pf 0;
 			impedance_fraction 0;
-			
-			object double_assert{
-				name asserter;
-				parent zipload;
-				target base_power;
-				status ASSERT_TRUE;
-				within 1e-4;
-				object player{
-					parent asserter;
-					property value;
-					file "../test_core_4blocks_schedule.player";
-					loop 1;
-				};
-			};
-			object recorder{
-				parent zipload;
+object recorder{
+				parent auto_zipload_136;
 				property base_power;
 				file "base_power.csv";
 				interval 900;
 				limit 96;
 			};
+object double_assert{
+				name auto_double_assert_151;
+				parent auto_zipload_136;
+				target base_power;
+				status ASSERT_TRUE;
+				within 1e-4;
+object player{
+					parent auto_double_assert_151;
+					property value;
+					file "../test_core_4blocks_schedule.player";
+					loop 1;
+				};
+			};
 		};
 	};
-
-	
 }
 

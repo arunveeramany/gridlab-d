@@ -35,7 +35,7 @@ histogram::histogram(MODULE *mod)
 #ifdef _DEBUG
 		gl_debug("construction histogram class");
 #endif
-		oclass = gl_register_class(mod,"histogram",sizeof(histogram), PC_PRETOPDOWN);
+		oclass = gld_class::create(mod,"histogram",sizeof(histogram), PC_PRETOPDOWN);
 		if (oclass==nullptr)
 			throw "unable to register class histogram";
 		else

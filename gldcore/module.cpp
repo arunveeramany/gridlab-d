@@ -104,6 +104,8 @@
 #define F_OK 0 // Define F_OK to represent file existence checks
 #endif
 
+extern "C" CALLBACKS *callback;  
+
 int get_exe_path(char *buf, int len, void *mod)
 { /* void for GetModuleFileName, a windows func */
 	int rv = 0, i = 0;
@@ -216,7 +218,7 @@ s_callbacks::s_callbacks() throw()
 	output_fatal = ::output_fatal;
 	output_debug = ::output_debug;
 	output_test = ::output_test;
-	register_class = class_register;
+	// register_class = class_register;
 	create.single = object_create_single;
 	create.array = object_create_array;
 	create.foreign = object_create_foreign;
@@ -351,10 +353,10 @@ s_callbacks::s_callbacks() throw()
 	schedule.dtnext = schedule_dtnext;
 	schedule.find = schedule_find_byname;
 	schedule.getfirst = schedule_getfirst;
-	loadshape.create = loadshape_create;
-	loadshape.init = loadshape_init;
-	enduse.create = enduse_create;
-	enduse.sync = enduse_sync;
+	// loadshape.create = loadshape_create;
+	// loadshape.init = loadshape_init;
+	// enduse.create = enduse_create;
+	// enduse.sync = enduse_sync;
 	interpolate.linear = interpolate_linear;
 	interpolate.quadratic = interpolate_quadratic;
 	forecast.create = forecast_create;
@@ -432,7 +434,9 @@ MODULE *module_load(const char *file, /**< module filename, searches \p PATH */
 					char *argv[])	  /**< arguments passed from the command line */
 {
 	// std::cerr << "Entering module_load for module: " << file << std::endl;
-	CALLBACKS *callbacks = module_callbacks();
+	//CALLBACKS *callbacks = module_callbacks();
+	callback = module_callbacks();
+	CALLBACKS *callbacks = callback;
 	// std::cerr << "Calling init for module " << file << " with callbacks at: " << (void*)callbacks << std::endl;
     // std::cerr << "properties.get_property in callbacks: " << (void*)callbacks->properties.get_property << std::endl;
 	
@@ -799,8 +803,8 @@ MODULE *module_load(const char *file, /**< module filename, searches \p PATH */
 				errno = EINVAL;
 				return release_and_return(nullptr); // Release and retur
 			}
-			else if (!map[i].optional)
-				output_verbose("%s(%d): module '%s' intrinsic %s found", __FILE__, __LINE__, file, fname);
+			//else if (!map[i].optional)
+				// output_verbose("%s(%d): module '%s' intrinsic %s found", __FILE__, __LINE__, file, fname);
 		}
 	}
 

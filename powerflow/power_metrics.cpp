@@ -50,7 +50,7 @@ power_metrics::power_metrics(MODULE *mod) : powerflow_library(mod)
 {
 	if(oclass == nullptr)
 	{
-		oclass = gl_register_class(mod,"power_metrics",sizeof(power_metrics),0x00);
+		oclass = gld_class::create(mod,"power_metrics",sizeof(power_metrics),0x00);
 		if (oclass==nullptr)
 			throw "unable to register class power_metrics";
 		else

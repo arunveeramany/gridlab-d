@@ -23,7 +23,7 @@ underground_line_conductor::underground_line_conductor(MODULE *mod) : powerflow_
 {
 	if(oclass == nullptr)
 	{
-		oclass = gl_register_class(mod,"underground_line_conductor",sizeof(underground_line_conductor),0x00);
+		oclass =gld_class::create(mod,"underground_line_conductor",sizeof(underground_line_conductor),0x00);
 		if (oclass==nullptr)
 			throw "unable to register class underground_line_conductor";
 		else

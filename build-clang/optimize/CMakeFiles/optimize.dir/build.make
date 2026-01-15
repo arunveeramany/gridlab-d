@@ -127,6 +127,7 @@ lib/optimize.dylib: optimize/CMakeFiles/optimize.dir/init.cpp.o
 lib/optimize.dylib: optimize/CMakeFiles/optimize.dir/main.cpp.o
 lib/optimize.dylib: optimize/CMakeFiles/optimize.dir/simple.cpp.o
 lib/optimize.dylib: optimize/CMakeFiles/optimize.dir/build.make
+lib/optimize.dylib: lib/libgldapi.dylib
 lib/optimize.dylib: optimize/CMakeFiles/optimize.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX shared library ../lib/optimize.dylib"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/optimize && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/optimize.dir/link.txt --verbose=$(VERBOSE)

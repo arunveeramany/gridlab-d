@@ -7,16 +7,14 @@
  **/
 
 #include "controller.h"
-#include "auction.h"
 
 CLASS* controller::oclass = nullptr;
 controller* controller::defaults = nullptr;
 
-
 controller::controller(MODULE *module){
 	if (oclass==nullptr)
 	{
-		oclass = gl_register_class(module, "controller",sizeof(controller),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_AUTOLOCK);
+		oclass = gld_class::create(module, "controller",sizeof(controller),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			throw "unable to register class controller";
 		else
@@ -176,7 +174,7 @@ controller::controller(MODULE *module){
 }
 
 int controller::create(){
-	////memset(this, 0, sizeof(controller));
+	memset(this, 0, sizeof(controller));
 	sprintf((char *)(&avg_target), "avg24");
 	sprintf((char *)(&std_target), "std24");
 	slider_setting_heat = -0.001;
@@ -327,7 +325,6 @@ int controller::fetch_property(gld_property **prop, const char *propName, OBJECT
 int controller::init(OBJECT *parent){
 	OBJECT *hdr = object_header(this);
 	parent = hdr->parent;
-
 	char tname[32];
 	char *namestr = (hdr->name ? hdr->name : tname);
 	gld_property *pInitPrice = nullptr;
@@ -1447,7 +1444,7 @@ TIMESTAMP controller::sync(TIMESTAMP t0, TIMESTAMP t1){
 					return TS_INVALID;
 				}
 			}
-			//lastbid_id = market->submit(object_header(this), -last_q, last_p, bid_id, (BIDDERSTATE)(pState != 0 ? *pState : 0));
+			//lastbid_id = market->submit(OBJECTHDR(this), -last_q, last_p, bid_id, (BIDDERSTATE)(pState != 0 ? *pState : 0));
 			controller_bid.market_id = lastmkt_id;
 			controller_bid.price = last_p;
 			controller_bid.quantity = -last_q;
@@ -2232,7 +2229,7 @@ TIMESTAMP controller::postsync(TIMESTAMP t0, TIMESTAMP t1){
 				}
 			}
 
-			//lastbid_id = market->submit(object_header(this), -last_q, last_p, bid_id, (BIDDERSTATE)(pState != 0 ? *pState : 0));
+			//lastbid_id = market->submit(OBJECTHDR(this), -last_q, last_p, bid_id, (BIDDERSTATE)(pState != 0 ? *pState : 0));
 			controller_bid.market_id = lastmkt_id;
 			controller_bid.price = last_p;
 			controller_bid.quantity = -last_q;
@@ -2636,12 +2633,8 @@ EXPORT int create_controller(OBJECT **obj, OBJECT *parent)
 		*obj = gl_create_object(controller::oclass);
 		if (*obj!=nullptr)
 		{
-			controller *my = /*OBJECTDATA(*obj,<>)*/ object_data<controller>(*obj);
-			if (!my) {
-				gl_error("create_controller: obj->data is null for class 'controller'");
-				return 0;
-			}
-			// gl_set_parent(*obj,parent);
+			controller *my = object_data<controller>(*obj);
+			//gl_set_parent(*obj,parent);
 			return my->create();
 		}
 		else
@@ -2656,7 +2649,7 @@ EXPORT int init_controller(OBJECT *obj, OBJECT *parent)
 	{
 		if (obj!=nullptr)
 		{
-			return /*OBJECTDATA(obj,<>)*/ object_data<controller>(obj)->init(parent);
+			return  object_data<controller>(obj)->init(parent);
 		}
 		else
 			return 0;
@@ -2667,14 +2660,14 @@ EXPORT int init_controller(OBJECT *obj, OBJECT *parent)
 EXPORT int isa_controller(OBJECT *obj, char *classname)
 {
 	if(obj != 0 && classname != 0){
-		return /*OBJECTDATA(obj,<>)*/ object_data<controller>(obj)->isa(classname);
+		return object_data<controller>(obj)->isa(classname);
 	} else {
 		return 0;
 	}
 }
 
-// EXPORT TIMESTAMP sync_controller(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
-// {
+//EXPORT TIMESTAMP sync_controller(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+//{
 
 extern "C" TIMESTAMP sync_controller(void *object, ...)
 {
@@ -2684,14 +2677,13 @@ extern "C" TIMESTAMP sync_controller(void *object, ...)
     PASSCONFIG pass = va_arg(args, PASSCONFIG);
     va_end(args);
 
-    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
-    
+    OBJECT *obj = (OBJECT*)object;  
 	if (!callback) {
         gl_error("callback is null in sync_controller");
         return 0;  // Fail module load
     }
 
-	    // Add structure validation
+	// Add structure validation
     // std::cerr << "Callback structure size check:" << std::endl;
     // std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
     // std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
@@ -2705,7 +2697,7 @@ extern "C" TIMESTAMP sync_controller(void *object, ...)
 
 
 	TIMESTAMP t2 = TS_NEVER;
-	controller *my = /*OBJECTDATA(obj,<>)*/ object_data<controller>(obj);
+	controller *my = object_data<controller>(obj);
 	try
 	{
 		switch (pass) {

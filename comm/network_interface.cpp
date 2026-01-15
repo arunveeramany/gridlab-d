@@ -26,7 +26,7 @@ network_interface::network_interface(MODULE *mod)
 	if (oclass==nullptr)
 	{
 		// register the class definition
-		oclass = gl_register_class(mod,"network_interface",sizeof(network_interface),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN);
+		oclass = gld_class::create(mod,"network_interface",sizeof(network_interface),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN);
 		if (oclass==nullptr)
 			GL_THROW("unable to register object class implemented by %s",__FILE__);
 			/* TROUBLESHOOT

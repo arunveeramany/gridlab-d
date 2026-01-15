@@ -55,7 +55,7 @@ lights::lights(MODULE *mod)
 		pclass = residential_enduse::oclass;
 
 		// register the class definition
-		oclass = gl_register_class(mod, "lights",sizeof(lights),PC_BOTTOMUP|PC_AUTOLOCK);
+		oclass = gld_class::create(mod, "lights",sizeof(lights),PC_BOTTOMUP|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			throw "unable to register class lights";
 			/* TROUBLESHOOT
@@ -248,7 +248,8 @@ TIMESTAMP lights::sync(TIMESTAMP t0, TIMESTAMP t1)
 		load.power.SetRect(load.power.Re(), val);
 	}
 
-	gl_enduse_sync(&(residential_enduse::load),t1);
+	// gl_enduse_sync(&(residential_enduse::load),t1);
+	load.postsync(gl_globalclock, t1);
 	lights_actual_power = load.power + (load.current + load.admittance * load.voltage_factor) * load.voltage_factor;
 
 	return t2;

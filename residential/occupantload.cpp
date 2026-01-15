@@ -30,7 +30,7 @@ occupantload::occupantload(MODULE *module) : residential_enduse(module)
 	if (oclass==nullptr)
 	{
 		// register the class definition
-		oclass = gl_register_class(module,"occupantload",sizeof(occupantload),PC_BOTTOMUP|PC_AUTOLOCK);
+		oclass = gld_class::create(module,"occupantload",sizeof(occupantload),PC_BOTTOMUP|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			throw "unable to register class occupantload";
 		else
@@ -94,7 +94,7 @@ int occupantload::init(OBJECT *parent)
 
 	//	pull parent attach_enduse and attach the enduseload
 	FUNCTIONADDR attach = 0;
-	load.end_obj = hdr;
+	// load.end_obj = hdr;
 	attach = (gl_get_function(parent, "attach_enduse"));
 	if(attach == nullptr){
 		gl_error("occupantload parent must publish attach_enduse()");

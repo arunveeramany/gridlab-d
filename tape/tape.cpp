@@ -307,7 +307,7 @@ EXPORT CLASS *init(CALLBACKS *fntable, MODULE *module, int argc, char *argv[])
 	gl_global_create(const_cast<char *>("tape::delta_mode_needed"), PT_timestamp, &delta_mode_needed, nullptr);
 
 	/* register the first class implemented, use SHARE to reveal variables */
-	player_class = gl_register_class(module, const_cast<char *>("player"), sizeof(struct player), PC_PRETOPDOWN);
+	player_class = gld_class::create(module, const_cast<char *>("player"), sizeof(struct player), PC_PRETOPDOWN);
 	if (!player_class)
 	{
 		gl_error("Failed to register 'player_class'.");
@@ -332,7 +332,7 @@ EXPORT CLASS *init(CALLBACKS *fntable, MODULE *module, int argc, char *argv[])
 	PUBLISH_STRUCT(player, bool, all_events_delta);
 
 	/* register the other classes as needed, */
-	recorder_class = gl_register_class(module, const_cast<char *>("recorder"), sizeof(struct recorder), PC_POSTTOPDOWN | PC_OBSERVER);
+	recorder_class = gld_class::create(module, const_cast<char *>("recorder"), sizeof(struct recorder), PC_POSTTOPDOWN | PC_OBSERVER);
 	recorder_class->trl = TRL_PROVEN;
 	// recorder_class->create = (FUNCTIONADDR)create_recorder;
 	// recorder_class->init = (FUNCTIONADDR)init_recorder;
@@ -377,7 +377,7 @@ EXPORT CLASS *init(CALLBACKS *fntable, MODULE *module, int argc, char *argv[])
 	
 
 	/* register the first class implemented, use SHARE to reveal variables */
-	shaper_class = gl_register_class(module, const_cast<char *>("shaper"), sizeof(struct shaper), PC_PRETOPDOWN);
+	shaper_class = gld_class::create(module, const_cast<char *>("shaper"), sizeof(struct shaper), PC_PRETOPDOWN);
 	shaper_class->trl = TRL_QUALIFIED;
 	PUBLISH_STRUCT(shaper, char1024, file);
 	PUBLISH_STRUCT(shaper, char8, filetype);
@@ -388,7 +388,7 @@ EXPORT CLASS *init(CALLBACKS *fntable, MODULE *module, int argc, char *argv[])
 	PUBLISH_STRUCT(shaper, double, events);
 
 	/* register the other classes as needed, */
-	multi_recorder_class = gl_register_class(module, const_cast<char *>("multi_recorder"), sizeof(struct recorder), PC_POSTTOPDOWN | PC_OBSERVER);
+	multi_recorder_class = gld_class::create(module, const_cast<char *>("multi_recorder"), sizeof(struct recorder), PC_POSTTOPDOWN | PC_OBSERVER);
 	multi_recorder_class->trl = TRL_QUALIFIED;
 	if (gl_publish_variable(multi_recorder_class,
 							PT_double, "interval[s]", ((char *)&(my.dInterval) - (char *)&my),
@@ -423,7 +423,7 @@ EXPORT CLASS *init(CALLBACKS *fntable, MODULE *module, int argc, char *argv[])
 		GL_THROW(const_cast<char *>("Could not publish property output for multi_recorder"));
 
 	/* register the other classes as needed, */
-	collector_class = gl_register_class(module, const_cast<char *>("collector"), sizeof(struct collector), PC_POSTTOPDOWN | PC_OBSERVER);
+	collector_class = gld_class::create(module, const_cast<char *>("collector"), sizeof(struct collector), PC_POSTTOPDOWN | PC_OBSERVER);
 	collector_class->trl = TRL_PROVEN;
 	PUBLISH_STRUCT(collector, char1024, property);
 	PUBLISH_STRUCT(collector, char32, trigger);
@@ -664,7 +664,11 @@ EXPORT SIMULATIONMODE interupdate(MODULE *module, TIMESTAMP t0, unsigned int64 d
 					/* See if we're in service */
 					if ((obj->in_svc_double <= gl_globaldeltaclock) && (obj->out_svc_double >= gl_globaldeltaclock))
 					{
-						if (read_properties(my, obj->parent, my->target, value, sizeof(value)))
+
+						OBJECT *rp_parent = my->target_obj ? my->target_obj : obj->parent;
+						if (rp_parent == nullptr) { gl_error("recorder:%d: no target object in deltamode", obj->id); return SM_ERROR; }
+
+						if (read_properties(my, rp_parent, my->target, value, sizeof(value)))
 						{
 							if (!my->ops->write(my, recorder_timestamp, value))
 							{
@@ -931,10 +935,22 @@ EXPORT STATUS postupdate(MODULE *module, TIMESTAMP t0, unsigned int64 dt)
 			obj = index_item->obj;
 			myrec = object_data<struct recorder>(obj);
 
+
+            // Skip if not linked or not open
+            if (!myrec || !myrec->target || !myrec->target_obj || myrec->status != TS_OPEN) {
+                index_item = index_item->next;
+                continue;
+            }
+
+
 			/* See if we're in service */
 			if ((obj->in_svc_double <= gl_globaldeltaclock) && (obj->out_svc_double >= gl_globaldeltaclock))
 			{
-				if (read_properties(myrec, obj->parent, myrec->target, value, sizeof(value)))
+
+				OBJECT *rp_parent = myrec->target_obj ? myrec->target_obj : obj->parent;
+				if (rp_parent == nullptr) { gl_error("recorder:%d: no target object in postupdate", obj->id); return FAILED; }
+
+				if (read_properties(myrec, rp_parent, myrec->target, value, sizeof(value)))
 				{
 					if (!myrec->ops->write(myrec, recorder_timestamp, value))
 					{

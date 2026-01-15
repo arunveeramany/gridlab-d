@@ -33,7 +33,7 @@ multizone::multizone(MODULE *module)
 {
 	if (oclass==nullptr)
 	{
-		oclass = gl_register_class(module,"multizone",sizeof(multizone),passconfig);
+		oclass = gld_class::create(module,"multizone",sizeof(multizone),passconfig);
 		if (oclass==nullptr)
 			throw "unable to register class multizone";
 		else

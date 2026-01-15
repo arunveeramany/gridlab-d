@@ -24,7 +24,7 @@ fault_check::fault_check(MODULE *mod) : powerflow_object(mod)
 	if(oclass == nullptr)
 	{
 		pclass = powerflow_object::oclass;
-		oclass = gl_register_class(mod,"fault_check",sizeof(fault_check),PC_BOTTOMUP|PC_AUTOLOCK);
+		oclass = gld_class::create(mod,"fault_check",sizeof(fault_check),PC_BOTTOMUP|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			throw "unable to register class fault_check";
 		else

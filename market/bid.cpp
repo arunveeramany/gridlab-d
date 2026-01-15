@@ -23,6 +23,7 @@ void submit_bid_state(char *from, char *to, const char *function_name, const cha
 		if( obj == nullptr){
 			gl_error("bid::submit_bid_state: No market object exists with given name %s.", to);
 			bidding_info->bid_accepted = false;
+			return;
 		}
 
 		if (obj->oclass==auction::oclass)
@@ -32,7 +33,17 @@ void submit_bid_state(char *from, char *to, const char *function_name, const cha
 				auction *mkt = /*OBJECTDATA(obj,<>)*/ object_data<auction>(obj);
 				rv = mkt->submit(from,bidding_info->quantity,bidding_info->price,bidding_info->bid_id,bidding_info->state,bidding_info->rebid, bidding_info->market_id);
 			} else {
-				gl_verbose("%s submits stateful (%s) bid for Q:%.2f at P:%.4f", from,bidding_info->state,bidding_info->quantity,bidding_info->price);
+				// gl_verbose("%s submits stateful (%s) bid for Q:%.2f at P:%.4f", from,bidding_info->state,bidding_info->quantity,bidding_info->price);
+				
+                // Map enum/state to a human-readable string for logging
+                const char *state_str =
+                    (bidding_info->state == BS_ON)      ? "ON"  :
+                    (bidding_info->state == BS_OFF)     ? "OFF" :
+                    (bidding_info->state == BS_UNKNOWN) ? "UNKNOWN" : "UNKNOWN";
+
+                gl_verbose("%s submits stateful (%s) bid for Q:%.2f at P:%.4f",
+                           from, state_str, bidding_info->quantity, bidding_info->price);
+
 				auction *mkt = /*OBJECTDATA(obj,<>)*/ object_data<auction>(obj);
 				rv = mkt->submit(from,bidding_info->quantity,bidding_info->price,bidding_info->bid_id,bidding_info->state,bidding_info->rebid, bidding_info->market_id);
 			}

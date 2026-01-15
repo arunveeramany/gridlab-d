@@ -25,7 +25,7 @@ metrics::metrics(MODULE *module)
 {
 	if (oclass == nullptr)
 	{
-		oclass = gl_register_class(module, "metrics", sizeof(metrics), PC_POSTTOPDOWN | PC_AUTOLOCK);
+		oclass = gld_class::create(module, "metrics", sizeof(metrics), PC_POSTTOPDOWN | PC_AUTOLOCK);
 		if (oclass == nullptr)
 			throw "unable to register class metrics";
 		else

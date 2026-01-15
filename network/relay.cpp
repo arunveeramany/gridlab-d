@@ -57,7 +57,7 @@ relay::relay(MODULE *mod) : link(mod)
 	if (oclass==nullptr)
 	{
 		// register the class definition
-		relay_class = oclass = gl_register_class(mod,"relay",sizeof(relay),PC_BOTTOMUP);
+		relay_class = oclass = gld_class::create(mod,"relay",sizeof(relay),PC_BOTTOMUP);
 		if (oclass==nullptr)
 			throw "unable to register class relay";
 		else

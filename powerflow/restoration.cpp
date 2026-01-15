@@ -23,7 +23,7 @@ restoration::restoration(MODULE *mod) : powerflow_library(mod)
 {
 	if (oclass == nullptr)
 	{
-		oclass = gl_register_class(mod, "restoration", sizeof(restoration), 0x00);
+		oclass = gld_class::create(mod, "restoration", sizeof(restoration), 0x00);
 		if (oclass == nullptr)
 			throw "unable to register class restoration";
 		else

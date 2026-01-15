@@ -446,7 +446,7 @@ static bool import_classes(MYSQL *mysql)
 
 		// create runtime classes
 		CLASS *cls = gl_class_get_by_name(name);
-		if ( module==nullptr && cls==nullptr && (cls=gl_register_class(nullptr,name,0,0))==nullptr )
+		if ( module==nullptr && cls==nullptr && (cls=gld_class::create(nullptr,name,0,0))==nullptr )
 			return false;
 
 		// create extended properties in classes

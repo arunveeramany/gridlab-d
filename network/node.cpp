@@ -81,7 +81,7 @@ node::node(MODULE *mod)
 	if (oclass==nullptr)
 	{
 		// register the class definition
-		node_class = oclass = gl_register_class(mod,"node",sizeof(node),PC_PRETOPDOWN|PC_POSTTOPDOWN|PC_UNSAFE_OVERRIDE_OMIT);
+		node_class = oclass = gld_class::create(mod,"node",sizeof(node),PC_PRETOPDOWN|PC_POSTTOPDOWN|PC_UNSAFE_OVERRIDE_OMIT);
 		if (oclass==nullptr)
 			throw "unable to register class node";
 		else

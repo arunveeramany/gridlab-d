@@ -33,7 +33,7 @@ capacitor::capacitor(MODULE *mod):node(mod)
 	{
 		pclass = node::oclass;
 		
-		oclass = gl_register_class(mod, "capacitor",sizeof(capacitor),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_UNSAFE_OVERRIDE_OMIT|PC_AUTOLOCK);
+		oclass = gld_class::create(mod, "capacitor",sizeof(capacitor),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_UNSAFE_OVERRIDE_OMIT|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			throw "unable to register class capacitor";
 		else

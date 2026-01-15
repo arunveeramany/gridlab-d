@@ -31,7 +31,7 @@ series_reactor::series_reactor(MODULE *mod) : link_object(mod)
 	{
 		pclass = link_object::oclass;
 
-		oclass = gl_register_class(mod,"series_reactor",sizeof(series_reactor),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_UNSAFE_OVERRIDE_OMIT|PC_AUTOLOCK);
+		oclass = gld_class::create(mod,"series_reactor",sizeof(series_reactor),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_UNSAFE_OVERRIDE_OMIT|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			throw "unable to register class series_reactor";
 		else

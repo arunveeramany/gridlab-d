@@ -29,7 +29,7 @@ classtemplate::classtemplate(MODULE *module){
 	if (oclass==nullptr)
 		{
 			// register the class definition
-			oclass = gl_register_class(mod,"house",sizeof(house_e),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN);
+			oclass = gld_class::create(mod,"house",sizeof(house_e),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN);
 
 			if (oclass==nullptr)
 				GL_THROW("unable to register object class implemented by %s",__FILE__);

@@ -29,7 +29,7 @@ jsondump::jsondump(MODULE *mod)
 	if (oclass == nullptr)
 	{
 		// register the class definition
-		oclass = gl_register_class(mod, "jsondump", sizeof(jsondump), PC_AUTOLOCK);
+		oclass = gld_class::create(mod, "jsondump", sizeof(jsondump), PC_AUTOLOCK);
 
 		if (oclass == nullptr)
 			GL_THROW("unable to register object class implemented by %s", __FILE__);

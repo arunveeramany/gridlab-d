@@ -71,8 +71,6 @@ file(REMOVE_RECURSE
   "CMakeFiles/gldapi.dir/local.cpp.o.d"
   "CMakeFiles/gldapi.dir/lock.cpp.o"
   "CMakeFiles/gldapi.dir/lock.cpp.o.d"
-  "CMakeFiles/gldapi.dir/main.cpp.o"
-  "CMakeFiles/gldapi.dir/main.cpp.o.d"
   "CMakeFiles/gldapi.dir/match.cpp.o"
   "CMakeFiles/gldapi.dir/match.cpp.o.d"
   "CMakeFiles/gldapi.dir/matlab.cpp.o"

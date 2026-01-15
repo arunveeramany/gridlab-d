@@ -31,7 +31,7 @@ loadshape::loadshape(MODULE *module)
 	if (oclass==nullptr)
 	{
 		// register the class definition
-		oclass = gl_register_class(module,"loadshape",sizeof(loadshape),PC_BOTTOMUP);
+		oclass = gld_class::create(module,"loadshape",sizeof(loadshape),PC_BOTTOMUP);
 		if (oclass==nullptr)
 			GL_THROW("unable to register object class implemented by %s",__FILE__);
 

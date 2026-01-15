@@ -47,7 +47,7 @@ line::line(MODULE *module)
   if (oclass==nullptr)
     {
       // pclass = wholesale_object::oclass;
-      oclass = gl_register_class(module,"line",sizeof(line),passconfig);
+      oclass = gld_class::create(module,"line",sizeof(line),passconfig);
       if (oclass==nullptr)
 	GL_THROW("unable to register object class implemented by %s", __FILE__);
       

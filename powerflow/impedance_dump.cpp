@@ -24,7 +24,7 @@ impedance_dump::impedance_dump(MODULE *mod)
 	if (oclass==nullptr)
 	{
 		// register the class definition
-		oclass = gl_register_class(mod,"impedance_dump",sizeof(impedance_dump),PC_AUTOLOCK);
+		oclass = gld_class::create(mod,"impedance_dump",sizeof(impedance_dump),PC_AUTOLOCK);
 		if (oclass==nullptr)
 			GL_THROW("unable to register object class implemented by %s",__FILE__);
 

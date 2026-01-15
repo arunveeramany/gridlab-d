@@ -24,7 +24,7 @@ controller_dg::controller_dg(MODULE *mod)
 {
 	if(oclass == nullptr)
 	{
-		oclass = gl_register_class(mod,"controller_dg",sizeof(controller_dg),passconfig|PC_AUTOLOCK);
+		oclass = gld_class::create(mod,"controller_dg",sizeof(controller_dg),passconfig|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			throw "unable to register class controller_dg";
 		else

@@ -175,6 +175,7 @@ lib/assert.dylib: assert/CMakeFiles/assert.dir/enum_assert.cpp.o
 lib/assert.dylib: assert/CMakeFiles/assert.dir/int_assert.cpp.o
 lib/assert.dylib: assert/CMakeFiles/assert.dir/init.cpp.o
 lib/assert.dylib: assert/CMakeFiles/assert.dir/build.make
+lib/assert.dylib: lib/libgldapi.dylib
 lib/assert.dylib: assert/CMakeFiles/assert.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX shared library ../lib/assert.dylib"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/assert && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/assert.dir/link.txt --verbose=$(VERBOSE)

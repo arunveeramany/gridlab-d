@@ -26,7 +26,7 @@
 
 #include "mex.h"
 
-#define _MAIN_C
+// #define _MAIN_C
 
 #include "globals.h"
 #include "module.h"

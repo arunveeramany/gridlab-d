@@ -76,7 +76,7 @@ auction::auction(MODULE *module)
 {
 	if (oclass==nullptr)
 	{
-		oclass = gl_register_class(module, "auction",sizeof(auction),passconfig|PC_AUTOLOCK);
+		oclass = gld_class::create(module, "auction",sizeof(auction),passconfig|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			throw "unable to register class auction";
 		else

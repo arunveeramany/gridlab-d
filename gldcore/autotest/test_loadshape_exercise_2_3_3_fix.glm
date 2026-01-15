@@ -20,13 +20,15 @@ class waterheater{
 }
 
 object house {
-	object waterheater {
+name auto_house_22;
+object waterheater {
+		parent auto_house_22;
 		name newwaterheater;
 		myshape "type: pulsed; schedule: waterheater_demand_prob; energy: 1 kWh; count: 6; power: 1.1 kW";
 		impedance_fraction 1.0;
 		water_demand this.myshape;
 		heating_element_capacity 4500;
-		object recorder {
+object recorder {
 			parent newwaterheater;
 			file exerces_2_3_3.csv;
 			property power,water_demand,energy;

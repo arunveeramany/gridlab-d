@@ -21,6 +21,7 @@ typedef struct s_implicit_enduse {
 	double amps;
 	int is220;
 	struct s_implicit_enduse *next;
+	s_implicit_enduse(MODULE* mod) : load(mod) {}
 } IMPLICITENDUSE;
 
 typedef enum {

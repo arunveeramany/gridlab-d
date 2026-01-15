@@ -23,7 +23,7 @@ triplex_line_conductor::triplex_line_conductor(MODULE *mod) : powerflow_library(
 {
 	if(oclass == nullptr)
 	{
-		oclass = gl_register_class(mod,"triplex_line_conductor",sizeof(triplex_line_conductor),0x00);
+		oclass = gld_class::create(mod,"triplex_line_conductor",sizeof(triplex_line_conductor),0x00);
 		if (oclass==nullptr)
 			throw "unable to register class triplex_line_conductor";
 		else

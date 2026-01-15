@@ -29,7 +29,7 @@ plugload::plugload(MODULE *module) : residential_enduse(module)
 	if (oclass==nullptr)
 	{
 		// register the class definition
-		oclass = gl_register_class(module,"plugload",sizeof(plugload),PC_BOTTOMUP|PC_AUTOLOCK);
+		oclass = gld_class::create(module,"plugload",sizeof(plugload),PC_BOTTOMUP|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			throw "unable to register class plugload";
 		else
@@ -128,7 +128,9 @@ TIMESTAMP plugload::sync(TIMESTAMP t0, TIMESTAMP t1)
 	else
 		load.power = load.current = load.admittance = gld::complex(0,0,J);
 
-	gl_enduse_sync(&(residential_enduse::load),t1);
+	// gl_enduse_sync(&(residential_enduse::load),t1);
+	load.postsync(gl_globalclock, t1);
+
 
 	plugs_actual_power = load.power + (load.current + load.admittance * load.voltage_factor) * load.voltage_factor;
 	return t2;

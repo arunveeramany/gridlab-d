@@ -63,7 +63,7 @@ generator::generator(MODULE *mod)
 	if (oclass==nullptr)
 	{
 		// register the class definition
-		generator_class = oclass = gl_register_class(mod,"generator",sizeof(generator),PC_BOTTOMUP);
+		generator_class = oclass = gld_class::create(mod,"generator",sizeof(generator),PC_BOTTOMUP);
 		if (oclass==nullptr)
 			throw "unable to register class generator";
 		else

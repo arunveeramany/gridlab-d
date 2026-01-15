@@ -90,7 +90,7 @@ enum_assert::enum_assert(MODULE *module): gld_object()
 	if (oclass == nullptr)
 	{
 		// register to receive notice for first top down. bottom up, and second top down synchronizations
-		oclass = gl_register_class(module, "enum_assert", sizeof(enum_assert), PC_AUTOLOCK | PC_OBSERVER);
+		oclass = gld_class::create(module, "enum_assert", sizeof(enum_assert), PC_AUTOLOCK | PC_OBSERVER);
 		if (oclass == nullptr)
 			throw "unable to register class enum_assert";
 		else

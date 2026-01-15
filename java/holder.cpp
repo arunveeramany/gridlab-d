@@ -11,7 +11,7 @@ CLASS *oclass = 0;
 
 CLASS *new_holder(MODULE *module){
 	if(oclass == nullptr){
-		oclass = gl_register_class(module, "holder", 0, 0);
+		oclass = gld_class::create(module, "holder", 0, 0);
 		if(oclass == nullptr){
 			gl_error("unable to register class holder");
 			return 0;

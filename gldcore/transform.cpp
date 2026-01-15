@@ -18,6 +18,8 @@
 #include "exception.h"
 #include "module.h"
 #include "exec.h"
+#include "loadshape.h"
+#include "enduse.h"
 
 static TRANSFORM *schedule_xformlist=nullptr;
 

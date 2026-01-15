@@ -85,7 +85,7 @@ bus::bus(MODULE *module)
 
 	if (oclass==nullptr)
 	{
-		oclass = gl_register_class(module,"bus",sizeof(bus),passconfig);
+		oclass = gld_class::create(module,"bus",sizeof(bus),passconfig);
 		if (oclass==nullptr)
 			GL_THROW("unable to register object class implemented by %s", __FILE__);
                 

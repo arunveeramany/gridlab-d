@@ -768,6 +768,7 @@ int class_define_map(CLASS *oclass, /**< the object class */
 			{
 				char *keyword = va_arg(arg, char *);
 				int32 keyvalue = va_arg(arg, int32);
+				// if (!class_define_enumeration_member(oclass, prop->name, keyword, keyvalue))
 				if (!class_define_enumeration_member(oclass, prop->name, keyword, keyvalue))
 				{
 					errno = EINVAL;
@@ -926,6 +927,8 @@ int class_define_map(CLASS *oclass, /**< the object class */
 		{
 			char *name = va_arg(arg, char *);
 			PROPERTYADDR addr = va_arg(arg, PROPERTYADDR);
+			fprintf(stderr,"class_define_map(%s): expanding enduse '%s'", oclass->name, name?name:"(null)");
+
 			if (enduse_publish(oclass, addr, name) <= 0)
 			{
 				output_error("class_define_map(oclass='%s',...): substructure of property '%s' substructure could not be published", oclass->name, prop->name);
@@ -942,6 +945,7 @@ int class_define_map(CLASS *oclass, /**< the object class */
 			DELEGATEDTYPE *delegation = (proptype == PT_delegated ? va_arg(arg, DELEGATEDTYPE *) : nullptr);
 			char *name = va_arg(arg, char *);
 			PROPERTYADDR addr = va_arg(arg, PROPERTYADDR);
+
 			if (prop != nullptr && strlen(name) >= sizeof(prop->name))
 			{
 				output_error("class_define_map(oclass='%s',...): property name '%s' is too big", oclass->name, name);

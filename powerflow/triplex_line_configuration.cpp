@@ -25,7 +25,7 @@ triplex_line_configuration::triplex_line_configuration(MODULE *mod) : line_confi
 	{
 		pclass = line_configuration::oclass;
 		
-		oclass = gl_register_class(mod,"triplex_line_configuration",sizeof(triplex_line_configuration),0x00);
+		oclass = gld_class::create(mod,"triplex_line_configuration",sizeof(triplex_line_configuration),0x00);
 		if (oclass==nullptr)
 			throw "unable to register class triplex_line_configuration";
 		else

@@ -23,7 +23,7 @@ series_compensator::series_compensator(MODULE *mod) : link_object(mod)
 		pclass = link_object::oclass;
 
 		// register the class definition
-		oclass = gl_register_class(mod,"series_compensator",sizeof(series_compensator),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_UNSAFE_OVERRIDE_OMIT|PC_AUTOLOCK);
+		oclass = gld_class::create(mod,"series_compensator",sizeof(series_compensator),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_UNSAFE_OVERRIDE_OMIT|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			throw "unable to register class series_compensator";
 		else

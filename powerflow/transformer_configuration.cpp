@@ -40,7 +40,7 @@ transformer_configuration::transformer_configuration(MODULE *mod) : powerflow_li
 {
 	if(oclass == nullptr)
 	{
-		oclass = gl_register_class(mod,"transformer_configuration",sizeof(transformer_configuration),0);
+		oclass = gld_class::create(mod,"transformer_configuration",sizeof(transformer_configuration),0);
 		if (oclass==nullptr)
 			throw "unable to register class transformer_configuration";
 		else

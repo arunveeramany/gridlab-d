@@ -303,6 +303,7 @@ lib/tape.dylib: tape/CMakeFiles/tape.dir/recorder.cpp.o
 lib/tape.dylib: tape/CMakeFiles/tape.dir/shaper.cpp.o
 lib/tape.dylib: tape/CMakeFiles/tape.dir/tape.cpp.o
 lib/tape.dylib: tape/CMakeFiles/tape.dir/build.make
+lib/tape.dylib: lib/libgldapi.dylib
 lib/tape.dylib: lib/static/libsuperlu.a
 lib/tape.dylib: lib/static/libblas.a
 lib/tape.dylib: tape/CMakeFiles/tape.dir/link.txt

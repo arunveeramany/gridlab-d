@@ -46,7 +46,7 @@ gen_cost::gen_cost(MODULE *module)
 #endif
 	if (oclass==nullptr)
 	{
-		oclass = gl_register_class(module,"gen_cost",sizeof(gen_cost),passconfig);
+		oclass = gld_class::create(module,"gen_cost",sizeof(gen_cost),passconfig);
 		if (oclass==nullptr)
 			GL_THROW("unable to register object class implemented by %s", __FILE__);
 

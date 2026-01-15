@@ -29,7 +29,7 @@ regulator_configuration::regulator_configuration(MODULE *mod) : powerflow_librar
 	if (oclass==nullptr)
 	{
 		// register the class definition
-		oclass = gl_register_class(mod,"regulator_configuration",sizeof(regulator_configuration),0x00);
+		oclass = gld_class::create(mod,"regulator_configuration",sizeof(regulator_configuration),0x00);
 		if (oclass==nullptr)
 			throw "unable to register class regulator_configuration";
 		else

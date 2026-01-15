@@ -52,7 +52,7 @@ meter::meter(MODULE *mod) : node(mod)
 		pclass = node::oclass;
 
 		// register the class definition
-		oclass = gl_register_class(mod,"meter",sizeof(meter),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_UNSAFE_OVERRIDE_OMIT|PC_AUTOLOCK);
+		oclass = gld_class::create(mod,"meter",sizeof(meter),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_UNSAFE_OVERRIDE_OMIT|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			throw "unable to register class meter";
 		else
@@ -1489,7 +1489,7 @@ extern "C" TIMESTAMP sync_meter(void *object, ...)
     PASSCONFIG pass = va_arg(args, PASSCONFIG);
     va_end(args);
 
-    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
+    OBJECT *obj = (OBJECT*)object;  
     
 	if (!callback) {
         gl_error("callback is null in init_climate");

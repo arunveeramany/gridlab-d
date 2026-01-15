@@ -102,7 +102,15 @@ int loadshape_create(loadshape *shape);
 int loadshape_init(loadshape *shape);
 int loadshape_initall(void);
 TIMESTAMP loadshape_sync(loadshape *m, TIMESTAMP t1);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 TIMESTAMP loadshape_syncall(TIMESTAMP t1);
+#ifdef __cplusplus
+}
+#endif
+
 
 int loadshape_test(void);
 

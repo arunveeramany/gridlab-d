@@ -16,11 +16,16 @@
 
 #include "version.h"
 #include "output.h"
+
+#define _MAIN_C
 #include "globals.h"
+
 #include "module.h"
 #include "lock.h"
 
+
 static GLOBALVAR *global_varlist = nullptr, *lastvar = nullptr;
+extern "C" CALLBACKS *callback = nullptr;
 
 static KEYWORD cnf_keys[] = {
 	{"DEFAULT", CNF_DEFAULT, cnf_keys + 1},

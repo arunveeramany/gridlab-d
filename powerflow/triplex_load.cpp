@@ -26,7 +26,7 @@ triplex_load::triplex_load(MODULE *mod) : triplex_node(mod)
 	{
 		pclass = triplex_node::oclass;
 		
-		oclass = gl_register_class(mod,"triplex_load",sizeof(triplex_load),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_UNSAFE_OVERRIDE_OMIT|PC_AUTOLOCK);
+		oclass = gld_class::create(mod,"triplex_load",sizeof(triplex_load),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_UNSAFE_OVERRIDE_OMIT|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			throw "unable to register class triplex_load";
 		else

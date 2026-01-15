@@ -40,7 +40,7 @@ group_recorder::group_recorder(MODULE *mod) {
 #ifdef _DEBUG
 		gl_debug("construction group_recorder class");
 #endif
-		oclass = gl_register_class(mod, "group_recorder", sizeof(group_recorder), PC_POSTTOPDOWN);
+		oclass = gld_class::create(mod, "group_recorder", sizeof(group_recorder), PC_POSTTOPDOWN);
 		if (oclass == nullptr)
 			GL_THROW("unable to register object class implemented by %s", __FILE__);
 

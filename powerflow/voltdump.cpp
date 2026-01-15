@@ -22,7 +22,7 @@ voltdump::voltdump(MODULE *mod)
 	if (oclass == nullptr)
 	{
 		// register the class definition
-		oclass = gl_register_class(mod, "voltdump", sizeof(voltdump), PC_BOTTOMUP | PC_AUTOLOCK);
+		oclass = gld_class::create(mod, "voltdump", sizeof(voltdump), PC_BOTTOMUP | PC_AUTOLOCK);
 		if (oclass == nullptr)
 			throw "unable to register class voltdump";
 		else

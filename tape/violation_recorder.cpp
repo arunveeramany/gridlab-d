@@ -17,7 +17,7 @@ violation_recorder::violation_recorder(MODULE *mod){
 #ifdef _DEBUG
 		gl_debug("construction violation_recorder class");
 #endif
-		oclass = gl_register_class(mod, const_cast<char *>("violation_recorder"), sizeof(violation_recorder), PC_POSTTOPDOWN);
+		oclass = gld_class::create(mod, const_cast<char *>("violation_recorder"), sizeof(violation_recorder), PC_POSTTOPDOWN);
         if(oclass == nullptr)
             GL_THROW(const_cast<char *>("unable to register object class implemented by %s"), __FILE__);
 

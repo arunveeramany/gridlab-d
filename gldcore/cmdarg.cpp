@@ -29,7 +29,7 @@
 #include "timestamp.h"
 #include "gldrandom.h"
 #include "loadshape.h"
-#include "enduse.h"
+// #include "enduse.h"
 #include "instance.h"
 #include "test.h"
 #include "setup.h"
@@ -58,6 +58,7 @@
 #endif
 
 clock_t loader_time = 0;
+extern int enduse_test(void);
 
 STATUS load_module_list(FILE *fd, int *test_mod_num)
 {

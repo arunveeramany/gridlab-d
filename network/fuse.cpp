@@ -29,7 +29,7 @@ fuse::fuse(MODULE *mod) : link(mod)
 	if (oclass==nullptr)
 	{
 		// register the class definition
-		fuse_class = oclass = gl_register_class(mod,"fuse",sizeof(fuse),PC_BOTTOMUP);
+		fuse_class = oclass = gld_class::create(mod,"fuse",sizeof(fuse),PC_BOTTOMUP);
 		if (oclass==nullptr)
 			throw "unable to register class fuse";
 		else

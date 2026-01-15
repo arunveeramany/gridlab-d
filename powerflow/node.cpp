@@ -99,7 +99,7 @@ node::node(MODULE *mod) : powerflow_object(mod)
 	if (oclass == nullptr)
 	{
 		pclass = powerflow_object::oclass;
-		oclass = gl_register_class(mod, "node", sizeof(node), PC_PRETOPDOWN | PC_BOTTOMUP | PC_POSTTOPDOWN | PC_UNSAFE_OVERRIDE_OMIT | PC_AUTOLOCK);
+		oclass = gld_class::create(mod, "node", sizeof(node), PC_PRETOPDOWN | PC_BOTTOMUP | PC_POSTTOPDOWN | PC_UNSAFE_OVERRIDE_OMIT | PC_AUTOLOCK);
 		if (oclass == nullptr)
 			throw std::runtime_error("unable to register class node");
 		else

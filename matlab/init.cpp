@@ -218,7 +218,7 @@ EXPORT CLASS *init(CALLBACKS *fntable, MODULE *module, int argc, char *argv[])
 		if (mxGetString(pcfg,passinfo,sizeof(passinfo))==0 && callback->convert.string_to_property(&pctype,&passdata,passinfo)>0)
 		{
 			passconfig = (PASSCONFIG)passdata;
-			oclass=gl_register_class(module,argv[0],passconfig);
+			oclass=gld_class::create(module,argv[0],passconfig);
 			if (oclass==nullptr)
 				gl_error("unable to register '%s' as a class",argv[0]);
 

@@ -2,9 +2,13 @@
 #ifndef _ENDUSE_H
 #define _ENDUSE_H
 
-#include "class.h"
-#include "object.h"
-#include "timestamp.h"
+
+// #include "class.h"
+// #include "object.h"
+// #include "timestamp.h"
+
+
+#include "gridlabd.h"
 #include "loadshape.h"
 
 //#define EUC_IS110 0x0000 ///< enduse flag to indicate that the voltage is line-to-neutral
@@ -47,7 +51,12 @@ typedef struct s_electronic {
 	double v_start;		/**< load "start" voltage (pu) */
 } EUELECTRONIC;
 
-typedef struct s_enduse {
+// typedef struct s_enduse {
+class enduse : public gld_object {
+public:
+	static enduse *defaults; 
+	enduse() {} // default constructor for defaults
+public:
 	/* the output value must be first for transform to stream */
 	/* meter values */
 	gld::complex total;				/* total power in kW */
@@ -82,23 +91,45 @@ typedef struct s_enduse {
 	/* misc info */
 	const char *name;
 	loadshape *shape;
+
+public:
+    enduse(MODULE *mod);
+    int create(void);
+    int init(OBJECT *parent);
+    TIMESTAMP postsync(TIMESTAMP t0, TIMESTAMP t1);
+
+public:
+    // Static members for class registration (copied from meter.h)
+    static CLASS *oclass;
+    static CLASS *pclass;
+
+
+public:
 	TIMESTAMP t_last;			/* last time of update */
 
 	// added for backward compatibility with res ENDUSELOAD
 	// @todo these are obsolete and must be retrofitted with the above values
-	struct s_object_list *end_obj;
-
-	struct s_enduse *next;
+	// struct s_object_list *end_obj;
+	// struct s_enduse *next;
 #ifdef _DEBUG
 	unsigned int magic;
 #endif
-} enduse;
+};
 
-int enduse_create(enduse *addr);
-int enduse_init(enduse *e);
-int enduse_initall(void);
-TIMESTAMP enduse_sync(enduse *e, PASSCONFIG pass, TIMESTAMP t1);
+// int enduse_create(enduse *addr);
+// int enduse_init(enduse *e);
+// int enduse_initall(void);
+// TIMESTAMP enduse_sync(enduse *e, PASSCONFIG pass, TIMESTAMP t1);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+TIMESTAMP enduse_sync(void *obj, ...);
 TIMESTAMP enduse_syncall(TIMESTAMP t1);
+#ifdef __cplusplus
+}
+#endif
+
 int convert_to_enduse(char *string, void *data, PROPERTY *prop);
 int convert_from_enduse(char *string,int size,void *data, PROPERTY *prop);
 int enduse_publish(CLASS *oclass, PROPERTYADDR struct_address, char *prefix);

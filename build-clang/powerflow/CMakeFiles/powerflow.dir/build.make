@@ -895,6 +895,7 @@ lib/powerflow.dylib: powerflow/CMakeFiles/powerflow.dir/voltdump.cpp.o
 lib/powerflow.dylib: powerflow/CMakeFiles/powerflow.dir/volt_var_control.cpp.o
 lib/powerflow.dylib: powerflow/CMakeFiles/powerflow.dir/solver_nr.cpp.o
 lib/powerflow.dylib: powerflow/CMakeFiles/powerflow.dir/build.make
+lib/powerflow.dylib: lib/libgldapi.dylib
 lib/powerflow.dylib: lib/static/libsuperlu.a
 lib/powerflow.dylib: lib/static/libblas.a
 lib/powerflow.dylib: powerflow/CMakeFiles/powerflow.dir/link.txt

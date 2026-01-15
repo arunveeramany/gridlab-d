@@ -287,6 +287,7 @@ lib/market.dylib: market/CMakeFiles/market.dir/stub_bidder.cpp.o
 lib/market.dylib: market/CMakeFiles/market.dir/stubauction.cpp.o
 lib/market.dylib: market/CMakeFiles/market.dir/supervisory_control.cpp.o
 lib/market.dylib: market/CMakeFiles/market.dir/build.make
+lib/market.dylib: lib/libgldapi.dylib
 lib/market.dylib: market/CMakeFiles/market.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Linking CXX shared library ../lib/market.dylib"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/market.dir/link.txt --verbose=$(VERBOSE)

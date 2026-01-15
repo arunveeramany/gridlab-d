@@ -49,7 +49,7 @@ areas::areas(MODULE *module)
 #endif
 	if (oclass==nullptr)
 	{
-		oclass = gl_register_class(module,"areas",sizeof(areas),passconfig);
+		oclass = gld_class::create(module,"areas",sizeof(areas),passconfig);
 		if (oclass==nullptr)
 			GL_THROW("unable to register object class implemented by %s", __FILE__);
 

@@ -26,7 +26,7 @@ sectionalizer::sectionalizer(MODULE *mod) : switch_object(mod)
 		pclass = link_object::oclass;
 
 		// register the class definition
-		oclass = gl_register_class(mod,"sectionalizer",sizeof(sectionalizer),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_UNSAFE_OVERRIDE_OMIT|PC_AUTOLOCK);
+		oclass = gld_class::create(mod,"sectionalizer",sizeof(sectionalizer),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_UNSAFE_OVERRIDE_OMIT|PC_AUTOLOCK);
         if(oclass == nullptr)
             GL_THROW("unable to register object class implemented by %s",__FILE__);
 

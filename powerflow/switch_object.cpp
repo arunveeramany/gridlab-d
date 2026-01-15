@@ -28,7 +28,7 @@ switch_object::switch_object(MODULE *mod) : link_object(mod)
 	{
 		pclass = link_object::oclass;
 
-		oclass = gl_register_class(mod,"switch",sizeof(switch_object),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_UNSAFE_OVERRIDE_OMIT|PC_AUTOLOCK);
+		oclass = gld_class::create(mod,"switch",sizeof(switch_object),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_UNSAFE_OVERRIDE_OMIT|PC_AUTOLOCK);
 		if (oclass== nullptr)
 			throw "unable to register class switch_object";
 		else

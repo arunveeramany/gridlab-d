@@ -275,7 +275,7 @@ evcharger::evcharger(MODULE *module) : residential_enduse(module)
 	if (oclass==nullptr)
 	{
 		// register the class definition
-		oclass = gl_register_class(module,"evcharger",sizeof(evcharger),PC_BOTTOMUP|PC_AUTOLOCK);
+		oclass = gld_class::create(module,"evcharger",sizeof(evcharger),PC_BOTTOMUP|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			throw "unable to register class evcharger";
 		else

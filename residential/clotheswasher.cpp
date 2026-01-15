@@ -38,7 +38,7 @@ clotheswasher::clotheswasher(MODULE *module) : residential_enduse(module)
 	if (oclass==nullptr)
 	{
 		// register the class definition
-		oclass = gl_register_class(module,"clotheswasher",sizeof(clotheswasher),PC_PRETOPDOWN|PC_BOTTOMUP|PC_AUTOLOCK);
+		oclass = gld_class::create(module,"clotheswasher",sizeof(clotheswasher),PC_PRETOPDOWN|PC_BOTTOMUP|PC_AUTOLOCK);
 		pclass = residential_enduse::oclass;
 		if (oclass==nullptr)
 			GL_THROW("unable to register object class implemented by %s",__FILE__);

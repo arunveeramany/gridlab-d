@@ -8,6 +8,8 @@
 
 #include "gridlabd.h"
 #include "module.h"
+#include "enduse.h"	
+#include "loadshape.h"
 
 #ifdef _RESIDENTIAL_CPP
 #define GLOBAL

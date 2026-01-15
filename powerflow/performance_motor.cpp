@@ -24,7 +24,7 @@ performance_motor::performance_motor(MODULE *mod):node(mod)
 	{
 		pclass = node::oclass;
 		
-		oclass = gl_register_class(mod,"performance_motor",sizeof(performance_motor),passconfig|PC_UNSAFE_OVERRIDE_OMIT|PC_AUTOLOCK);
+		oclass = gld_class::create(mod,"performance_motor",sizeof(performance_motor),passconfig|PC_UNSAFE_OVERRIDE_OMIT|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			throw "unable to register class performance_motor";
 		else

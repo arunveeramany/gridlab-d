@@ -75,6 +75,7 @@ if (HELICS_FOUND)
     target_link_libraries(${GLD_MODULE_NAME} PRIVATE HELICS::helics)
     target_compile_definitions(${GLD_MODULE_NAME} PRIVATE HAVE_HELICS)
 endif ()
+target_link_libraries(${GLD_MODULE_NAME} PRIVATE gldapi)
 
 target_link_libraries(${GLD_MODULE_NAME} PRIVATE nlohmann_json::nlohmann_json)
 target_compile_options(${GLD_MODULE_NAME} PRIVATE ${GLD_COMPILE_OPTIONS})

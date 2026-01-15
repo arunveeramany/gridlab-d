@@ -1,18 +1,16 @@
 SET(GLD_MODULE_NAME gridlabd)
 
-#set(CMAKE_BUILD_TYPE Debug) # Add this near the top if not using multi-config generator
-
+#set(CMAKE_BUILD_TYPE Debug) # keep your top-level choice if multi-config
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
-
-
-
-# Load and link C/C++ files for the executable
-set(SOURCE_LIST
+# ---- Core sources (the "one true core") ----
+# IMPORTANT: main.cpp must NOT be compiled into the library if you want to avoid duplicate state
+# and keep gridlabd as a thin wrapper.
+set(GLDCORE_SOURCE_LIST
         gridlabd.h
-	    gldapi.h
-	    gldapi.cpp
+        gldapi.h
+        gldapi.cpp
         globals.cpp
         globals.h
         object.cpp
@@ -25,8 +23,6 @@ set(SOURCE_LIST
         class.h
         cmdarg.cpp
         cmdarg.h
-        #        cmex.c
-        #        cmex.h
         compare.cpp
         compare.h
         gld_complex.h
@@ -90,7 +86,6 @@ set(SOURCE_LIST
         local.h
         lock.cpp
         lock.h
-        main.cpp
         match.cpp
         match.h
         matlab.cpp
@@ -135,77 +130,84 @@ set(SOURCE_LIST
         validate.cpp
         validate.h
         version.cpp
-        #        xcore.cpp
-        #        xcore.h
-        )
+)
 
-#if(NOT APPLE)
-add_executable(${GLD_MODULE_NAME} ${SOURCE_LIST})
+# -------------------------------------------------------------------------
+# 1) Build reusable API library (this owns globals/callback/class registry)
+# -------------------------------------------------------------------------
+add_library(gldapi SHARED ${GLDCORE_SOURCE_LIST})
+
+# Preserve your existing link behavior
+target_link_libraries(gldapi PUBLIC nlohmann_json::nlohmann_json)
+target_link_libraries(gldapi PRIVATE ${OS_SPECIFIC_LIBRARIES})
+target_link_libraries(gldapi PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+
+if (CURSES_FOUND)
+    target_link_libraries(gldapi PRIVATE ${CURSES_LIBRARIES})
+endif ()
+
+if (XercesC_FOUND)
+    target_link_libraries(gldapi PRIVATE ${XercesC_LIBRARIES})
+endif ()
+
+# include dirs (keep your generated headers behavior)
+target_include_directories(gldapi PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/headers)
+
+# -------------------------------------------------------------------------
+# 2) Build executable as thin wrapper (only main.cpp)
+# -------------------------------------------------------------------------
+add_executable(${GLD_MODULE_NAME} main.cpp)
 
 if(APPLE)
-	set_target_properties(gridlabd PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    set_target_properties(gridlabd PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    # Keep this: needed so runtime-loaded modules can resolve symbols from the process
     set_target_properties(gridlabd PROPERTIES ENABLE_EXPORTS ON)
 endif ()
 
-# Place this after your add_executable(gridlabd ...) command
+# Keep the module linkage you had (if GL_MODULES is a list of module targets)
+# If GL_MODULES are runtime-loaded plugins, you may not want to link them here;
+# but this preserves existing behavior.
+target_link_libraries(${GLD_MODULE_NAME} PUBLIC ${GL_MODULES})
+
+# Link the executable to the core library (this is the important change)
+target_link_libraries(${GLD_MODULE_NAME} PRIVATE gldapi)
+
+target_link_libraries(${GLD_MODULE_NAME} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+
+if (CURSES_FOUND)
+    target_link_libraries(${GLD_MODULE_NAME} PRIVATE ${CURSES_LIBRARIES})
+endif ()
+
+if (XercesC_FOUND)
+    target_link_libraries(${GLD_MODULE_NAME} PRIVATE ${XercesC_LIBRARIES})
+endif ()
+
+target_link_libraries(${GLD_MODULE_NAME} PUBLIC nlohmann_json::nlohmann_json)
+target_link_libraries(${GLD_MODULE_NAME} PRIVATE ${OS_SPECIFIC_LIBRARIES})
+
+# Keep your compile options/debug flags behavior
 if(MSVC)
-    # Set the stack size for the gridlabd executable to 16MB.
-    # This is not a hack; it's the proper way to configure an executable
-    # that is known to have deep recursion or large stack-based allocations.
     target_link_options(gridlabd PRIVATE /STACK:16777216)
     message(STATUS "MSVC build detected: Increasing stack size for 'gridlabd' to 16MB to support complex models.")
-endif()
-
-
-if(MSVC)
     target_compile_options(gridlabd PRIVATE $<$<CONFIG:Debug>:/Zi /Od>)
     set_property(TARGET ${GLD_MODULE_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
-   
 else()
     target_compile_options(gridlabd PRIVATE $<$<CONFIG:Debug>:-g -O0>)
 endif()
 
-
-#else()
-#    add_executable(${GLD_MODULE_NAME} MACOSX_BUNDLE ${SOURCE_LIST})
-#    set_target_properties(${GLD_MODULE_NAME} PROPERTIES
-#            BUNDLE True
-#            MACOSX_BUNDLE_GUI_IDENTIFIER gov.pnnl.gridlabd
-#            MACOSX_BUNDLE_NAME ${GLD_MODULE_NAME}
-#            )
-#endif()
-
-add_library(gldapi ${SOURCE_LIST})
-target_link_libraries(${GLD_MODULE_NAME} PUBLIC ${GL_MODULES})
-target_link_libraries(${GLD_MODULE_NAME} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
-if (CURSES_FOUND)
-    #target_link_libraries(gldapi PRIVATE ${CURSES_LIBRARIES})
-    target_link_libraries(${GLD_MODULE_NAME} PRIVATE ${CURSES_LIBRARIES})
-    target_link_libraries(gldapi PRIVATE ${CURSES_LIBRARIES})
-endif ()
-if (XercesC_FOUND)
-    #target_link_libraries(gldapi PRIVATE ${XercesC_LIBRARIES})
-    target_link_libraries(${GLD_MODULE_NAME} PRIVATE ${XercesC_LIBRARIES})
-endif ()
-
-## Ensure nlohmann_json include directories propagate to consumers (e.g., test targets)
-target_link_libraries(gldapi PUBLIC nlohmann_json::nlohmann_json)
-target_link_libraries(${GLD_MODULE_NAME} PUBLIC nlohmann_json::nlohmann_json)
-target_link_libraries(gldapi PRIVATE ${OS_SPECIFIC_LIBRARIES})
-
 target_compile_options(${GLD_MODULE_NAME} PRIVATE ${GLD_COMPILE_OPTIONS})
+
 set_target_properties(${GLD_MODULE_NAME} PROPERTIES PREFIX "")
-target_link_libraries(${GLD_MODULE_NAME} PRIVATE ${OS_SPECIFIC_LIBRARIES})
 target_include_directories(${GLD_MODULE_NAME} PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/headers)
 
 install(TARGETS ${GLD_MODULE_NAME}
         ${FILE_PERMISSIONS}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         COMPONENT Runtime
-        )
+)
 
 if (GLD_USE_CLANG_TIDY)
     set_target_properties(${GLD_MODULE_NAME} PROPERTIES
             CXX_CLANG_TIDY "${CMAKE_CXX_CLANG_TIDY}"
-            )
+    )
 endif ()

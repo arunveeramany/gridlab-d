@@ -175,6 +175,7 @@ lib/climate.dylib: climate/CMakeFiles/climate.dir/test.cpp.o
 lib/climate.dylib: climate/CMakeFiles/climate.dir/weather.cpp.o
 lib/climate.dylib: climate/CMakeFiles/climate.dir/weather_reader.cpp.o
 lib/climate.dylib: climate/CMakeFiles/climate.dir/build.make
+lib/climate.dylib: lib/libgldapi.dylib
 lib/climate.dylib: climate/CMakeFiles/climate.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX shared library ../lib/climate.dylib"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/climate && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/climate.dir/link.txt --verbose=$(VERBOSE)

@@ -169,7 +169,7 @@ csv_reader::csv_reader(MODULE *module){
 	////memset(this, 0, sizeof(csv_reader));
 	if (oclass==nullptr)
 	{
-		oclass = gl_register_class(module,"csv_reader",sizeof(csv_reader), 0);
+		oclass = gld_class::create(module,"csv_reader",sizeof(csv_reader), 0);
 		if (gl_publish_variable(oclass,
 			PT_int32,"index",PADDR(index),PT_ACCESS,PA_REFERENCE,
 			PT_char32,"city_name",PADDR(city_name),

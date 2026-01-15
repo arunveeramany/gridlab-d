@@ -13,7 +13,7 @@ sec_control::sec_control(MODULE *module)
 {
 	if (oclass == NULL)
 	{
-		oclass = gl_register_class(module, "sec_control", sizeof(sec_control), PC_BOTTOMUP | PC_AUTOLOCK);
+		oclass = gld_class::create(module, "sec_control", sizeof(sec_control), PC_BOTTOMUP | PC_AUTOLOCK);
 		if (oclass == NULL)
 			throw "unable to register class sec_control";
 		else

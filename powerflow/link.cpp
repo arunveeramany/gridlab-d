@@ -112,7 +112,7 @@ link_object::link_object(MODULE *mod) : powerflow_object(mod)
 	if (oclass == nullptr)
 	{
 		pclass = powerflow_object::oclass;
-		oclass = gl_register_class(mod, "link", sizeof(link_object), PC_PRETOPDOWN | PC_BOTTOMUP | PC_POSTTOPDOWN | PC_UNSAFE_OVERRIDE_OMIT | PC_AUTOLOCK);
+		oclass = gld_class::create(mod, "link", sizeof(link_object), PC_PRETOPDOWN | PC_BOTTOMUP | PC_POSTTOPDOWN | PC_UNSAFE_OVERRIDE_OMIT | PC_AUTOLOCK);
 		if (oclass == nullptr)
 			throw "unable to register class link";
 		else

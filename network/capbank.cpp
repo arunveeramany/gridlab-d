@@ -29,7 +29,7 @@ capbank::capbank(MODULE *mod) : link(mod)
 	if (oclass==nullptr)
 	{
 		// register the class definition
-		capbank_class = oclass = gl_register_class(mod,"capbank",sizeof(capbank),PC_BOTTOMUP);
+		capbank_class = oclass = gld_class::create(mod,"capbank",sizeof(capbank),PC_BOTTOMUP);
 		if (oclass==nullptr)
 			throw "unable to register class capbank";
 		else

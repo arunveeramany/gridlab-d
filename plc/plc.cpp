@@ -47,7 +47,7 @@ plc::plc(MODULE *mod)
 	if (oclass==nullptr)
 	{
 		// register the class definition
-		oclass = gl_register_class(mod,"plc",sizeof(plc),PC_BOTTOMUP|PC_AUTOLOCK);
+		oclass = gld_class::create(mod,"plc",sizeof(plc),PC_BOTTOMUP|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			throw "unable to register class plc";
 		else

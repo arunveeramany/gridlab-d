@@ -1185,12 +1185,12 @@ int object_set_value_by_name(OBJECT *obj,		/**< the object to change */
 							 PROPERTYNAME name, /**< the name of the property to change */
 							 char *value)		/**< the value to set */
 {
-	// if (global_verbose_mode)
-		// std::cerr << "Setting property " << name
-		// 		  << " to value " << value
-		// 		  << " on object type " << obj->oclass->name
-		// 		  << " with id " << obj->id
-		// 		  << std::endl;
+	if (global_verbose_mode)
+		std::cerr << "Setting property " << name
+				  << " to value " << value
+				  << " on object type " << obj->oclass->name
+				  << " with id " << obj->id
+				  << std::endl;
 
 	// Step 1: Check if value could be a schedule reference
 	bool might_be_schedule = false;
@@ -1316,9 +1316,33 @@ int object_set_value_by_name(OBJECT *obj,		/**< the object to change */
 	}
 
 	void *addr;
+	const char *effective_name = name;
 	PROPERTY *prop = class_find_property(obj->oclass, name);
 	if (prop == nullptr)
 	{
+		// Heuristic: allow legacy enduse fields (power_fraction, current_fraction, etc.)
+		// to be set on objects that inherit residential_enduse by redirecting to load.<field>.
+		if (obj && obj->oclass && name && strchr(name, '.') == nullptr)
+		{
+			// Only if the object "isa" residential_enduse (prevents random classes being affected)
+			if (object_isa(obj, "residential_enduse"))
+			{
+				char alt[256];
+				snprintf(alt, sizeof(alt), "load.%s", name);
+				PROPERTY *altprop = class_find_property(obj->oclass, alt);
+				if (altprop != nullptr)
+				{
+					prop = altprop;
+					effective_name = nullptr; // we will use prop directly for addr
+					// and jump to normal set-by-addr logic below
+					// (or store alt somewhere and use it in object_get_addr if needed)
+					addr = reinterpret_cast<void *>(
+						reinterpret_cast<std::uintptr_t>(obj + 1) + reinterpret_cast<std::uintptr_t>(prop->addr));
+					return object_set_value_by_addr(obj, addr, value, prop);
+				}
+			}
+		}
+
 		if (set_header_value(obj, name, value) == FAILED)
 		{
 			errno = ENOENT;
@@ -1890,10 +1914,22 @@ extern "C" TIMESTAMP _object_sync(void *object, ...)
 
 	@return  the time of the next event for this object.
  */
-TIMESTAMP object_sync(OBJECT *obj,	   /**< the object to synchronize */
-					  TIMESTAMP ts,	   /**< the desire clock to sync to */
-					  PASSCONFIG pass) /**< the pass configuration */
+// TIMESTAMP object_sync(OBJECT *obj,	   /**< the object to synchronize */
+// 					  TIMESTAMP ts,	   /**< the desire clock to sync to */
+// 					  PASSCONFIG pass) /**< the pass configuration */
+// {
+
+extern "C" TIMESTAMP object_sync(void *object, ...)
 {
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP ts = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object;
+    
+
 	clock_t t = (clock_t)exec_clock();
 	TIMESTAMP t2 = TS_NEVER;
 	do

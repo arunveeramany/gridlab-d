@@ -415,6 +415,7 @@ lib/residential.dylib: residential/CMakeFiles/residential.dir/thermal_storage.cp
 lib/residential.dylib: residential/CMakeFiles/residential.dir/waterheater.cpp.o
 lib/residential.dylib: residential/CMakeFiles/residential.dir/zipload.cpp.o
 lib/residential.dylib: residential/CMakeFiles/residential.dir/build.make
+lib/residential.dylib: lib/libgldapi.dylib
 lib/residential.dylib: residential/CMakeFiles/residential.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_22) "Linking CXX shared library ../lib/residential.dylib"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/residential && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/residential.dir/link.txt --verbose=$(VERBOSE)

@@ -46,7 +46,7 @@ solar::solar(MODULE *module)
 {
 	if (oclass == nullptr)
 	{
-		oclass = gl_register_class(module, "solar", sizeof(solar), PC_PRETOPDOWN | PC_BOTTOMUP | PC_POSTTOPDOWN | PC_AUTOLOCK);
+		oclass = gld_class::create(module, "solar", sizeof(solar), PC_PRETOPDOWN | PC_BOTTOMUP | PC_POSTTOPDOWN | PC_AUTOLOCK);
 		if (oclass == nullptr)
 			throw "unable to register class solar";
 		else

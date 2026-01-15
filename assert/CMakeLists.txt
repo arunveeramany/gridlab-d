@@ -1,36 +1,32 @@
 SET(GLD_MODULE_NAME assert)
-
 add_library(${GLD_MODULE_NAME}
-        gld_assert.cpp
-        gld_assert.h
-        complex_assert.cpp
-        complex_assert.h
-        double_assert.cpp
-        double_assert.h
-        enum_assert.cpp
-        enum_assert.h
-        int_assert.cpp
-        int_assert.h
-        init.cpp
-        #main.cpp
-        )
-
-if(APPLE)
-    target_link_libraries(${GLD_MODULE_NAME} PRIVATE
-        gridlabd
-        ${OS_SPECIFIC_LIBRARIES}
-    )
-    target_link_options(${GLD_MODULE_NAME} PRIVATE -Wl,-export_dynamic)
-else ()
-    target_link_libraries(${GLD_MODULE_NAME} PRIVATE ${OS_SPECIFIC_LIBRARIES})
-endif ()
+    gld_assert.cpp
+    gld_assert.h
+    complex_assert.cpp
+    complex_assert.h
+    double_assert.cpp
+    double_assert.h
+    enum_assert.cpp
+    enum_assert.h
+    int_assert.cpp
+    int_assert.h
+    init.cpp
+)
 
 target_compile_options(${GLD_MODULE_NAME} PRIVATE ${GLD_COMPILE_OPTIONS})
 set_target_properties(${GLD_MODULE_NAME} PROPERTIES PREFIX "")
 target_include_directories(${GLD_MODULE_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/gldcore")
 
+# Link to the core library (not the executable) + OS libs
+target_link_libraries(${GLD_MODULE_NAME} PRIVATE gldapi ${OS_SPECIFIC_LIBRARIES})
+
+if(APPLE)
+    # optional/sometimes needed for plugins on macOS
+    target_link_options(${GLD_MODULE_NAME} PRIVATE -Wl,-undefined,dynamic_lookup)
+endif()
+
 if (GLD_USE_CLANG_TIDY)
     set_target_properties(${GLD_MODULE_NAME} PROPERTIES
-            CXX_CLANG_TIDY "${CMAKE_CXX_CLANG_TIDY}"
-            )
+        CXX_CLANG_TIDY "${CMAKE_CXX_CLANG_TIDY}"
+    )
 endif ()

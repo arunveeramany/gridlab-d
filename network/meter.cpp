@@ -35,7 +35,7 @@ meter::meter(MODULE *mod) : node(mod)
 		pclass = node::oclass;
 
 		// register the class definition
-		meter_class = oclass = gl_register_class(mod,"meter",sizeof(meter),PC_BOTTOMUP);
+		meter_class = oclass = gld_class::create(mod,"meter",sizeof(meter),PC_BOTTOMUP);
 		if (oclass==nullptr)
 			throw "unable to register class meter";
 		else

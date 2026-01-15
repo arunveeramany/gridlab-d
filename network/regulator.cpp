@@ -30,7 +30,7 @@ regulator::regulator(MODULE *mod) : link(mod)
 	if (oclass==nullptr)
 	{
 		// register the class definition
-		regulator_class = oclass = gl_register_class(mod,"regulator",sizeof(regulator),PC_BOTTOMUP);
+		regulator_class = oclass = gld_class::create(mod,"regulator",sizeof(regulator),PC_BOTTOMUP);
 		if (oclass==nullptr)
 			throw "unable to register class regulator";
 		else

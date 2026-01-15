@@ -86,7 +86,7 @@ metrics_collector::metrics_collector(MODULE *mod){
 #ifdef _DEBUG
 		gl_debug("construction metrics_collector class");
 #endif
-		oclass = gl_register_class(mod, const_cast<char *>("metrics_collector"), sizeof(metrics_collector), PC_POSTTOPDOWN);
+		oclass = gld_class::create(mod, const_cast<char *>("metrics_collector"), sizeof(metrics_collector), PC_POSTTOPDOWN);
     if(oclass == nullptr)
       GL_THROW(const_cast<char *>("unable to register object class implemented by %s"),__FILE__);
 

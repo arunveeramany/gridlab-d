@@ -23,7 +23,7 @@ line_spacing::line_spacing(MODULE *mod) : powerflow_library(mod)
 {
 	if(oclass == nullptr)
 	{
-		oclass = gl_register_class(mod,"line_spacing",sizeof(line_spacing),0x00);
+		oclass = gld_class::create(mod,"line_spacing",sizeof(line_spacing),0x00);
 		if (oclass==nullptr)
 			throw "unable to register class line_spacing";
 		else

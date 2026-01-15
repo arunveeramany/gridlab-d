@@ -382,7 +382,7 @@ EXPORT jint JNICALL Java_gridlabd_GridlabD_module_1depends(JNIEnv *env, jobject 
 
 EXPORT jlong JNICALL Java_gridlabd_GridlabD_register_1class(JNIEnv *env, jobject _this, jlong moduleaddr, jstring classname, jint passconfig){
 	char *instr = (char *)env->GetStringUTFChars(classname, nullptr);
-	int64 rv = (int64)gl_register_class((MODULE *)moduleaddr, instr, 0, (PASSCONFIG)(0xFF & passconfig));
+	int64 rv = (int64)gld_class::create((MODULE *)moduleaddr, instr, 0, (PASSCONFIG)(0xFF & passconfig));
 	env->ReleaseStringUTFChars(classname, instr);
 	return rv;
 }

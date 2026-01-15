@@ -320,7 +320,7 @@ schedule::schedule(MODULE *module)
 	if (oclass == nullptr)
 	{
 		// register the class definition
-		oclass = gl_register_class(module, "schedule", sizeof(schedule), PC_PRETOPDOWN);
+		oclass = gld_class::create(module, "schedule", sizeof(schedule), PC_PRETOPDOWN);
 		if (oclass == nullptr)
 			GL_THROW("unable to register object class implemented by %s", __FILE__);
 

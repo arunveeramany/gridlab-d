@@ -226,8 +226,10 @@ complex_assert::complex_assert(MODULE *module) : gld_object()
 		// register to receive notice for first top down. bottom up, and second top down synchronizations
 		//Making assert a POSTTOPDOWN observer increases the chance the detector sees switching change before 
 		// any assert fires in that timestamp—reducing race conditions
-		oclass = gl_register_class(module, "complex_assert", sizeof(complex_assert),   PC_AUTOLOCK | PC_OBSERVER);
-		//oclass = gl_register_class(module, "complex_assert", sizeof(complex_assert), PC_AUTOLOCK );
+		// oclass = gl_register_class(module, "complex_assert", sizeof(complex_assert),   PC_AUTOLOCK | PC_OBSERVER);
+		oclass = gld_class::create(module, "complex_assert", sizeof(complex_assert),   PC_AUTOLOCK | PC_OBSERVER);
+		
+        //oclass = gl_register_class(module, "complex_assert", sizeof(complex_assert), PC_AUTOLOCK );
 
 		if (oclass == nullptr)
 			throw "unable to register class complex_assert";

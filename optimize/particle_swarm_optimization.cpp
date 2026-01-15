@@ -29,7 +29,7 @@ particle_swarm_optimization::particle_swarm_optimization(MODULE *module)
 {
 	if (oclass==nullptr)
 	{
-		oclass = gl_register_class(module,"particle_swarm_optimization",sizeof(particle_swarm_optimization),passconfig);
+		oclass = gld_class::create(module,"particle_swarm_optimization",sizeof(particle_swarm_optimization),passconfig);
 		if (oclass==nullptr)
 			throw "unable to register class particle_swarm_optimization";
 		else

@@ -524,9 +524,9 @@ inline int gl_module_depends(char *name,			   /**< module name */
 	Note that C file may publish structures, even they are not implemented as classes.
 	@see class_register()
  **/
-#define gl_register_class (*callback->register_class)
-#define gl_class_get_first (*callback->class_getfirst)
-#define gl_class_get_by_name (*callback->class_getname)
+ #define gl_register_class (*callback->register_class)
+// #define gl_class_get_first (*callback->class_getfirst)
+// #define gl_class_get_by_name (*callback->class_getname)
 /** @} **/
 
 /******************************************************************************
@@ -593,7 +593,7 @@ inline bool gl_object_isa(OBJECT *obj, /**< object to test */
         while (pclass != NULL)
         {
             // Check that the name pointer itself is not NULL before comparing.
-            if (pclass->name != NULL && strcmp(pclass->name, type) == 0)
+            if (pclass->name[0] != '\0' && strcmp(pclass->name, type) == 0)
             {
                 return true; // Found a match.
             }
@@ -1275,38 +1275,38 @@ inline SCHEDULE *gl_schedule_getfirst(void)
 }
 /** Create an enduse
  **/
-inline int gl_enduse_create(enduse *e)
-{
-	return callback->enduse.create(e);
-}
-/** Synchronize an enduse
- **/
-inline TIMESTAMP gl_enduse_sync(enduse *e, TIMESTAMP t1)
-{
-	return callback->enduse.sync(e, PC_BOTTOMUP, t1);
-}
+// inline int gl_enduse_create(enduse *e)
+// {
+// 	return callback->enduse.create(e);
+// }
+// /** Synchronize an enduse
+//  **/
+// inline TIMESTAMP gl_enduse_sync(enduse *e, TIMESTAMP t1)
+// {
+// 	return callback->enduse.sync(e, PC_BOTTOMUP, t1);
+// }
 /** Create a loadshape
  **/
-inline loadshape *gl_loadshape_create(SCHEDULE *s)
-{
-	loadshape *ls = (loadshape *)malloc(sizeof(loadshape));
-	memset(ls, 0, sizeof(loadshape));
-	if (0 == callback->loadshape.create(ls))
-	{
-		return NULL;
-	}
-	ls->schedule = s;
-	return ls;
-}
+// inline loadshape *gl_loadshape_create(SCHEDULE *s)
+// {
+// 	loadshape *ls = (loadshape *)malloc(sizeof(loadshape));
+// 	memset(ls, 0, sizeof(loadshape));
+// 	if (0 == callback->loadshape.create(ls))
+// 	{
+// 		return NULL;
+// 	}
+// 	ls->schedule = s;
+// 	return ls;
+// }
 /** Get the current value of a loadshape
  **/
-inline double gl_get_loadshape_value(loadshape *shape)
-{
-	if (shape)
-		return shape->load;
-	else
-		return 0;
-}
+// inline double gl_get_loadshape_value(loadshape *shape)
+// {
+// 	if (shape)
+// 		return shape->load;
+// 	else
+// 		return 0;
+// }
 /** Format a DATETIME into a string buffer
  **/
 inline char *gl_strftime(DATETIME *dt, char *buffer, int size) { return callback->time.strdatetime(dt, buffer, size) ? buffer : NULL; };
@@ -2191,7 +2191,8 @@ public: // write accessors
 
 public: // special functions
 	/// Register a class
-	static inline CLASS *create(MODULE *m, const char *n, size_t s, unsigned int f) { return callback->register_class(m, n, (unsigned int)s, f); };
+	// static inline CLASS *create(MODULE *m, const char *n, size_t s, unsigned int f) { return callback->register_class(m, n, (unsigned int)s, f); };
+	static inline CLASS *create(MODULE *m, const char *n, size_t s, unsigned int f) { return class_register(m, n, (unsigned int)s, f); };
 
 public: // iterators
 	/// Check if last class registered

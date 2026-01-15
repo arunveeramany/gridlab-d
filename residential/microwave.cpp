@@ -29,7 +29,7 @@ microwave::microwave(MODULE *module) : residential_enduse(module)
 	if (oclass==nullptr)
 	{
 		// register the class definition
-		oclass = gl_register_class(module,"microwave",sizeof(microwave),PC_BOTTOMUP|PC_AUTOLOCK);
+		oclass = gld_class::create(module,"microwave",sizeof(microwave),PC_BOTTOMUP|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			throw "unable to register class microwave";
 		else
@@ -314,7 +314,8 @@ TIMESTAMP microwave::sync(TIMESTAMP t0, TIMESTAMP t1)
 		load.power.SetPowerFactor( (state==ON ? shape.params.analog.power : standby_power), load.power_factor);
 	}
 
-	gl_enduse_sync(&(residential_enduse::load),t1);
+	//gl_enduse_sync(&(residential_enduse::load),t1);
+	load.postsync(gl_globalclock, t1);
 
 	if(shape.type == MT_UNKNOWN){
 		if(cycle_time == 0)

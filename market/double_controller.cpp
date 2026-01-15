@@ -15,7 +15,7 @@ double_controller::double_controller(MODULE *module)
 {
 	if (oclass==nullptr)
 	{
-		oclass = gl_register_class(module, "double_controller",sizeof(double_controller),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_AUTOLOCK);
+		oclass = gld_class::create(module, "double_controller",sizeof(double_controller),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			throw "unable to register class double_controller";
 		else

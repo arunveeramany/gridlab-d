@@ -27,7 +27,7 @@ diesel_dg::diesel_dg(MODULE *module)
 {
 	if (oclass == nullptr)
 	{
-		oclass = gl_register_class(module, "diesel_dg", sizeof(diesel_dg), passconfig | PC_AUTOLOCK);
+		oclass = gld_class::create(module, "diesel_dg", sizeof(diesel_dg), passconfig | PC_AUTOLOCK);
 		if (oclass == nullptr)
 			throw "unable to register class diesel_dg";
 		else

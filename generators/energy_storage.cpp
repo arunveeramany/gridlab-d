@@ -18,7 +18,7 @@ energy_storage::energy_storage(MODULE *module)
 {
 	if (oclass == nullptr)
 	{
-		oclass = gl_register_class(module, "energy_storage", sizeof(energy_storage), passconfig | PC_AUTOLOCK);
+		oclass = gld_class::create(module, "energy_storage", sizeof(energy_storage), passconfig | PC_AUTOLOCK);
 		if (oclass == nullptr)
 			throw "unable to register class energy_storage";
 		else

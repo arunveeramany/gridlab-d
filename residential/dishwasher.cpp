@@ -29,7 +29,7 @@ dishwasher::dishwasher(MODULE *module) : residential_enduse(module)
 		pclass = residential_enduse::oclass;
 		
 		// register the class definition
-		oclass = gl_register_class(module,"dishwasher",sizeof(dishwasher),PC_PRETOPDOWN|PC_BOTTOMUP|PC_AUTOLOCK);
+		oclass = gld_class::create(module,"dishwasher",sizeof(dishwasher),PC_PRETOPDOWN|PC_BOTTOMUP|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			GL_THROW("unable to register object class implemented by %s",__FILE__);
 
@@ -316,9 +316,9 @@ int dishwasher::init(OBJECT *parent)
 
 			} else if (shape.params.analog.power == 0){
 
-				daily_dishwasher_demand = gl_get_loadshape_value(&shape) / 2.4449;
+				daily_dishwasher_demand = shape.load / 2.4449; // gl_get_loadshape_value(&shape) / 2.4449;
 			} else {
-				daily_dishwasher_demand = gl_get_loadshape_value(&shape); /* unitless ~ drive gpm */
+				daily_dishwasher_demand = shape.load; //gl_get_loadshape_value(&shape); /* unitless ~ drive gpm */
 			}
 			break;
 		case MT_PULSED:
@@ -328,7 +328,7 @@ int dishwasher::init(OBJECT *parent)
 				; /* constant time pulse ~ consumes X gallons to drive heater for Y hours ~ but what's Vdot, what's t? */
 			} else if(shape.params.pulsed.pulsetype == MPT_POWER){
 				; /* constant power pulse ~ dishwasher demand X kW, limited by C + Q * h ~ Vdot proportional to power/time */
-				daily_dishwasher_demand = gl_get_loadshape_value(&shape) / 2.4449;
+				daily_dishwasher_demand = shape.load / 2.4449;
 			}
 			break;
 		case MT_MODULATED:
@@ -341,7 +341,7 @@ int dishwasher::init(OBJECT *parent)
 			} else if(shape.params.modulated.pulsetype == MPT_POWER){
 				/* frequency modulated */
 				/* fixed-amplitude, varying length pulses at regular intervals. */
-				daily_dishwasher_demand = gl_get_loadshape_value(&shape) / 2.4449;
+				daily_dishwasher_demand = shape.load / 2.4449;
 			}
 			break;
 		case MT_QUEUED:
@@ -349,7 +349,7 @@ int dishwasher::init(OBJECT *parent)
 				; /* constant time pulse ~ consumes X gallons/minute to consume Y thermal energy */
 			} else if(shape.params.queued.pulsetype == MPT_POWER){
 				; /* constant power pulse ~ dishwasher demand X kW, limited by C + Q * h */
-				daily_dishwasher_demand = gl_get_loadshape_value(&shape) / 2.4449;
+				daily_dishwasher_demand = shape.load / 2.4449;
 			}
 			break;
 		default:
@@ -422,9 +422,9 @@ TIMESTAMP dishwasher::presync(TIMESTAMP t0, TIMESTAMP t1){
 
 			} else if (shape.params.analog.power == 0){
 
-				daily_dishwasher_demand = gl_get_loadshape_value(&shape) / 2.4449;
+				daily_dishwasher_demand = shape.load / 2.4449;
 			} else {
-				daily_dishwasher_demand = gl_get_loadshape_value(&shape); /* unitless ~ drive gpm */
+				daily_dishwasher_demand = shape.load; /* unitless ~ drive gpm */
 			}
 			break;
 		case MT_PULSED:
@@ -434,7 +434,7 @@ TIMESTAMP dishwasher::presync(TIMESTAMP t0, TIMESTAMP t1){
 				; /* constant time pulse ~ consumes X gallons to drive heater for Y hours ~ but what's Vdot, what's t? */
 			} else if(shape.params.pulsed.pulsetype == MPT_POWER){
 				; /* constant power pulse ~ dishwasher demand X kW, limited by C + Q * h ~ Vdot proportional to power/time */
-				daily_dishwasher_demand = gl_get_loadshape_value(&shape) / 2.4449;
+				daily_dishwasher_demand = shape.load / 2.4449;
 			}
 			break;
 		case MT_MODULATED:
@@ -447,7 +447,7 @@ TIMESTAMP dishwasher::presync(TIMESTAMP t0, TIMESTAMP t1){
 			} else if(shape.params.modulated.pulsetype == MPT_POWER){
 				/* frequency modulated */
 				/* fixed-amplitude, varying length pulses at regular intervals. */
-				daily_dishwasher_demand = gl_get_loadshape_value(&shape) / 2.4449;
+				daily_dishwasher_demand = shape.load / 2.4449;
 			}
 			break;
 		case MT_QUEUED:
@@ -455,7 +455,7 @@ TIMESTAMP dishwasher::presync(TIMESTAMP t0, TIMESTAMP t1){
 				; /* constant time pulse ~ consumes X gallons/minute to consume Y thermal energy */
 			} else if(shape.params.queued.pulsetype == MPT_POWER){
 				; /* constant power pulse ~ dishwasher demand X kW, limited by C + Q * h */
-				daily_dishwasher_demand = gl_get_loadshape_value(&shape) / 2.4449;
+				daily_dishwasher_demand = shape.load / 2.4449;
 			}
 			break;
 		default:

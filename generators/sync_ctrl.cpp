@@ -34,7 +34,7 @@ sync_ctrl::sync_ctrl(MODULE *mod)
 {
     if (oclass == nullptr)
     {
-        oclass = gl_register_class(mod, "sync_ctrl", sizeof(sync_ctrl), PC_PRETOPDOWN | PC_BOTTOMUP | PC_POSTTOPDOWN | PC_AUTOLOCK);
+        oclass = gld_class::create(mod, "sync_ctrl", sizeof(sync_ctrl), PC_PRETOPDOWN | PC_BOTTOMUP | PC_POSTTOPDOWN | PC_AUTOLOCK);
         if (oclass == nullptr)
             GL_THROW("unable to register object class implemented by %s", __FILE__);
 		else

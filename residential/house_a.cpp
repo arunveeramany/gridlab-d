@@ -152,7 +152,7 @@ house::house(MODULE *mod) : residential_enduse(mod)
 	if (oclass==nullptr)
 	{
 		// register the class definition
-		oclass = gl_register_class(mod,"house_a",sizeof(house),PC_PRETOPDOWN|PC_BOTTOMUP|PC_AUTOLOCK);
+		oclass = gld_class::create(mod,"house_a",sizeof(house),PC_PRETOPDOWN|PC_BOTTOMUP|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			throw "unable to register class house_a";
 		else

@@ -1,13 +1,12 @@
 SET(GLD_MODULE_NAME powerflow)
 
-
 if (GLD_USE_EIGEN)
     SET(NR_SOLVER solver_nr_eigen.cpp solver_nr_eigen.h)
 else ()
     SET(NR_SOLVER solver_nr.cpp solver_nr.h)
 endif ()
 
-add_library(${GLD_MODULE_NAME}
+add_library(${GLD_MODULE_NAME} SHARED
         billdump.cpp
         billdump.h
         capacitor.cpp
@@ -37,7 +36,6 @@ add_library(${GLD_MODULE_NAME}
         load.h
         load_tracker.cpp
         load_tracker.h
-        #main.cpp
         meter.cpp
         meter.h
         meter_test.h
@@ -115,9 +113,20 @@ add_library(${GLD_MODULE_NAME}
         volt_var_control.cpp
         volt_var_control.h
         ${NR_SOLVER}
-        )
+)
 
+target_compile_options(${GLD_MODULE_NAME} PRIVATE ${GLD_COMPILE_OPTIONS})
+set_target_properties(${GLD_MODULE_NAME} PROPERTIES PREFIX "")
 
+target_include_directories(${GLD_MODULE_NAME} PRIVATE
+    "${CMAKE_SOURCE_DIR}/gldcore"
+    "${CMAKE_CURRENT_BINARY_DIR}/headers"
+    "${CMAKE_BINARY_DIR}/headers"
+)
+
+# Link to the reusable core (not the gridlabd executable) + OS libs
+target_link_libraries(${GLD_MODULE_NAME} PRIVATE gldapi ${OS_SPECIFIC_LIBRARIES})
+target_link_libraries(${GLD_MODULE_NAME} PRIVATE nlohmann_json::nlohmann_json)
 
 if (GLD_USE_EIGEN)
     find_package(KLU)
@@ -128,38 +137,22 @@ if (GLD_USE_EIGEN)
     target_include_directories(${GLD_MODULE_NAME} PRIVATE
             "${CMAKE_SOURCE_DIR}/third_party/Eigen"
             "${KLU_INCLUDES}"
-            )
+    )
     target_link_libraries(${GLD_MODULE_NAME} PRIVATE
             Eigen3::Eigen
             ${KLU_LIBRARIES}
-            )
+    )
 else ()
-    target_link_libraries(${GLD_MODULE_NAME} PRIVATE
-            #            superlu
-            ${SUPERLU_LIB}
-            )
+    target_link_libraries(${GLD_MODULE_NAME} PRIVATE ${SUPERLU_LIB})
 endif ()
-
-
-target_link_libraries(${GLD_MODULE_NAME} PRIVATE nlohmann_json::nlohmann_json)
-
-target_compile_options(${GLD_MODULE_NAME} PRIVATE ${GLD_COMPILE_OPTIONS})
-set_target_properties(${GLD_MODULE_NAME} PROPERTIES PREFIX "")
-target_include_directories(${GLD_MODULE_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/gldcore")
 
 if(APPLE)
-    target_link_libraries(${GLD_MODULE_NAME} PRIVATE
-        gridlabd
-        ${OS_SPECIFIC_LIBRARIES}
-    )
-    target_link_options(${GLD_MODULE_NAME} PRIVATE -Wl,-export_dynamic)
-else ()
-    target_link_libraries(${GLD_MODULE_NAME} PRIVATE ${OS_SPECIFIC_LIBRARIES})
+    # plugin-style late binding (replaces the old -export_dynamic usage)
+    target_link_options(${GLD_MODULE_NAME} PRIVATE -Wl,-undefined,dynamic_lookup)
 endif ()
-
 
 if (GLD_USE_CLANG_TIDY)
     set_target_properties(${GLD_MODULE_NAME} PROPERTIES
             CXX_CLANG_TIDY "${CMAKE_CXX_CLANG_TIDY}"
-            )
+    )
 endif ()

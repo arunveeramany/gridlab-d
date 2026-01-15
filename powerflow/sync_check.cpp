@@ -34,7 +34,7 @@ sync_check::sync_check(MODULE *mod) : powerflow_object(mod)
 	if (oclass == nullptr)
 	{
 		pclass = powerflow_object::oclass;
-		oclass = gl_register_class(mod, "sync_check", sizeof(sync_check), PC_PRETOPDOWN | PC_BOTTOMUP | PC_POSTTOPDOWN | PC_AUTOLOCK);
+		oclass = gld_class::create(mod, "sync_check", sizeof(sync_check), PC_PRETOPDOWN | PC_BOTTOMUP | PC_POSTTOPDOWN | PC_AUTOLOCK);
 		if (oclass == nullptr)
 			GL_THROW("unable to register object class implemented by %s", __FILE__);
 		if (gl_publish_variable(oclass,

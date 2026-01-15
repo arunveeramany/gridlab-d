@@ -23,7 +23,7 @@ overhead_line_conductor::overhead_line_conductor(MODULE *mod) : powerflow_librar
 {
 	if(oclass == nullptr)
 	{
-		oclass = gl_register_class(mod, "overhead_line_conductor",sizeof(overhead_line_conductor),0x00);
+		oclass = gld_class::create(mod, "overhead_line_conductor",sizeof(overhead_line_conductor),0x00);
 		if (oclass== nullptr)
 			throw "unable to register class overhead_line_conductor";
 		else

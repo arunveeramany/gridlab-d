@@ -435,7 +435,15 @@ endif ()
 
 set(BUILD_SHARED_LIBS ${BUILD_SHARED_CACHE})
 
-# Configure module targets
+# Core first (defines gldapi + gridlabd targets)
+add_subdirectory(gldcore)
+
+# If these are truly "core components", keep them after gldcore or move them inside gldcore;
+# but keep them AFTER gldcore so gldapi exists.
+add_subdirectory(${CMAKE_SOURCE_DIR}/gldcore/solvers)
+add_subdirectory(${CMAKE_SOURCE_DIR}/gldcore/link/engine)
+
+# Configure module targets (after gldapi exists)
 add_subdirectory(assert)
 add_subdirectory(climate)
 add_subdirectory(commercial)
@@ -450,9 +458,6 @@ add_subdirectory(residential)
 add_subdirectory(tape)
 add_subdirectory(tape_file)
 add_subdirectory(tape_plot)
-add_subdirectory(${CMAKE_SOURCE_DIR}/gldcore/solvers)
-add_subdirectory(${CMAKE_SOURCE_DIR}/gldcore/link/engine)
-add_subdirectory(gldcore)
 
 # Add test_gldapi executable
 add_executable(test_gldapi gldcore/test_gldapi.cpp)

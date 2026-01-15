@@ -33,7 +33,7 @@ emissions::emissions(MODULE *mod) : powerflow_object(mod)
 	if(oclass == nullptr)
 	{
 		pclass = powerflow_object::oclass;
-		oclass = gl_register_class(mod,"emissions",sizeof(emissions),PC_POSTTOPDOWN|PC_AUTOLOCK);
+		oclass = gld_class::create(mod,"emissions",sizeof(emissions),PC_POSTTOPDOWN|PC_AUTOLOCK);
 		if(oclass == nullptr)
 			GL_THROW("unable to register object class implemented by %s",__FILE__);
 		
