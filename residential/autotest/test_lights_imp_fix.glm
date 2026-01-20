@@ -31,7 +31,7 @@ object house {
 	object complex_assert {
 	  parent "autogen_house_0";
 	  name "autogen_house_0_complex_assert_0";
-		target panel.energy;
+		target energy;
 		once ONCE_TRUE;
 		in '2001-12-31 23:00:00';
 		value 3531.39+885.051j;

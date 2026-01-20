@@ -1,9 +1,5 @@
- M ../../CMakeLists.txt
- M ../../assert/CMakeLists.txt
- M ../../assert/complex_assert.cpp
  M ../../assert/enum_assert.cpp
- M ../../assert/int_assert.cpp
- D ../.cmake/api/v1/reply/directory-gldcore-Debug-88ec30a458647b38afed.json
+ M ../../assert/enum_assert.h
  D ../CPackConfig.cmake
  D ../CPackSourceConfig.cmake
  D ../_deps/json-build/CMakeFiles/CMakeDirectoryInformation.cmake
@@ -929,192 +925,74 @@
  D ../third_party/SuperLU/SRC/superluTargets.cmake
  D ../third_party/SuperLU/SRC/superlu_config.h
  D ../third_party/SuperLU/superlu.pc
- M ../../build-gcc/headers/loadshape.h
- M ../../climate/CMakeLists.txt
- M ../../climate/csv_reader.cpp
- M ../../climate/weather.cpp
- M ../../comm/mpi_network.cpp
- M ../../comm/network.cpp
- M ../../comm/network_interface.cpp
- M ../../comm/network_message.cpp
- M ../../commercial/CMakeLists.txt
- M ../../commercial/multizone.cpp
- M ../../connection/CMakeLists.txt
- M ../../generators/CMakeLists.txt
- M ../../generators/battery.cpp
- M ../../generators/central_dg_control.cpp
- M ../../generators/controller_dg.cpp
- M ../../generators/diesel_dg.cpp
- M ../../generators/energy_storage.cpp
- M ../../generators/inverter.cpp
- M ../../generators/inverter_dyn.cpp
- M ../../generators/rectifier.cpp
- M ../../generators/sec_control.cpp
- M ../../generators/solar.cpp
- M ../../generators/sync_ctrl.cpp
- M ../../generators/windturb_dg.cpp
- M ../../gldcore/CMakeLists.txt
- M ../../gldcore/class.cpp
- M ../../gldcore/cmdarg.cpp
- M ../../gldcore/deltamode.cpp
- M ../../gldcore/enduse.cpp
- M ../../gldcore/enduse.h
- M ../../gldcore/exec.cpp
- M ../../gldcore/gridlabd.h
- M ../../gldcore/load.cpp
- M ../../gldcore/loadshape.cpp
- M ../../gldcore/loadshape.h
- M ../../gldcore/main.cpp
- M ../../gldcore/module.cpp
- M ../../gldcore/object.cpp
- M ../../gldcore/object.h
- M ../../gldcore/property.cpp
- M ../../gldcore/stream_type.h
- M ../../gldcore/test.cpp
- M ../../gldcore/transform.cpp
- M ../../java/gridlabd_java.cpp
- M ../../java/holder.cpp
- M ../../market/CMakeLists.txt
- M ../../market/auction.cpp
- M ../../market/autotest/data_controller_double_price_bids_assert.csv
- M ../../market/autotest/data_controller_double_price_clearing_quant_assert.csv
- M ../../market/autotest/data_controller_double_price_cool_setpoint_assert.csv
- D ../../market/autotest/test_controller_double_price_functionality.glm
- M ../../market/bid.cpp
- M ../../market/controller.cpp
- M ../../market/controller2.cpp
- M ../../market/double_controller.cpp
- M ../../market/generator_controller.cpp
- M ../../market/passive_controller.cpp
- M ../../market/passive_controller.h
- M ../../market/stub_bidder.cpp
- M ../../market/stubauction.cpp
- M ../../market/supervisory_control.cpp
- M ../../matlab/init.cpp
- M ../../matpower/areas.cpp
- M ../../matpower/baseMVA.cpp
- M ../../matpower/branch.cpp
- M ../../matpower/bus.cpp
- M ../../matpower/gen.cpp
- M ../../matpower/gen_cost.cpp
- M ../../matpower/line.cpp
- M ../../mysql/group_recorder.cpp
- M ../../mysql/main.cpp
- M ../../network/capbank.cpp
- M ../../network/fuse.cpp
- M ../../network/generator.cpp
- M ../../network/link.cpp
- M ../../network/meter.cpp
- M ../../network/node.cpp
- M ../../network/regulator.cpp
- M ../../network/relay.cpp
- M ../../network/transformer.cpp
- M ../../optimize/CMakeLists.txt
- M ../../optimize/particle_swarm_optimization.cpp
- M ../../optimize/simple.cpp
- M ../../plc/comm.cpp
- M ../../plc/plc.cpp
- M ../../powerflow/CMakeLists.txt
- M ../../powerflow/billdump.cpp
- M ../../powerflow/capacitor.cpp
- M ../../powerflow/currdump.cpp
- M ../../powerflow/emissions.cpp
- M ../../powerflow/fault_check.cpp
- M ../../powerflow/fuse.cpp
- M ../../powerflow/impedance_dump.cpp
- M ../../powerflow/jsondump.cpp
- M ../../powerflow/line.cpp
- M ../../powerflow/line_configuration.cpp
- M ../../powerflow/line_spacing.cpp
- M ../../powerflow/link.cpp
- M ../../powerflow/load.cpp
- M ../../powerflow/load_tracker.cpp
- M ../../powerflow/meter.cpp
- M ../../powerflow/motor.cpp
- M ../../powerflow/node.cpp
- M ../../powerflow/overhead_line.cpp
- M ../../powerflow/overhead_line_conductor.cpp
- M ../../powerflow/performance_motor.cpp
- M ../../powerflow/power_metrics.cpp
- M ../../powerflow/powerflow_library.cpp
- M ../../powerflow/powerflow_object.cpp
- M ../../powerflow/pqload.cpp
- M ../../powerflow/recloser.cpp
- M ../../powerflow/regulator.cpp
- M ../../powerflow/regulator_configuration.cpp
- M ../../powerflow/restoration.cpp
- M ../../powerflow/sectionalizer.cpp
- M ../../powerflow/series_compensator.cpp
- M ../../powerflow/series_reactor.cpp
- M ../../powerflow/substation.cpp
- M ../../powerflow/switch_object.cpp
- M ../../powerflow/sync_check.cpp
- M ../../powerflow/transformer.cpp
- M ../../powerflow/transformer_configuration.cpp
- M ../../powerflow/triplex_line.cpp
- M ../../powerflow/triplex_line_conductor.cpp
- M ../../powerflow/triplex_line_configuration.cpp
- M ../../powerflow/triplex_load.cpp
- M ../../powerflow/triplex_meter.cpp
- M ../../powerflow/triplex_node.cpp
- M ../../powerflow/underground_line.cpp
- M ../../powerflow/underground_line_conductor.cpp
- M ../../powerflow/vfd.cpp
- M ../../powerflow/volt_var_control.cpp
- M ../../powerflow/voltdump.cpp
- M ../../reliability/CMakeLists.txt
- M ../../reliability/eventgen.cpp
- M ../../reliability/metrics.cpp
- M ../../residential/CMakeLists.txt
- M ../../residential/appliance.cpp
- M ../../residential/clotheswasher.cpp
- M ../../residential/dishwasher.cpp
- M ../../residential/dryer.cpp
- M ../../residential/evcharger.cpp
- M ../../residential/evcharger_det.cpp
- M ../../residential/freezer.cpp
- M ../../residential/house_a.cpp
- M ../../residential/house_e.cpp
- M ../../residential/house_e.h
- M ../../residential/lights.cpp
- M ../../residential/microwave.cpp
- M ../../residential/occupantload.cpp
- M ../../residential/plugload.cpp
- M ../../residential/range.cpp
- M ../../residential/refrigerator.cpp
- M ../../residential/residential.h
- M ../../residential/residential_enduse.cpp
- M ../../residential/residential_enduse.h
- M ../../residential/thermal_storage.cpp
- M ../../residential/waterheater.cpp
- M ../../residential/zipload.cpp
- M ../../rest/server.cpp
- M ../../tape/CMakeLists.txt
- M ../../tape/group_recorder.cpp
- M ../../tape/histogram.cpp
- M ../../tape/loadshape.cpp
- M ../../tape/metrics_collector.cpp
- M ../../tape/metrics_collector_writer.cpp
- M ../../tape/recorder.cpp
- M ../../tape/schedule.cpp
- M ../../tape/tape.cpp
- M ../../tape/violation_recorder.cpp
- M ../../template.cpp
+ M ../../commercial/office.cpp
+ D ../../market/autotest/test_market_auction_advanced_1.glm
+ D ../../market/autotest/test_market_auction_clearing_3.glm
+ D ../../market/autotest/test_market_auction_clearing_6_morebuyers.glm
+ D ../../market/autotest/test_market_auction_clearing_6_moresellers.glm
+ D ../../market/autotest/test_market_auction_timing_1.glm
+ D ../../market/autotest/test_market_auction_timing_2.glm
+ D ../../market/autotest/test_market_auction_timing_4.glm
+ D ../../market/autotest/test_market_auction_timing_5.glm
+ D ../../market/autotest/test_market_exercise_4_4_1.glm
+ D ../../market/autotest/test_market_passive_controller_RAMP_mode_matching_period.glm
+ D ../../market/autotest/test_market_passive_controller_RAMP_mode_nonmatching_period.glm
+ D ../../market/autotest/test_markets_auction_buyer_rebid.glm
+ D ../../market/autotest/test_markets_auction_buyer_seller_alt.glm
+ D ../../market/autotest/test_markets_auction_buyers_first.glm
+ D ../../market/autotest/test_markets_auction_cases_4_and_5.glm
+ D ../../market/autotest/test_markets_auction_large_balanced_exact.glm
+ D ../../market/autotest/test_markets_auction_large_unbalanced_bid_resubmissions.glm
+ D ../../market/autotest/test_markets_auction_large_unbalanced_exact.glm
+ D ../../market/autotest/test_markets_auction_large_unbalanced_failure.glm
+ D ../../market/autotest/test_markets_auction_large_unbalanced_marginal_buyer.glm
+ D ../../market/autotest/test_markets_auction_large_unbalanced_marginal_price.glm
+ D ../../market/autotest/test_markets_auction_large_unbalanced_marginal_seller.glm
+ D ../../market/autotest/test_markets_auction_large_unbalanced_no_buyers_null.glm
+ D ../../market/autotest/test_markets_auction_large_unbalanced_no_sellers_null.glm
+ D ../../market/autotest/test_markets_auction_large_unbalanced_null.glm
+ D ../../market/autotest/test_markets_auction_negative_all_quantities.glm
+ D ../../market/autotest/test_markets_auction_negative_buyer_and_seller_price.glm
+ D ../../market/autotest/test_markets_auction_negative_buyer_price.glm
+ D ../../market/autotest/test_markets_auction_negative_buyer_quantity.glm
+ D ../../market/autotest/test_markets_auction_negative_seller_price.glm
+ D ../../market/autotest/test_markets_auction_negative_seller_quantity.glm
+ D ../../market/autotest/test_markets_auction_no_buyers.glm
+ D ../../market/autotest/test_markets_auction_no_sellers.glm
+ D ../../market/autotest/test_markets_auction_null_market.glm
+ D ../../market/autotest/test_markets_auction_seller_buyer_alt.glm
+ D ../../market/autotest/test_markets_auction_seller_rebid.glm
+ D ../../market/autotest/test_markets_auction_sellers_first.glm
+ D ../../market/autotest/test_markets_auction_simultaneous.glm
+ D ../../market/autotest/test_markets_auction_unresponsive_buyer_failure.glm
+ D ../../market/autotest/test_skew_DST_fall.glm
+ D ../../market/autotest/test_skew_DST_spring.glm
+ D ../../market/autotest/test_skew_leap_years.glm
+ D ../../market/autotest/test_skew_year_transitions.glm
+ D ../../market/autotest/test_stubauction.glm
+ D ../../taxonomy_feeders/autotest/test_R3-12.47-1_NR.glm
+ D ../../taxonomy_feeders/autotest/test_R3-12.47-3_NR.glm
+ D ../../taxonomy_feeders/autotest/test_R5-12.47-2.glm
+ D ../../taxonomy_feeders/autotest/test_R5-12.47-5.glm
+ D ../../taxonomy_feeders/autotest/test_R5-35.00-1.glm
+ D ../../taxonomy_feeders/autotest/test_R5-35.00-1_NR.glm
 ?? ../../assert/.DS_Store
 ?? ../../assert/autotest/.DS_Store
 ?? ../../assert/autotest/test_complex_assert_fix.glm
 ?? ../../assert/autotest/test_double_assert_fix.glm
+?? ../../assert/autotest/test_int_assert_fix.glm
 ?? ../../assert/autotest/test_opt_complex_assert.glm
 ?? ../../assert/autotest/test_opt_double_assert.glm
 ?? ../../assert/autotest/test_opt_double_assert_err.glm
 ?? ../../assert/autotest/test_opt_enum_assert_err.glm
+?? ../../assert/autotest/test_opt_int_assert.glm
 ?? ../../assert/complex_assert_diff_patch.txt
-?? ../.cmake/api/v1/reply/cache-v2-54172ccf6ff02c6d7527.json
-?? ../.cmake/api/v1/reply/cmakeFiles-v1-383848e08e97098d9a6c.json
+?? ../.cmake/api/v1/reply/cache-v2-5af77547757ab18944b9.json
+?? ../.cmake/api/v1/reply/cmakeFiles-v1-392b91a4721aec5901cd.json
 ?? ../.cmake/api/v1/reply/codemodel-v2-6dfd3fb6c86da3025ced.json
 ?? ../.cmake/api/v1/reply/directory-.-Debug-af5f9a37c88b507e7e15.json
 ?? ../.cmake/api/v1/reply/directory-gldcore-Debug-612e9b9fc9ff9c28add7.json
-?? ../.cmake/api/v1/reply/index-2026-01-14T23-10-16-0129.json
+?? ../.cmake/api/v1/reply/index-2026-01-19T22-19-05-0731.json
 ?? ../.cmake/api/v1/reply/target-assert-Debug-018e329631ed4f49221f.json
 ?? ../.cmake/api/v1/reply/target-blas-Debug-15f2455946ba22d89293.json
 ?? ../.cmake/api/v1/reply/target-citersol-Debug-3ca36f257b8becf73b8f.json
@@ -1280,7 +1158,46 @@
 ?? ../../market/autotest/test_controller_double_price_functionality_fix.glm
 ?? ../../market/autotest/test_dutycycle_CPP_fix.glm
 ?? ../../market/autotest/test_dutycycle_TOU_fix.glm
+?? ../../market/autotest/test_market_auction_advanced_1_fix.glm
+?? ../../market/autotest/test_market_auction_clearing_3_fix.glm
+?? ../../market/autotest/test_market_auction_clearing_6_morebuyers_fix.glm
+?? ../../market/autotest/test_market_auction_clearing_6_moresellers_fix.glm
+?? ../../market/autotest/test_market_auction_timing_1_fix.glm
+?? ../../market/autotest/test_market_auction_timing_2_fix.glm
+?? ../../market/autotest/test_market_auction_timing_4_fix.glm
+?? ../../market/autotest/test_market_auction_timing_5_fix.glm
+?? ../../market/autotest/test_market_exercise_4_4_1_fix.glm
+?? ../../market/autotest/test_market_passive_controller_RAMP_mode_matching_period_fix.glm
+?? ../../market/autotest/test_market_passive_controller_RAMP_mode_nonmatching_period_fix.glm
 ?? ../../market/autotest/test_market_quantity_conversion_fix.glm
+?? ../../market/autotest/test_markets_auction_buyer_rebid_fix.glm
+?? ../../market/autotest/test_markets_auction_buyer_seller_alt_fix.glm
+?? ../../market/autotest/test_markets_auction_buyers_first_fix.glm
+?? ../../market/autotest/test_markets_auction_cases_4_and_5_fix.glm
+?? ../../market/autotest/test_markets_auction_large_balanced_exact_fix.glm
+?? ../../market/autotest/test_markets_auction_large_unbalanced_bid_resubmissions_fix.glm
+?? ../../market/autotest/test_markets_auction_large_unbalanced_exact_fix.glm
+?? ../../market/autotest/test_markets_auction_large_unbalanced_failure_fix.glm
+?? ../../market/autotest/test_markets_auction_large_unbalanced_marginal_buyer_fix.glm
+?? ../../market/autotest/test_markets_auction_large_unbalanced_marginal_price_fix.glm
+?? ../../market/autotest/test_markets_auction_large_unbalanced_marginal_seller_fix.glm
+?? ../../market/autotest/test_markets_auction_large_unbalanced_no_buyers_null_fix.glm
+?? ../../market/autotest/test_markets_auction_large_unbalanced_no_sellers_null_fix.glm
+?? ../../market/autotest/test_markets_auction_large_unbalanced_null_fix.glm
+?? ../../market/autotest/test_markets_auction_negative_all_quantities_fix.glm
+?? ../../market/autotest/test_markets_auction_negative_buyer_and_seller_price_fix.glm
+?? ../../market/autotest/test_markets_auction_negative_buyer_price_fix.glm
+?? ../../market/autotest/test_markets_auction_negative_buyer_quantity_fix.glm
+?? ../../market/autotest/test_markets_auction_negative_seller_price_fix.glm
+?? ../../market/autotest/test_markets_auction_negative_seller_quantity_fix.glm
+?? ../../market/autotest/test_markets_auction_no_buyers_fix.glm
+?? ../../market/autotest/test_markets_auction_no_sellers_fix.glm
+?? ../../market/autotest/test_markets_auction_null_market_fix.glm
+?? ../../market/autotest/test_markets_auction_seller_buyer_alt_fix.glm
+?? ../../market/autotest/test_markets_auction_seller_rebid_fix.glm
+?? ../../market/autotest/test_markets_auction_sellers_first_fix.glm
+?? ../../market/autotest/test_markets_auction_simultaneous_fix.glm
+?? ../../market/autotest/test_markets_auction_unresponsive_buyer_failure_fix.glm
 ?? ../../market/autotest/test_opt_Zip_Load_Elasticity_Model_Critical_Three_Tier_Price.glm
 ?? ../../market/autotest/test_opt_Zip_Load_Elasticity_Model_Critical_Two_Tier_Price.glm
 ?? ../../market/autotest/test_opt_Zip_Load_Elasticity_Model_NonCritical_With_Three_TierCPP.glm
@@ -1288,7 +1205,56 @@
 ?? ../../market/autotest/test_opt_controller_double_price_functionality.glm
 ?? ../../market/autotest/test_opt_dutycycle_CPP.glm
 ?? ../../market/autotest/test_opt_dutycycle_TOU.glm
+?? ../../market/autotest/test_opt_market_auction_advanced_1.glm
+?? ../../market/autotest/test_opt_market_auction_clearing_3.glm
+?? ../../market/autotest/test_opt_market_auction_clearing_6_morebuyers.glm
+?? ../../market/autotest/test_opt_market_auction_clearing_6_moresellers.glm
+?? ../../market/autotest/test_opt_market_auction_timing_1.glm
+?? ../../market/autotest/test_opt_market_auction_timing_2.glm
+?? ../../market/autotest/test_opt_market_auction_timing_4.glm
+?? ../../market/autotest/test_opt_market_auction_timing_5.glm
+?? ../../market/autotest/test_opt_market_exercise_4_4_1.glm
+?? ../../market/autotest/test_opt_market_passive_controller_RAMP_mode_matching_period.glm
+?? ../../market/autotest/test_opt_market_passive_controller_RAMP_mode_nonmatching_period.glm
 ?? ../../market/autotest/test_opt_market_quantity_conversion.glm
+?? ../../market/autotest/test_opt_markets_auction_buyer_rebid.glm
+?? ../../market/autotest/test_opt_markets_auction_buyer_seller_alt.glm
+?? ../../market/autotest/test_opt_markets_auction_buyers_first.glm
+?? ../../market/autotest/test_opt_markets_auction_cases_4_and_5.glm
+?? ../../market/autotest/test_opt_markets_auction_large_balanced_exact.glm
+?? ../../market/autotest/test_opt_markets_auction_large_unbalanced_bid_resubmissions.glm
+?? ../../market/autotest/test_opt_markets_auction_large_unbalanced_exact.glm
+?? ../../market/autotest/test_opt_markets_auction_large_unbalanced_failure.glm
+?? ../../market/autotest/test_opt_markets_auction_large_unbalanced_marginal_buyer.glm
+?? ../../market/autotest/test_opt_markets_auction_large_unbalanced_marginal_price.glm
+?? ../../market/autotest/test_opt_markets_auction_large_unbalanced_marginal_seller.glm
+?? ../../market/autotest/test_opt_markets_auction_large_unbalanced_no_buyers_null.glm
+?? ../../market/autotest/test_opt_markets_auction_large_unbalanced_no_sellers_null.glm
+?? ../../market/autotest/test_opt_markets_auction_large_unbalanced_null.glm
+?? ../../market/autotest/test_opt_markets_auction_negative_all_quantities.glm
+?? ../../market/autotest/test_opt_markets_auction_negative_buyer_and_seller_price.glm
+?? ../../market/autotest/test_opt_markets_auction_negative_buyer_price.glm
+?? ../../market/autotest/test_opt_markets_auction_negative_buyer_quantity.glm
+?? ../../market/autotest/test_opt_markets_auction_negative_seller_price.glm
+?? ../../market/autotest/test_opt_markets_auction_negative_seller_quantity.glm
+?? ../../market/autotest/test_opt_markets_auction_no_buyers.glm
+?? ../../market/autotest/test_opt_markets_auction_no_sellers.glm
+?? ../../market/autotest/test_opt_markets_auction_null_market.glm
+?? ../../market/autotest/test_opt_markets_auction_seller_buyer_alt.glm
+?? ../../market/autotest/test_opt_markets_auction_seller_rebid.glm
+?? ../../market/autotest/test_opt_markets_auction_sellers_first.glm
+?? ../../market/autotest/test_opt_markets_auction_simultaneous.glm
+?? ../../market/autotest/test_opt_markets_auction_unresponsive_buyer_failure.glm
+?? ../../market/autotest/test_opt_skew_DST_fall.glm
+?? ../../market/autotest/test_opt_skew_DST_spring.glm
+?? ../../market/autotest/test_opt_skew_leap_years.glm
+?? ../../market/autotest/test_opt_skew_year_transitions.glm
+?? ../../market/autotest/test_opt_stubauction.glm
+?? ../../market/autotest/test_skew_DST_fall_fix.glm
+?? ../../market/autotest/test_skew_DST_spring_fix.glm
+?? ../../market/autotest/test_skew_leap_years_fix.glm
+?? ../../market/autotest/test_skew_year_transitions_fix.glm
+?? ../../market/autotest/test_stubauction_fix.glm
 ?? ../../market/controller.cpp.new
 ?? ../../parent_inserter_safe.py
 ?? ../../parent_inserter_safe_v1.py
@@ -1546,9 +1512,11 @@
 ?? ../../taxonomy_feeders/autotest/test_R2-12.47-3_fix.glm
 ?? ../../taxonomy_feeders/autotest/test_R2-35.00-1_NR_fix.glm
 ?? ../../taxonomy_feeders/autotest/test_R2-35.00-1_fix.glm
+?? ../../taxonomy_feeders/autotest/test_R3-12.47-1_NR_fix.glm
 ?? ../../taxonomy_feeders/autotest/test_R3-12.47-1_fix.glm
 ?? ../../taxonomy_feeders/autotest/test_R3-12.47-2_NR_fix.glm
 ?? ../../taxonomy_feeders/autotest/test_R3-12.47-2_fix.glm
+?? ../../taxonomy_feeders/autotest/test_R3-12.47-3_NR_fix.glm
 ?? ../../taxonomy_feeders/autotest/test_R3-12.47-3_fix.glm
 ?? ../../taxonomy_feeders/autotest/test_R4-12.47-1_fix.glm
 ?? ../../taxonomy_feeders/autotest/test_R4-12.47-2_NR_fix.glm
@@ -1556,11 +1524,15 @@
 ?? ../../taxonomy_feeders/autotest/test_R4-25.00-1_NR_fix.glm
 ?? ../../taxonomy_feeders/autotest/test_R4-25.00-1_fix.glm
 ?? ../../taxonomy_feeders/autotest/test_R5-12.47-1_fix.glm
+?? ../../taxonomy_feeders/autotest/test_R5-12.47-2_fix.glm
 ?? ../../taxonomy_feeders/autotest/test_R5-12.47-3_NR_fix.glm
 ?? ../../taxonomy_feeders/autotest/test_R5-12.47-3_fix.glm
 ?? ../../taxonomy_feeders/autotest/test_R5-12.47-4_NR_fix.glm
 ?? ../../taxonomy_feeders/autotest/test_R5-12.47-4_fix.glm
 ?? ../../taxonomy_feeders/autotest/test_R5-12.47-5_NR_fix.glm
+?? ../../taxonomy_feeders/autotest/test_R5-12.47-5_fix.glm
+?? ../../taxonomy_feeders/autotest/test_R5-35.00-1_NR_fix.glm
+?? ../../taxonomy_feeders/autotest/test_R5-35.00-1_fix.glm
 ?? ../../taxonomy_feeders/autotest/test_opt_R1-12.47-1.glm
 ?? ../../taxonomy_feeders/autotest/test_opt_R1-12.47-1_NR.glm
 ?? ../../taxonomy_feeders/autotest/test_opt_R1-12.47-2.glm
@@ -1577,20 +1549,26 @@
 ?? ../../taxonomy_feeders/autotest/test_opt_R2-35.00-1.glm
 ?? ../../taxonomy_feeders/autotest/test_opt_R2-35.00-1_NR.glm
 ?? ../../taxonomy_feeders/autotest/test_opt_R3-12.47-1.glm
+?? ../../taxonomy_feeders/autotest/test_opt_R3-12.47-1_NR.glm
 ?? ../../taxonomy_feeders/autotest/test_opt_R3-12.47-2.glm
 ?? ../../taxonomy_feeders/autotest/test_opt_R3-12.47-2_NR.glm
 ?? ../../taxonomy_feeders/autotest/test_opt_R3-12.47-3.glm
+?? ../../taxonomy_feeders/autotest/test_opt_R3-12.47-3_NR.glm
 ?? ../../taxonomy_feeders/autotest/test_opt_R4-12.47-1.glm
 ?? ../../taxonomy_feeders/autotest/test_opt_R4-12.47-2.glm
 ?? ../../taxonomy_feeders/autotest/test_opt_R4-12.47-2_NR.glm
 ?? ../../taxonomy_feeders/autotest/test_opt_R4-25.00-1.glm
 ?? ../../taxonomy_feeders/autotest/test_opt_R4-25.00-1_NR.glm
 ?? ../../taxonomy_feeders/autotest/test_opt_R5-12.47-1.glm
+?? ../../taxonomy_feeders/autotest/test_opt_R5-12.47-2.glm
 ?? ../../taxonomy_feeders/autotest/test_opt_R5-12.47-3.glm
 ?? ../../taxonomy_feeders/autotest/test_opt_R5-12.47-3_NR.glm
 ?? ../../taxonomy_feeders/autotest/test_opt_R5-12.47-4.glm
 ?? ../../taxonomy_feeders/autotest/test_opt_R5-12.47-4_NR.glm
+?? ../../taxonomy_feeders/autotest/test_opt_R5-12.47-5.glm
 ?? ../../taxonomy_feeders/autotest/test_opt_R5-12.47-5_NR.glm
+?? ../../taxonomy_feeders/autotest/test_opt_R5-35.00-1.glm
+?? ../../taxonomy_feeders/autotest/test_opt_R5-35.00-1_NR.glm
 ?? ../../test_GFA_functions_QSTS_fix_patcher.py
 ?? ../../validate_each.sh
 ?? ../../validate_each.txt

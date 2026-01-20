@@ -21,12 +21,12 @@ EXPORT int gld_major = 5;
 EXPORT int gld_minor = 3;
 
 
-// EXPORT_CREATE(enum_assert);
-// EXPORT_INIT(enum_assert);
-// EXPORT_COMMIT(enum_assert);
+EXPORT_CREATE(enum_assert);
+EXPORT_INIT(enum_assert);
+EXPORT_COMMIT(enum_assert);
 
 CLASS *enum_assert::oclass = nullptr;
-// enum_assert *enum_assert::defaults = nullptr;
+enum_assert *enum_assert::defaults = nullptr;
 
 extern "C" CALLBACKS *callback;
 
@@ -112,7 +112,7 @@ enum_assert::enum_assert(MODULE *module): gld_object()
 			throw msg;
 		}
 
-		// defaults = this;
+		defaults = this;
 		status = ASSERT_TRUE;
 		value_code = 0;
 		strcpy(value_text, ""); 
@@ -124,14 +124,10 @@ int enum_assert::create(void)
 {
 	//memcpy(this, defaults, sizeof(*this));
 
-    // if (defaults != nullptr)
-    // {
-    //     this->status = defaults->status;
-    //     this->value_ = defaults->value;
-    //     strncpy(this->target, defaults->target, sizeof(this->target) - 1);
-    // }
-
-
+	memset(target, 0, sizeof(target));
+    memset(value_text, 0, sizeof(value_text));
+    status = ASSERT_TRUE;
+    value_code = 0;
 
 	return 1; /* return 1 on success, 0 on failure */
 }
@@ -166,49 +162,121 @@ static bool map_enum_name_to_code(const std::string &name, int *code)
     return false; // unknown
 }
 
+// EXPORT int init_enum_assert(OBJECT *obj, OBJECT *parent)
+// {
+//     try {
+//         if (obj != nullptr) {
+//             enum_assert *my = object_data<enum_assert>(obj);
+//             return my->init(parent);
+//         }
+//         return 0;
+//     }
+//     catch (const char *msg) {
+//         gl_error("init_enum_assert: %s", msg);
+//         return 0;
+//     }
+//     catch (...) {
+//         gl_error("init_enum_assert: unhandled exception");
+//         return 0;
+//     }
+// }
+
+
 
 int enum_assert::init(OBJECT *parent)
 {
-	gld_object* pobj = get_parent();
-    if (!pobj) throw "enum_assert: parent is null";
-	const char* prop_name = get_target().c_str();   // or POD accessor if you switched to raw char[]
-    if (!prop_name || *prop_name=='\0') throw "enum_assert: target property name is empty";
+    try {
+        std::cerr << "enum_assert::init() starting" << std::endl;
+        
+        OBJECT *obj = my();
+        if (!obj) {
+            gl_error("enum_assert::init: my() returned NULL");
+            return 0;
+        }
+        std::cerr << "enum_assert::init: my() = " << (void*)obj << std::endl;
+        
+        gl_verbose("  sizeof(gld_object) = %zu", sizeof(gld_object));
+        gl_verbose("  sizeof(OBJECT) = %zu", sizeof(OBJECT));
+        gl_verbose("  offsetof(enum_assert, target) = %zu", offsetof(enum_assert, target));
+        gl_verbose("  obj+1 address = %p", (void*)((char*)obj + sizeof(OBJECT)));
+        gl_verbose("  this address = %p", (void*)this);
+        gl_verbose("  target member address = %p", (void*)target);
+        
+        // Calculate difference using char* for byte-level math
+        char* data_start = (char*)obj + sizeof(OBJECT);
+        gl_verbose("  difference (this - data_start) = %td", (char*)this - data_start);
+        gl_verbose("  difference (target - data_start) = %td", (char*)target - data_start);
+        
+        // Try reading from where GridLAB-D wrote it
+        size_t published_offset = get_target_offset();
+        gl_verbose("  published offset = %zu", published_offset);
+        gl_verbose("  string at data_start + offset: '%s'", data_start + published_offset);
+        gl_verbose("  string at target member: '%s'", target);
 
+        std::cerr << "enum_assert::init: checking parent" << std::endl;
+        gld_object* pobj = get_parent();
+        if (!pobj) {
+            gl_error("enum_assert: parent is null");
+            return 0;
+        }
+        std::cerr << "enum_assert::init: parent OK" << std::endl;
 
-	// Resolve target property on parent
-	gld_property target_prop(pobj->my(), const_cast<char*>(prop_name));    
-	if (!target_prop.is_valid()) {
-        char msg[256];
-        snprintf(msg, sizeof(msg), "enum_assert: target property '%s' invalid on '%s'",
-                 prop_name, 
-				pobj->get_name() ? pobj->get_name() : "(no-name)");
-        throw msg;
+        std::cerr << "enum_assert::init: getting target" << std::endl;
+        const char* prop_name = target;  // Use raw member directly!
+        std::cerr << "enum_assert::init: target = '" << (prop_name ? prop_name : "(null)") << "'" << std::endl;
+        
+        if (!prop_name || *prop_name == '\0') {
+            gl_error("enum_assert: target property name is empty");
+            return 0;
+        }
+
+        std::cerr << "enum_assert::init: resolving property on parent" << std::endl;
+        // Resolve target property on parent
+        gld_property target_prop(pobj->my(), const_cast<char*>(prop_name));    
+        if (!target_prop.is_valid()) {
+            gl_error("enum_assert: target property '%s' invalid on '%s'",
+                     prop_name, 
+                     pobj->get_name() ? pobj->get_name() : "(no-name)");
+            return 0;
+        }
+
+        std::cerr << "enum_assert::init: parsing value text" << std::endl;
+        // Parse expected "value" (text) into value_code
+        int tmp = 0;
+        const char* vt = value_text;  // Use raw member directly!
+        std::cerr << "enum_assert::init: value_text = '" << (vt ? vt : "(null)") << "'" << std::endl;
+        
+        if (!vt || !*vt) {
+            gl_error("enum_assert: expected value text is empty");
+            return 0;
+        }
+        
+        if (std::isdigit(static_cast<unsigned char>(vt[0])) || vt[0] == '-') {
+            tmp = std::atoi(vt);
+        } else {
+            if (!map_enum_name_to_code(vt, &tmp)) {
+                gl_error("enum_assert: cannot parse value '%s' as numeric or known enum name", vt);
+                return 0;
+            }
+        }
+        set_value_code(tmp);
+        
+        std::cerr << "enum_assert::init: completed successfully" << std::endl;
+        return 1;
     }
-
-    // Parse expected "value" (text) into value_code
-    int tmp = 0;
-
-	const char* vt = get_value_text().c_str();
-	if (!vt || !*vt) {
-		throw "enum_assert: expected value text is empty";
-	}
-	
-	if (std::isdigit(static_cast<unsigned char>(vt[0])) || vt[0]=='-') {
-			tmp = std::atoi(vt);
-		} else {
-			if (!map_enum_name_to_code(vt, &tmp)) {
-				char msg[256];
-				std::snprintf(msg, sizeof(msg),
-							"enum_assert: cannot parse value '%s' as numeric or known enum name",
-							vt);
-				throw msg;
-			}
-		}
-		set_value_code(tmp);
-		return 1;
-
+    catch (const char* msg) {
+        gl_error("enum_assert::init exception: %s", msg ? msg : "(null)");
+        return 0;
+    }
+    catch (const std::exception& e) {
+        gl_error("enum_assert::init std::exception: %s", e.what());
+        return 0;
+    }
+    catch (...) {
+        gl_error("enum_assert::init: unknown exception");
+        return 0;
+    }
 }
-
 
 // TIMESTAMP enum_assert::commit(TIMESTAMP t0, TIMESTAMP t1)
 // {
@@ -266,121 +334,143 @@ int enum_assert::init(OBJECT *parent)
 
 
 
+// TIMESTAMP enum_assert::commit(TIMESTAMP t0, TIMESTAMP t1)
+// {
+//     gld_object* pobj = get_parent();
+//     if (!pobj) throw "enum_assert: parent is null";
+
+//    const TIMESTAMP now = gl_globalclock;
+//    char stopbuf[64] = {0};
+//    gl_global_getvar("stoptime", stopbuf, sizeof(stopbuf));
+//    TIMESTAMP t_stop = gl_parsetime(stopbuf);
+
+//     // --- get actual ---
+//     const char* prop_name = target;
+//     gld_property actual_prop(pobj->my(), const_cast<char*>(prop_name));
+//     if (!actual_prop.is_valid()) { 
+// 	    // Fix: Throw an exception or log an error and return.
+// 		char msg[256];
+// 		snprintf(msg, sizeof(msg), "property '%s' not found in object '%s'", prop_name, pobj->get_name());
+// 		gl_error("enum_assert: %s", msg);
+// 		return TS_INVALID; // Halt the simulation
+			
+// 	}
+//     char actual_text[64] = {0};
+//     actual_prop.to_string(actual_text, sizeof(actual_text));
+//     int actual_code = 0;
+//     if (std::isdigit(static_cast<unsigned char>(actual_text[0])) || actual_text[0] == '-') {
+//         actual_code = std::atoi(actual_text);
+//     } else {
+//         if (!map_enum_name_to_code(std::string(actual_text), &actual_code)) {
+//             actual_code = actual_prop.get_integer(); // integer accessor
+//         }
+//     }
+
+//     // --- get expected (current sample) ---
+//     const char* expected_text = value_text().c_str();
+//     int expected_code = 0;
+//     if (std::isdigit(static_cast<unsigned char>(expected_text[0])) || expected_text[0] == '-') {
+//         expected_code = std::atoi(expected_text);
+//     } else {
+//         if (!map_enum_name_to_code(std::string(expected_text), &expected_code)) {
+//             expected_code = get_value_code();
+//         }
+//     }
+
+//     if (actual_code != expected_code) {
+//         char msg[256];
+//         std::snprintf(msg, sizeof(msg),
+//             "Assert failed on %s: %s=%s (%d) did not match %d",
+//             pobj->get_name() ? pobj->get_name() : "(no-name)",
+//             prop_name, actual_text, actual_code, expected_code);
+//         gl_error("%s", msg);
+//        // Failure semantics: either halt or keep running. Choose one:
+//        return TS_INVALID; // <-- halt simulation on failure
+//        //return TS_NEVER;     // <-- continue simulation on failure
+//     }
+
+
+//     // --- Adaptive scheduling: snapshot vs continuous ---
+//    // When the engine calls commit with advisory/invalid t2, decide what to do.
+//    bool continuous = model_is_continuous_like();
+//    if (!continuous) {
+//        // Snapshot-like: evaluate once and stop
+//        return TS_NEVER;
+//    } else {
+//        // Continuous-like: reschedule at a safe cadence (e.g., 900 s)
+//        const TIMESTAMP step = 900; // 15 minutes
+//        TIMESTAMP next = now + step;
+//        if (t_stop > 0 && next >= t_stop) {
+//            return TS_NEVER; // don't overshoot stoptime
+//        }
+//        // Always return strictly-future timestamps
+//        return (next <= now) ? (now + 1) : next;
+//    }
+// }
+
+
+
 TIMESTAMP enum_assert::commit(TIMESTAMP t0, TIMESTAMP t1)
 {
     gld_object* pobj = get_parent();
     if (!pobj) throw "enum_assert: parent is null";
 
-   const TIMESTAMP now = gl_globalclock;
-   char stopbuf[64] = {0};
-   gl_global_getvar("stoptime", stopbuf, sizeof(stopbuf));
-   TIMESTAMP t_stop = gl_parsetime(stopbuf);
-
-    // --- get actual ---
-    const char* prop_name = get_target().c_str();
-    gld_property actual_prop(pobj->my(), const_cast<char*>(prop_name));
-    if (!actual_prop.is_valid()) { /* throw or log */ }
-    char actual_text[64] = {0};
-    actual_prop.to_string(actual_text, sizeof(actual_text));
-    int actual_code = 0;
-    if (std::isdigit(static_cast<unsigned char>(actual_text[0])) || actual_text[0] == '-') {
-        actual_code = std::atoi(actual_text);
-    } else {
-        if (!map_enum_name_to_code(std::string(actual_text), &actual_code)) {
-            actual_code = actual_prop.get_integer(); // integer accessor
-        }
+    const char* prop_name = target;  // Use raw member
+    
+    gld_property target_prop(pobj, prop_name);
+    if (!target_prop.is_valid() || target_prop.get_type() != PT_enumeration)
+    {
+        gl_error("enum_assert: target '%s' is not a valid enumeration on '%s'",
+                 prop_name, pobj->get_name());
+        return TS_INVALID;
     }
 
-    // --- get expected (current sample) ---
-    const char* expected_text = get_value_text().c_str();
+    // Get actual value directly as integer (like legacy)
+    int32 actual_code;
+    target_prop.getp(actual_code);
+
+    // Get expected value
     int expected_code = 0;
-    if (std::isdigit(static_cast<unsigned char>(expected_text[0])) || expected_text[0] == '-') {
-        expected_code = std::atoi(expected_text);
+    const char* vt = value_text;
+    if (std::isdigit(static_cast<unsigned char>(vt[0])) || vt[0] == '-') {
+        expected_code = std::atoi(vt);
     } else {
-        if (!map_enum_name_to_code(std::string(expected_text), &expected_code)) {
-            expected_code = get_value_code();
-        }
+        expected_code = value_code;  // Use pre-parsed code from init()
     }
 
-    if (actual_code != expected_code) {
-        char msg[256];
-        std::snprintf(msg, sizeof(msg),
-            "Assert failed on %s: %s=%s (%d) did not match %d",
-            pobj->get_name() ? pobj->get_name() : "(no-name)",
-            prop_name, actual_text, actual_code, expected_code);
-        gl_error("%s", msg);
-       // Failure semantics: either halt or keep running. Choose one:
-       return TS_INVALID; // <-- halt simulation on failure
-       //return TS_NEVER;     // <-- continue simulation on failure
-    }
-
-
-    // --- Adaptive scheduling: snapshot vs continuous ---
-   // When the engine calls commit with advisory/invalid t2, decide what to do.
-   bool continuous = model_is_continuous_like();
-   if (!continuous) {
-       // Snapshot-like: evaluate once and stop
-       return TS_NEVER;
-   } else {
-       // Continuous-like: reschedule at a safe cadence (e.g., 900 s)
-       const TIMESTAMP step = 900; // 15 minutes
-       TIMESTAMP next = now + step;
-       if (t_stop > 0 && next >= t_stop) {
-           return TS_NEVER; // don't overshoot stoptime
-       }
-       // Always return strictly-future timestamps
-       return (next <= now) ? (now + 1) : next;
-   }
-}
-
-
-
-EXPORT int create_enum_assert(OBJECT **obj, OBJECT *parent)
-{
-    try
+    if (status == ASSERT_TRUE && actual_code != expected_code)
     {
-        *obj = gl_create_object(enum_assert::oclass);
-        if (*obj != NULL)
-        {
-            enum_assert *my = object_data<enum_assert>(*obj);
-
-			if (!my) {
-				gl_error("create_enum_assert: obj->data is null for class 'enum_assert'");
-				return 0;
-			}
-
-
-            // gl_set_parent(*obj, parent);
-            return my->create();
-        }	
-        else
-            return 0;
-    }
-    CREATE_CATCHALL(enum_assert);
-}
-
-EXPORT TIMESTAMP commit_enum_assert(OBJECT *obj, TIMESTAMP t1, TIMESTAMP t2)
-{
-    try
-    {
-        return object_data<enum_assert>(obj)->commit(t1, t2);
-    }
-    catch (char *msg)
-    {
-        gl_error("commit_enum_assert(obj=%d;%s): %s", obj->id, obj->name ? obj->name : "unnamed", msg);
+        gl_error("Assert failed on %s: %s=%d did not match %d",
+                 pobj->get_name(), prop_name, actual_code, expected_code);
         return TS_INVALID;
     }
-    catch (const char *msg)
-    {
-        gl_error("commit_enum_assert(obj=%d;%s): %s", obj->id, obj->name ? obj->name : "unnamed", msg);
-        return TS_INVALID;
-    }
-    catch (const std::exception &ex)
-    {
-        gl_error("commit_enum_assert(obj=%d;%s): unhandled exception - %s", obj->id, obj->name ? obj->name : "unnamed", ex.what());
-        return TS_INVALID;
-    }
+
+    gl_verbose("Assert passed on %s", pobj->get_name());
+    return TS_NEVER;
 }
+
+// EXPORT TIMESTAMP commit_enum_assert(OBJECT *obj, TIMESTAMP t1, TIMESTAMP t2)
+// {
+//     try
+//     {
+//         return object_data<enum_assert>(obj)->commit(t1, t2);
+//     }
+//     catch (char *msg)
+//     {
+//         gl_error("commit_enum_assert(obj=%d;%s): %s", obj->id, obj->name ? obj->name : "unnamed", msg);
+//         return TS_INVALID;
+//     }
+//     catch (const char *msg)
+//     {
+//         gl_error("commit_enum_assert(obj=%d;%s): %s", obj->id, obj->name ? obj->name : "unnamed", msg);
+//         return TS_INVALID;
+//     }
+//     catch (const std::exception &ex)
+//     {
+//         gl_error("commit_enum_assert(obj=%d;%s): unhandled exception - %s", obj->id, obj->name ? obj->name : "unnamed", ex.what());
+//         return TS_INVALID;
+//     }
+// }
 
 // Deltamode compatible enumeration assert
 EXPORT SIMULATIONMODE update_enum_assert(OBJECT *obj, TIMESTAMP t0, unsigned int64 delta_time, unsigned long dt, unsigned int iteration_count_val)

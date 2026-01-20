@@ -597,105 +597,179 @@ static TIMESTAMP recorder_write(OBJECT *obj)
 	return my->last.ts + my->interval;
 }
 
+
+// In recorder.cpp - build list dynamically from the actual published properties
+static char* expand_enduse_property(OBJECT *obj, const char* prop_name)
+{
+    PROPERTY *prop = gl_get_property(obj, prop_name, NULL);
+    if (prop == NULL || prop->ptype != PT_enduse)
+        return NULL;
+    
+    // Get the object's class and scan for properties that start with "prop_name."
+    CLASS *oclass = obj->oclass;
+    char prefix[256];
+    snprintf(prefix, sizeof(prefix), "%s.", prop_name);
+    size_t prefix_len = strlen(prefix);
+    
+    char buffer[4096] = {0};
+    size_t offset = 0;
+    bool first = true;
+    
+    // Iterate through all properties of the class
+    for (PROPERTY *p = oclass->pmap; p != NULL; p = p->next)
+    {
+        // Check if property name starts with our prefix (e.g., "panel.")
+        if (strncmp(p->name, prefix, prefix_len) == 0)
+        {
+            // Skip sub-sub-properties like "panel.power.real" - only get first level
+            const char *remainder = p->name + prefix_len;
+            if (strchr(remainder, '.') == NULL)  // No additional dots
+            {
+                offset += snprintf(buffer + offset, sizeof(buffer) - offset,
+                                  "%s%s", first ? "" : ",", p->name);
+                first = false;
+            }
+        }
+    }
+    
+    if (offset > 0)
+    {
+        gl_warning("recorder: expanding enduse '%s' to '%s'", prop_name, buffer);
+        return strdup(buffer);
+    }
+    return NULL;
+}
+
 PROPERTY *link_properties(struct recorder *rec, OBJECT *obj, char *property_list)
 {
-	char *item;
-	PROPERTY *first = nullptr, *last = nullptr;
-	UNIT *unit = nullptr;
-	PROPERTY *prop;
-	PROPERTY *target;
-	char1024 list;
-	complex oblig;
-	double scale;
-	char256 pstr, ustr;
-	char *cpart = 0;
-	int64 cid = -1;
-
-	strcpy(list, property_list); /* avoid destroying orginal list */
-	for (item = strtok(list, ","); item != nullptr; item = strtok(nullptr, ","))
-	{
-
-		prop = nullptr;
-		target = nullptr;
-		scale = 1.0;
-		unit = nullptr;
-		cpart = 0;
-		cid = -1;
-
-		// everything that looks like a property name, then read units up to ]
-		while (isspace(*item))
-			item++;
-		if (2 == sscanf(item, "%[A-Za-z0-9_.][%[^]\n0]", pstr.get_string(), ustr.get_string()))
-		{
-			unit = gl_find_unit(ustr);
-			if (unit == nullptr)
-			{
-				gl_error("recorder:%d: unable to find unit '%s' for property '%s'", obj->id, ustr.get_string(), pstr.get_string());
-				return nullptr;
-			}
-			item = pstr;
-		}
-		prop = (PROPERTY *)malloc(sizeof(PROPERTY));
-
-		/* branch: test to see if we're trying to split up a complex property */
-		/* must occur w/ *cpart=0 before gl_get_property in order to properly reformat the property name string */
-		cpart = strchr(item, '.');
-		if (cpart != nullptr)
-		{
-			if (strcmp("imag", cpart + 1) == 0)
-			{
-				cid = (int)((int64) & (oblig.Im()) - (int64)&oblig);
-				*cpart = 0;
-			}
-			else if (strcmp("real", cpart + 1) == 0)
-			{
-				cid = (int)((int64) & (oblig.Re()) - (int64)&oblig);
-				*cpart = 0;
-			}
-			else
-			{
-				;
-			}
-		}
-
-		target = gl_get_property(obj, item, nullptr);
-
-		if (prop != nullptr && target != nullptr)
-		{
-			if (unit != nullptr && target->unit == nullptr)
-			{
-				gl_warning("recorder:%d: property '%s' is unitless, ignoring unit conversion", obj->id, item);
-			}
-			else if (unit != nullptr && 0 == gl_convert_ex(target->unit, unit, &scale))
-			{
-				gl_error("recorder:%d: unable to convert property '%s' units to '%s'", obj->id, item, ustr.get_string());
-				return nullptr;
-			}
-			if (first == nullptr)
-				first = prop;
-			else
-				last->next = prop;
-			last = prop;
-			memcpy(prop, target, sizeof(PROPERTY));
-			prop->unit = unit;
-			if (unit == nullptr && rec->line_units == LU_ALL)
-			{
-				prop->unit = target->unit;
-			}
-			prop->next = nullptr;
-		}
-		else
-		{
-			gl_error("recorder: property '%s' not found", item);
-			return nullptr;
-		}
-		if (cid >= 0)
-		{ /* doing the complex part thing */
-			prop->ptype = PT_double;
-			(prop->addr) = (PROPERTYADDR)((int64)(prop->addr) + cid);
-		}
-	}
-	return first;
+    char *item;
+    PROPERTY *first = nullptr, *last = nullptr;
+    UNIT *unit = nullptr;
+    PROPERTY *prop;
+    PROPERTY *target;
+    char1024 list;
+    complex oblig;
+    double scale;
+    char256 pstr, ustr;
+    char *cpart = 0;
+    int64 cid = -1;
+    
+    OBJECT *target_obj = obj->parent;
+    if (target_obj == nullptr) {
+        gl_error("recorder:%d: has no parent object to record from", obj->id);
+        return nullptr;
+    }
+    
+    strcpy(list, property_list);
+    for (item = strtok(list, ","); item != nullptr; item = strtok(nullptr, ","))
+    {
+        prop = nullptr;
+        target = nullptr;
+        scale = 1.0;
+        unit = nullptr;
+        cpart = 0;
+        cid = -1;
+        
+        while (isspace(*item))
+            item++;
+        
+        // === Check for enduse expansion FIRST ===
+        PROPERTY *check_prop = gl_get_property(target_obj, item, nullptr);
+        if (check_prop != nullptr && check_prop->ptype == PT_enduse) {
+            char prefix[256];
+            snprintf(prefix, sizeof(prefix), "%s.", item);
+            size_t prefix_len = strlen(prefix);
+            
+            gl_warning("recorder:%d: expanding enduse '%s'", obj->id, item);
+            
+            for (PROPERTY *p = target_obj->oclass->pmap; p != nullptr; p = p->next) {
+                if (strncmp(p->name, prefix, prefix_len) == 0) {
+                    const char *remainder = p->name + prefix_len;
+                    if (strchr(remainder, '.') == nullptr) {
+                        PROPERTY *prop_copy = (PROPERTY *)malloc(sizeof(PROPERTY));
+                        memcpy(prop_copy, p, sizeof(PROPERTY));
+                        prop_copy->next = nullptr;
+                        
+                        if (first == nullptr) first = prop_copy;
+                        else last->next = prop_copy;
+                        last = prop_copy;
+                    }
+                }
+            }
+            continue;
+        }
+        // === END enduse expansion ===
+        
+        if (2 == sscanf(item, "%[A-Za-z0-9_.][%[^]\n0]", pstr.get_string(), ustr.get_string()))
+        {
+            unit = gl_find_unit(ustr);
+            if (unit == nullptr)
+            {
+                gl_error("recorder:%d: unable to find unit '%s' for property '%s'", obj->id, ustr.get_string(), pstr.get_string());
+                return nullptr;
+            }
+            item = pstr;
+        }
+        
+        prop = (PROPERTY *)malloc(sizeof(PROPERTY));
+        
+        cpart = strchr(item, '.');
+        if (cpart != nullptr)
+        {
+            if (strcmp("imag", cpart + 1) == 0)
+            {
+                cid = (int)((int64) & (oblig.Im()) - (int64)&oblig);
+                *cpart = 0;
+            }
+            else if (strcmp("real", cpart + 1) == 0)
+            {
+                cid = (int)((int64) & (oblig.Re()) - (int64)&oblig);
+                *cpart = 0;
+            }
+        }
+        
+        // === FIX: Use target_obj instead of obj ===
+        target = gl_get_property(target_obj, item, nullptr);
+        
+        if (prop != nullptr && target != nullptr)
+        {
+            if (unit != nullptr && target->unit == nullptr)
+            {
+                gl_warning("recorder:%d: property '%s' is unitless, ignoring unit conversion", obj->id, item);
+            }
+            else if (unit != nullptr && 0 == gl_convert_ex(target->unit, unit, &scale))
+            {
+                gl_error("recorder:%d: unable to convert property '%s' units to '%s'", obj->id, item, ustr.get_string());
+                return nullptr;
+            }
+            if (first == nullptr)
+                first = prop;
+            else
+                last->next = prop;
+            last = prop;
+            memcpy(prop, target, sizeof(PROPERTY));
+            prop->unit = unit;
+            if (unit == nullptr && rec->line_units == LU_ALL)
+            {
+                prop->unit = target->unit;
+            }
+            prop->next = nullptr;
+        }
+        else
+        {
+            gl_error("recorder:%d: property '%s' not found on '%s'", obj->id, item, 
+                     target_obj->name ? target_obj->name : "unnamed");
+            free(prop);  // Don't leak memory
+            return nullptr;
+        }
+        
+        if (cid >= 0)
+        {
+            prop->ptype = PT_double;
+            (prop->addr) = (PROPERTYADDR)((int64)(prop->addr) + cid);
+        }
+    }
+    return first;
 }
 
 EXPORT int init_recorder(OBJECT *obj)
@@ -705,7 +779,7 @@ EXPORT int init_recorder(OBJECT *obj)
 	// Perform the property linking here, during the INIT pass.
 	// This is safe because all parent properties (even formulas)
 	// will have been evaluated by the time the global init pass runs.
-	// my->target = link_properties(my, obj->parent, my->property);
+	//my->target = link_properties(my, obj->parent, my->property);
 	my->target = nullptr;
 	my->target_obj = nullptr;
 
@@ -925,6 +999,72 @@ extern "C" TIMESTAMP sync_recorder(void *object, ...)
             strncpy(full_path, item, sizeof(full_path)-1);
             full_path[sizeof(full_path)-1] = '\0';
 
+		    
+			// === Check for PT_enduse and expand ===
+			// PROPERTY *check_prop = gl_get_property(target_obj, full_path, nullptr);
+
+			// === Check for PT_enduse and expand ===
+			PROPERTY *check_prop = gl_get_property(target_obj, full_path, nullptr);
+
+			// Add debug to see what's happening
+			gl_debug("recorder:%d: checking property '%s' on class '%s', check_prop=%p, ptype=%d", 
+					obj->id, full_path, 
+					target_obj->oclass->name,
+					check_prop, 
+					check_prop ? check_prop->ptype : -1);
+
+			// If gl_get_property failed, try class_find_property which searches hierarchy
+			if (check_prop == nullptr) {
+				check_prop = class_find_property(target_obj->oclass, full_path);
+				gl_debug("recorder:%d: class_find_property returned %p for '%s'", 
+						obj->id, check_prop, full_path);
+			}
+			if (check_prop != nullptr && check_prop->ptype == PT_enduse) {
+				char prefix[256];
+				snprintf(prefix, sizeof(prefix), "%s.", full_path);
+				size_t prefix_len = strlen(prefix);
+				
+				gl_warning("recorder:%d: expanding enduse '%s'", obj->id, full_path);
+				int expanded_count = 0;
+				
+				// Iterate through the ENTIRE class hierarchy
+				CLASS *cls = target_obj->oclass;
+				while (cls != nullptr) {
+					for (PROPERTY *p = cls->pmap; p != nullptr && p->oclass == cls; p = p->next) {
+						// Match "panel.total", "panel.energy", etc. but not "panel.energy.real"
+						if (strncmp(p->name, prefix, prefix_len) == 0) {
+							const char *remainder = p->name + prefix_len;
+							if (strchr(remainder, '.') == nullptr) {  // first-level only
+								prop_copy = (PROPERTY *)malloc(sizeof(PROPERTY));
+								if (!prop_copy) {
+									gl_error("recorder:%d: memory allocation failed", obj->id);
+									my->status = TS_ERROR;
+									return TS_INVALID;
+								}
+								memcpy(prop_copy, p, sizeof(PROPERTY));
+								prop_copy->next = nullptr;
+								
+								if (first == nullptr) first = prop_copy;
+								else last->next = prop_copy;
+								last = prop_copy;
+								expanded_count++;
+								
+								gl_debug("recorder:%d: expanded '%s'", obj->id, p->name);
+							}
+						}
+					}
+					cls = cls->parent;  // Move to parent class
+				}
+				
+				if (expanded_count == 0) {
+					gl_error("recorder:%d: enduse '%s' has no expandable sub-properties", obj->id, full_path);
+					my->status = TS_ERROR;
+					while (first != nullptr) { prop_copy = first; first = first->next; free(prop_copy); }
+					return TS_INVALID;
+				}
+				continue;
+			}
+			
             // Detect ONLY trailing ".real"/".imag" and strip that final segment
             bool use_real = false, use_imag = false;
             char *lastdot = strrchr(full_path, '.');

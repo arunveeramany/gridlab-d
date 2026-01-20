@@ -371,6 +371,10 @@ static int compare(OBJECT *obj, FINDTYPE ftype, FINDOP op, void *value, char *pr
 	// case FT_PROPERTY: return compare_property_alt(obj,propname,op,value);
 	case FT_PROPERTY:
 		return compare_property(obj, propname, op, value);
+	case FT_NAME:
+        if (obj->name == nullptr)
+            return 0;
+        return compare_string(obj->name, op, (char *)value);
 	default:
 		output_error("findtype %s not supported", findtype_to_string( ftype ) );
 		/* TROUBLESHOOT

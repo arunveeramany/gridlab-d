@@ -389,8 +389,6 @@ int complex_assert::init(OBJECT *parent)
 // Add a new method for property resolution
 int complex_assert::resolve_target_property()
 {
-	// return TS_NEVER;
-
     const char* target_str = get_target().c_str();
 
 	// printf("DEBUG: target_str raw content: '");
@@ -408,39 +406,51 @@ int complex_assert::resolve_target_property()
     OBJECT *target_obj = nullptr;
     char obj_name_str[256] = "";
     char prop_name_str[256] = "";
-    
-    // Parse the target string for dot notation (object.property)
-    const char *dot = strchr(target_str, '.');
-    if (dot != nullptr) {
-        // Extract object name and property name
-        size_t obj_name_len = dot - target_str;
-        if (obj_name_len >= sizeof(obj_name_str)) {
-            gl_error("Target object name in '%s' is too long", target_str);
-            return 0;
+
+    // === First, try the ENTIRE target string as a property on parent ===
+    target_obj = get_parent()->my();
+    if (target_obj != nullptr) {
+        PROPERTY *prop = gl_get_property(target_obj, target_str, nullptr);
+        if (prop != nullptr) {
+            // Found it directly on parent (e.g., "panel.power" is a valid property name)
+            strcpy(prop_name_str, target_str);
         }
-        strncpy(obj_name_str, target_str, obj_name_len);
-        obj_name_str[obj_name_len] = '\0';
-        strcpy(prop_name_str, dot + 1);
-        
-        // Find the object by name
-        FINDLIST *pFindList = gl_find_objects(FL_NEW, FT_NAME, SAME, obj_name_str, FT_END);
-        if (pFindList == nullptr || pFindList->hit_count == 0) {
-            gl_error("Target object '%s' not found", obj_name_str);
-            if (pFindList) gl_free((void**)&pFindList);
-            return 0;
-        }
-        target_obj = gl_find_next(pFindList, nullptr);
-        gl_free((void**)&pFindList);
-    } else {
-        // No dot - use parent object with simple property name
-        target_obj = get_parent()->my();
-        if (target_obj == nullptr) {
-            gl_error("complex_assert has no parent and target '%s' doesn't specify an object", target_str);
-            return 0;
-        }
-        strcpy(prop_name_str, target_str);
     }
     
+    // If not found on parent, try object.property parsing
+    if (prop_name_str[0] == '\0') {
+        // Parse the target string for dot notation (object.property)
+        const char *dot = strchr(target_str, '.');
+        if (dot != nullptr) {
+            // Extract object name and property name
+            size_t obj_name_len = dot - target_str;
+            if (obj_name_len >= sizeof(obj_name_str)) {
+                gl_error("Target object name in '%s' is too long", target_str);
+                return 0;
+            }
+            strncpy(obj_name_str, target_str, obj_name_len);
+            obj_name_str[obj_name_len] = '\0';
+            strcpy(prop_name_str, dot + 1);
+            
+            // Find the object by name
+            FINDLIST *pFindList = gl_find_objects(FL_NEW, FT_NAME, SAME, obj_name_str, FT_END);
+            if (pFindList == nullptr || pFindList->hit_count == 0) {
+                gl_error("Target object '%s' not found", obj_name_str);
+                if (pFindList) gl_free((void**)&pFindList);
+                return 0;
+            }
+            target_obj = gl_find_next(pFindList, nullptr);
+            gl_free((void**)&pFindList);
+        } else {
+            // No dot - use parent object with simple property name
+            target_obj = get_parent()->my();
+            if (target_obj == nullptr) {
+                gl_error("complex_assert has no parent and target '%s' doesn't specify an object", target_str);
+                return 0;
+            }
+            strcpy(prop_name_str, target_str);
+        }
+    }
     // gl_debug("Resolving target property '%s' on object '%s'", 
     //          prop_name_str, target_obj->name ? target_obj->name : "unnamed");
              

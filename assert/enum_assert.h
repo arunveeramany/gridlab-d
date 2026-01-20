@@ -30,12 +30,37 @@ protected:
 
 public:
 
+static inline enum_assert* get_defaults() {
+        if (!defaults) {
+            defaults = new enum_assert(); // Initialize lazily
+        }
+        return defaults;
+    }
 
-    // --- Offsets used by gl_publish_variable (modern: offsetof) ---
-    static constexpr size_t get_status_offset()     noexcept { return offsetof(enum_assert, status); }
-    static constexpr size_t get_target_offset()     noexcept { return offsetof(enum_assert, target); }
-    static constexpr size_t get_value_text_offset() noexcept { return offsetof(enum_assert, value_text); }
-    static constexpr size_t get_value_code_offset() noexcept { return offsetof(enum_assert, value_code); }
+    // Legacy-style offset calculations
+    static inline size_t get_status_offset(void) {
+        enum_assert* current_defaults = get_defaults();
+        return reinterpret_cast<const char*>(&(current_defaults->status)) 
+             - reinterpret_cast<const char*>(current_defaults);
+    }
+
+    static inline size_t get_target_offset(void) {
+        enum_assert* current_defaults = get_defaults();
+        return reinterpret_cast<const char*>(&(current_defaults->target)) 
+             - reinterpret_cast<const char*>(current_defaults);
+    }
+
+    static inline size_t get_value_text_offset(void) {
+        enum_assert* current_defaults = get_defaults();
+        return reinterpret_cast<const char*>(&(current_defaults->value_text)) 
+             - reinterpret_cast<const char*>(current_defaults);
+    }
+
+    static inline size_t get_value_code_offset(void) {
+        enum_assert* current_defaults = get_defaults();
+        return reinterpret_cast<const char*>(&(current_defaults->value_code)) 
+             - reinterpret_cast<const char*>(current_defaults);
+    }
 
 public:
     // --- Accessors: lock-free & lightweight ---
@@ -115,7 +140,7 @@ public:
 
 public:
 	static CLASS *oclass;
-	// static enum_assert *defaults;
+	static enum_assert *defaults;
 };
 
 #endif

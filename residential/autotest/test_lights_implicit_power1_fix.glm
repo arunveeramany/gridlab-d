@@ -23,21 +23,20 @@ object house {
 	air_temperature 70;
 	outdoor_temperature 73;
 	object recorder{
-	  parent "autogen_house_0";
-	  name "autogen_house_0_recorder_0";
-		property panel;
+	  	parent "autogen_house_0";
+	  	name "autogen_house_0_recorder_0";
+		property "total_load,load.energy,panel.energy.real,panel.energy.imag";
 		file "test_lights_implicit_power.csv";
 		interval 3600;
 		limit 10000;
 	};
 	object complex_assert {
 	  parent "autogen_house_0";
-	  name "autogen_house_0_complex_assert_0";
 	  name "autogen_complex_assert_0";
-		target panel.power;
+		target power;
 		within 1;
 		object player {
-		  parent "autogen_complex_assert_0";
+		        parent "autogen_complex_assert_0";
 			property value;
 			file "../test_lights_explicit_power1.player";
 			loop 1;

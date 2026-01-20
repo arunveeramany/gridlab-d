@@ -78,7 +78,7 @@
 
 EXPORT_CREATE(office)
 EXPORT_INIT(office)
-EXPORT_SYNC(office)
+// EXPORT_SYNC(office)
 EXPORT_PLC(office)
 
 /* module globals */
@@ -378,14 +378,20 @@ int office::init(OBJECT *parent)
 	OBJECT *hdr = object_header(this);
 	parent = hdr->parent;
 
+
+
 	// link to climate data
-	static FINDLIST *climates = gl_find_objects(FL_NEW, FT_CLASS, SAME, "climate", FT_END);
-	if (climates == nullptr)
+	FINDLIST *climates = gl_find_objects(FL_NEW, FT_CLASS, SAME, "climate", FT_END);
+
+	if (climates == nullptr || climates->hit_count == 0)
 		gl_warning("office: no climate data found, using static data");
-	else if (climates->hit_count > 1)
-		gl_warning("house: %d climates found, using first one defined", climates->hit_count);
-	if (climates->hit_count > 0)
+	else //if (climates->hit_count > 1)
+		//gl_warning("house: %d climates found, using first one defined", climates->hit_count);
+	//if (climates->hit_count > 0)
 	{
+		if (climates->hit_count > 1)
+			gl_warning("house: %d climates found, using first one defined", climates->hit_count);
+
 		OBJECT *obj = gl_find_next(climates, nullptr);
 		if (obj->rank <= hdr->rank)
 			gl_set_dependent(obj, hdr);
@@ -393,6 +399,13 @@ int office::init(OBJECT *parent)
 		zone.current.pHumidity = (double *)get_addr(obj, gl_get_property(obj, "humidity"));
 		zone.current.pSolar = (double *)get_addr(obj, gl_get_property(obj, "solar_flux"));
 	}
+
+	if (climates)
+		gl_free((void **)&climates);
+
+	// Initialize out_temp from pTemperature after climate linkage is complete
+    if (zone.current.pTemperature != nullptr)
+        zone.current.out_temp = *(zone.current.pTemperature);
 
 	/* sanity check the initial values (no ticket) */
 	struct
@@ -422,7 +435,6 @@ int office::init(OBJECT *parent)
 		if (map[i].test)
 			throw map[i].desc;
 	}
-	gl_free((void **)&climates);
 	return 1; /* return 1 on success, 0 on failure */
 }
 
@@ -434,6 +446,16 @@ TIMESTAMP office::presync(TIMESTAMP t1)
 
 	/* reset the multizone heat transfer */
 	Qz = 0;
+
+	/* update out_temp */
+    if (zone.current.pTemperature != nullptr)
+        zone.current.out_temp = *(zone.current.pTemperature);  
+ 
+
+	// Guard against invalid clock on Mac
+    if (t0 <= 0) {
+        return TS_NEVER;  // Skip processing on initial pass
+    }
 
 	/* update out_temp */
 	zone.current.out_temp = *(zone.current.pTemperature);
@@ -459,6 +481,32 @@ TIMESTAMP office::presync(TIMESTAMP t1)
 TIMESTAMP office::sync(TIMESTAMP t1)
 {
 	TIMESTAMP t0 = get_clock();
+
+	// Handle first sync pass - return soft timestamp to advance clock
+    if (t0 <= 0)
+    {
+        // Initialize thermal state variables for first pass
+        const double &Tout = (*(zone.current.pTemperature));
+        double &Ti = (zone.current.air_temperature);
+        double &Tm = (zone.current.mass_temperature);
+        
+        // Set initial equilibrium to current air temperature
+        Teq = Ti;
+        Tevent = Ti;
+        dTi = 0;
+        k1 = 0;
+        k2 = 0;
+        r1 = -1;  // Must be negative for stable solution
+        r2 = -1;  // Must be negative for stable solution
+        
+        // Update loads for initial state
+        update_lighting(t1);
+        update_plugs(t1);
+        Qi = zone.lights.enduse.heatgain + zone.plugs.enduse.heatgain;
+        
+        // Return soft timestamp to start simulation
+        return -(t1 + (TIMESTAMP)(1 * TS_SECOND));
+    }
 
 	/* load calculations */
 	update_lighting(t1);
@@ -655,6 +703,51 @@ TIMESTAMP office::sync(TIMESTAMP t1)
 		return t1 + 1; /* need to do a second pass to get next state */
 	else
 		return t1 + (TIMESTAMP)(dt2 * TS_SECOND); /* return t2>t1 on success, t2=t1 for retry, t2<t1 on failure */
+}
+
+extern "C" TIMESTAMP sync_office(void *object, ...)
+{
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_office: callback is null");
+        return TS_INVALID;
+    }
+    if (!callback->time.local_datetime) {
+        gl_error("sync_office: local_datetime function is null");
+        return TS_INVALID;
+    }
+    
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t1 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+    
+    OBJECT *obj = (OBJECT*)object;
+    TIMESTAMP t2 = TS_NEVER;
+    office *my = object_data<office>(obj);
+    
+    try
+    {
+        switch (pass) {
+        case PC_PRETOPDOWN:
+            t2 = my->presync(t1);
+            break;
+        case PC_BOTTOMUP:
+            t2 = my->sync(t1);
+            break;
+        case PC_POSTTOPDOWN:
+            t2 = my->postsync(t1);
+            break;
+        default:
+            GL_THROW("invalid pass request (%d)", pass);
+            break;
+        }
+        if (pass == PC_BOTTOMUP)  // or use clockpass variable if defined
+            obj->clock = t1;
+        return t2;
+    }
+    SYNC_CATCHALL(office);
 }
 
 void office::update_control_setpoints()
