@@ -97,7 +97,7 @@ typedef struct s_enduse {
 int enduse_create(enduse *addr);
 int enduse_init(enduse *e);
 int enduse_initall(void);
-TIMESTAMP enduse_sync(enduse *e, PASSCONFIG pass, TIMESTAMP t1);
+TIMESTAMP enduse_sync(enduse *e, TIMESTAMP t1, PASSCONFIG pass);
 TIMESTAMP enduse_syncall(TIMESTAMP t1);
 int convert_to_enduse(char *string, void *data, PROPERTY *prop);
 int convert_from_enduse(char *string,int size,void *data, PROPERTY *prop);

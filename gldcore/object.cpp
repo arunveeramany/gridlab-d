@@ -92,7 +92,7 @@ static void register_pending_parent_link(OBJECT* child, const char* parent_name)
 
 // Resolve after al l objects are created, before init_all()
 void resolve_pending_parent_links() {
-	std::cerr << "Resolving deferred parent links"<< std::endl;
+    std::cerr << "Resolving deferred parent links, count=" << g_pending_parent.size() << std::endl;
     for (auto& kv : g_pending_parent) {
         OBJECT* child = kv.first;
         const std::string& pname = kv.second;
@@ -1185,12 +1185,12 @@ int object_set_value_by_name(OBJECT *obj,		/**< the object to change */
 							 PROPERTYNAME name, /**< the name of the property to change */
 							 char *value)		/**< the value to set */
 {
-	if (global_verbose_mode)
-		std::cerr << "Setting property " << name
-				  << " to value " << value
-				  << " on object type " << obj->oclass->name
-				  << " with id " << obj->id
-				  << std::endl;
+	//if (global_verbose_mode)
+		// std::cerr << "Setting property " << name
+		// 		  << " to value " << value
+		// 		  << " on object type " << obj->oclass->name
+		// 		  << " with id " << obj->id
+		// 		  << std::endl;
 
 	// Step 1: Check if value could be a schedule reference
 	bool might_be_schedule = false;

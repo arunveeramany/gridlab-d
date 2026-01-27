@@ -172,6 +172,8 @@ public:
 class waterheater : public residential_enduse {
 private:
 	double standby_load;	///< typical power loss through thermal jacket losses (UA 2, 60 to 140 degF, 160 BTU/hr, 47W, 411kWh/year, ~10% energy star guesstimate)
+	loadshape* pParentWHShape = nullptr;
+	double water_demand_next = 0.0;
 public:
 	typedef enum {
 		ONENODE=1,	///< tank model uses a single zone
@@ -323,6 +325,10 @@ public:
 
 //Multi Layer Waterheater parameters.
 private:
+
+	double ambient_cache_air = NAN;
+	double ambient_cache_out = NAN;
+
 	int number_of_mixing_zone_disks;
 	int total_mixing_zones;
 	int number_of_regular_disks;

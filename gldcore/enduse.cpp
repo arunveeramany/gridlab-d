@@ -69,7 +69,13 @@ enduse* enduse::defaults = nullptr;
 
 double enduse_get_part(void *x, const char *name)
 {
+    // std::cerr << "enduse_get_part called with name='" << name << "'" << std::endl;
 	enduse *e = (enduse*)x;
+    gl_warning("enduse_get_part called with name='%s', e->power=(%g,%g), e->total=(%g,%g)",
+        name,
+        e->power.Re(), e->power.Im(),
+        e->total.Re(), e->total.Im());
+
 #define _DO_DOUBLE(X,Y) if ( strcmp(name,Y)==0) return e->X;
 #define _DO_COMPLEX(X,Y) \
 	if ( strcmp(name,Y".real")==0) return e->X.Re(); \
@@ -161,6 +167,9 @@ enduse::enduse(MODULE *mod)
         // publish the properties
         if (gl_publish_variable(oclass,
             // Use PADDR macro to get member offsets
+            // PT_complex, "power[kW]", PADDR(power),
+            //PT_complex, "power",    (ptrdiff_t)PADDR(total),      //"the total power consumption", "kVA", nullptr, 0},
+            PT_complex, "constant_power", PADDR(power), //"the constant power (P) component", "kW", nullptr, 0},
             PT_complex, "total[kW]", PADDR(total),
             PT_complex, "energy[kWh]", PADDR(energy),
             PT_complex, "demand[kW]", PADDR(demand),
@@ -171,7 +180,6 @@ enduse::enduse(MODULE *mod)
             PT_double, "breaker_amps[A]", PADDR(breaker_amps),
             PT_complex, "admittance[kW]", PADDR(admittance),
             PT_complex, "current[kW]", PADDR(current),
-            PT_complex, "power[kW]", PADDR(power),
             PT_double, "impedance_fraction", PADDR(impedance_fraction),
             PT_double, "current_fraction", PADDR(current_fraction),
             PT_double, "power_fraction", PADDR(power_fraction),
@@ -366,73 +374,154 @@ extern "C" TIMESTAMP enduse_sync(void *obj, ...)
  * @param t1 The end time of the current time step.
  * @return The timestamp of the next required update, or TS_NEVER.
  */
+// TIMESTAMP enduse::postsync(TIMESTAMP t0, TIMESTAMP t1)
+// {
+//     // --- Energy and heat accumulation logic (previously in PC_PRETOPDOWN) ---
+//     if (t_last > TS_ZERO)
+//     {
+//         // Calculate time delta in hours since the last update
+//         double dt = (double)(t1 - t_last) / 3600.0;
+        
+//         // Accumulate energy based on the total power from the previous step
+//         energy.Re() += total.Re() * dt;
+//         energy.Im() += total.Im() * dt;
+        
+//         // Accumulate heatgain
+//         cumulative_heatgain += heatgain * dt;
+
+//         // Reset instantaneous heatgain for this step (it will be recalculated below)
+//         if (dt > 0.0)
+//         {
+//             heatgain = 0.0;
+//         }
+//     }
+
+//     // --- Load calculation logic (previously in PC_BOTTOMUP) ---
+//     // This updates the ZIP components from the total load, or vice-versa.
+//     if (shape && shape->type != MT_UNKNOWN) // Case 1: Load is driven by a loadshape
+//     {
+//         // 'total' load is set by the loadshape. Now, break it down into ZIP components.
+//         power.Re() = total.Re() * power_fraction;
+//         power.Im() = total.Im() * power_fraction;
+
+//         current.Re() = total.Re() * current_fraction;
+//         current.Im() = total.Im() * current_fraction;
+
+//         admittance.Re() = total.Re() * impedance_fraction;
+//         admittance.Im() = total.Im() * impedance_fraction;
+//     }
+//     else if (voltage_factor > 0 && !(config & EUC_HEATLOAD)) // Case 2: Not shape-driven, it's a standard ZIP load
+//     {
+//         // The ZIP components are the source of truth. Calculate the total load from them.
+//         total.Re() = power.Re() + current.Re() + admittance.Re();
+//         total.Im() = power.Im() + current.Im() + admittance.Im();
+//     }
+//     // Note: If it's a pure HEATLOAD without a shape, 'total' is assumed to be set by its parent (e.g., a house)
+
+//     // --- Final state updates for the current timestep ---
+    
+//     // Update peak demand if the current total power is higher
+//     if (total.Re() > demand.Re())
+//     {
+//         demand = total;
+//     }
+
+//     // Calculate the new instantaneous heatgain from the current total power
+//     if (heatgain_fraction > 0.0)
+//     {
+//         heatgain = total.Re() * heatgain_fraction * 3412.1416; // Convert kW to Btu/h
+//     }
+
+//     // Update the last sync time to the end of the current step
+//     t_last = t1;
+
+//     // Return the time of the next required event.
+//     // If shape-driven, this is the shape's next update time. Otherwise, no special update is needed.
+//     return (shape && shape->type != MT_UNKNOWN) ? shape->t2 : TS_NEVER;
+// }
+
+
 TIMESTAMP enduse::postsync(TIMESTAMP t0, TIMESTAMP t1)
 {
-    // --- Energy and heat accumulation logic (previously in PC_PRETOPDOWN) ---
+    // Energy accumulation...
     if (t_last > TS_ZERO)
     {
-        // Calculate time delta in hours since the last update
         double dt = (double)(t1 - t_last) / 3600.0;
-        
-        // Accumulate energy based on the total power from the previous step
         energy.Re() += total.Re() * dt;
         energy.Im() += total.Im() * dt;
-        
-        // Accumulate heatgain
         cumulative_heatgain += heatgain * dt;
-
-        // Reset instantaneous heatgain for this step (it will be recalculated below)
         if (dt > 0.0)
-        {
             heatgain = 0.0;
-        }
     }
 
-    // --- Load calculation logic (previously in PC_BOTTOMUP) ---
-    // This updates the ZIP components from the total load, or vice-versa.
-    if (shape && shape->type != MT_UNKNOWN) // Case 1: Load is driven by a loadshape
+    // DEBUG: Check all the conditions
+    gl_warning("enduse::postsync '%s': shape=%p, shape->type=%d, shape->load=%g, voltage_factor=%g, power_fraction=%g, current_fraction=%g, impedance_fraction=%g",
+        name ? name : "unnamed",
+        (void*)shape,
+        shape ? (int)shape->type : -1,
+        shape ? shape->load : 0.0,
+        voltage_factor,
+        power_fraction,
+        current_fraction,
+        impedance_fraction);
+
+    // Load calculation
+    if (shape && shape->type != MT_UNKNOWN)
     {
-        // 'total' load is set by the loadshape. Now, break it down into ZIP components.
+        double P = voltage_factor > 0 ? shape->load:0.0; // * (power_fraction + current_fraction + impedance_fraction) : 0.0;
+   
+        gl_warning("enduse::postsync '%s': P=%g (from shape->load=%g, voltage_factor=%g)",
+            name ? name : "unnamed", P, shape->load, voltage_factor);
+
+        total.Re() = P;
+        
+        // Apply power factor for reactive component
+        if (fabs(power_factor) < 1){
+            double Q_multiplier = sqrt(1 / (power_factor * power_factor) - 1);
+            total.Im() = (power_factor < 0 ? -1 : 1) * P * Q_multiplier;
+            gl_warning("enduse::postsync '%s': Q calculation - power_factor=%g, Q_multiplier=%g, total.Im=%g",
+                name ? name : "unnamed", power_factor, Q_multiplier, total.Im());
+        }
+        else
+            total.Im() = 0;
+
+        gl_warning("enduse::postsync '%s': total=(%g,%g), fractions: p=%g, i=%g, z=%g",
+            name ? name : "unnamed", 
+            total.Re(), total.Im(),
+            power_fraction, current_fraction, impedance_fraction);
+
+        // Break down into ZIP components
         power.Re() = total.Re() * power_fraction;
         power.Im() = total.Im() * power_fraction;
-
         current.Re() = total.Re() * current_fraction;
         current.Im() = total.Im() * current_fraction;
-
         admittance.Re() = total.Re() * impedance_fraction;
         admittance.Im() = total.Im() * impedance_fraction;
+
+        gl_warning("enduse::postsync '%s': ZIP results - power=(%g,%g), current=(%g,%g), admittance=(%g,%g)",
+            name ? name : "unnamed",
+            power.Re(), power.Im(),
+            current.Re(), current.Im(),
+            admittance.Re(), admittance.Im());
     }
-    else if (voltage_factor > 0 && !(config & EUC_HEATLOAD)) // Case 2: Not shape-driven, it's a standard ZIP load
+    else if (voltage_factor > 0 && !(config & EUC_HEATLOAD))
     {
-        // The ZIP components are the source of truth. Calculate the total load from them.
         total.Re() = power.Re() + current.Re() + admittance.Re();
         total.Im() = power.Im() + current.Im() + admittance.Im();
+        gl_warning("enduse::postsync '%s': NON-SHAPE path - computed total=(%g,%g)",
+            name ? name : "unnamed", total.Re(), total.Im());
     }
-    // Note: If it's a pure HEATLOAD without a shape, 'total' is assumed to be set by its parent (e.g., a house)
 
-    // --- Final state updates for the current timestep ---
-    
-    // Update peak demand if the current total power is higher
+    // Final updates...
     if (total.Re() > demand.Re())
-    {
         demand = total;
-    }
-
-    // Calculate the new instantaneous heatgain from the current total power
+    
     if (heatgain_fraction > 0.0)
-    {
-        heatgain = total.Re() * heatgain_fraction * 3412.1416; // Convert kW to Btu/h
-    }
+        heatgain = total.Re() * heatgain_fraction * 3412.1416;
 
-    // Update the last sync time to the end of the current step
     t_last = t1;
-
-    // Return the time of the next required event.
-    // If shape-driven, this is the shape's next update time. Otherwise, no special update is needed.
     return (shape && shape->type != MT_UNKNOWN) ? shape->t2 : TS_NEVER;
 }
-
-
 
 typedef struct s_endusesyncdata {
 	unsigned int n;
@@ -812,6 +901,9 @@ clock_t enduse_synctime = 0;
 
 int convert_from_enduse(char *string,int size,void *data, PROPERTY *prop)
 {
+
+    // std::cerr << "convert_from_enduse called!" << std::endl;
+
 /*
 	loadshape *shape;
 	complex power;
@@ -849,6 +941,16 @@ int enduse_publish(CLASS *oclass, PROPERTYADDR struct_address, char *prefix)
     if (oclass == nullptr)
         return 0;
 
+    gl_warning("enduse_publish called: class=%s, prefix='%s', struct_address=%p",
+    oclass->name, prefix ? prefix : "", (void*)struct_address);
+
+    // First, publish the enduse itself as a property
+    const char *propname = (prefix == nullptr || strcmp(prefix, "") == 0) ? "load" : prefix;
+    PROPERTY *prop = property_malloc(PT_enduse, oclass, const_cast<char*>(propname), struct_address, nullptr);
+    prop->description = "the enduse load description";
+    prop->flags = 0;
+    class_add_property(oclass, prop);
+
     // We must not use PADDR() here (needs 'this'). Use dummy self + PADDR_C().
     enduse *self = nullptr;
 
@@ -874,7 +976,7 @@ int enduse_publish(CLASS *oclass, PROPERTYADDR struct_address, char *prefix)
 
 	static const map_entry items[] = {
 		{PT_complex, "energy",              (ptrdiff_t)PADDR_C(energy),    "total energy since last reading", "kVAh", nullptr, 0},
-		{PT_complex, "power",               (ptrdiff_t)PADDR_C(total),     "total power consumption",         "kVA",  nullptr, 0},
+		{PT_complex, "power",               (ptrdiff_t)PADDR_C(power),     "constant power (ZIP P)",         "kW",  nullptr, 0},
 		{PT_complex, "peak_demand",         (ptrdiff_t)PADDR_C(demand),    "peak power since last reading",   "kVA",  nullptr, 0},
 
 		{PT_double,  "heatgain",            (ptrdiff_t)PADDR_C(heatgain),  "heat transferred to parent",      "Btu/h",nullptr, 0},
@@ -898,6 +1000,10 @@ int enduse_publish(CLASS *oclass, PROPERTYADDR struct_address, char *prefix)
 		{PT_KEYWORD, nullptr,               0,                              nullptr,                          nullptr,"IS110", (int64)EUC_IS110},
 		{PT_KEYWORD, nullptr,               0,                              nullptr,                          nullptr,"IS220", (int64)EUC_IS220},
 		{PT_KEYWORD, nullptr,               0,                              nullptr,                          nullptr,"HEATLOAD",(int64)EUC_HEATLOAD},
+
+        {PT_complex, "total",               (ptrdiff_t)PADDR_C(total),     "total power (alias)",             "kVA",  nullptr, 0},  // ADD THIS
+        //{PT_complex, "constant_power",      (ptrdiff_t)PADDR_C(power),     "constant power (ZIP P)",          "kW",   nullptr, 0},  // ADD THIS for ZIP power
+
 	};
 	
 
@@ -984,6 +1090,7 @@ int enduse_publish(CLASS *oclass, PROPERTYADDR struct_address, char *prefix)
 
     return published;
 }
+
 
 
 // int enduse_publish(CLASS *oclass, PROPERTYADDR struct_address, char *prefix)
@@ -1247,7 +1354,7 @@ extern "C" void enduse_syncproc(ENDUSESYNCDATA* data) {
         // This loop iterates through the core's object list, but only processes 'ne' enduse objects
         for (unsigned int n = 0; n < data->ne && hdr != nullptr; ) {
             if (hdr->oclass == enduse::oclass) {
-                TIMESTAMP t = enduse_sync(hdr, PC_PRETOPDOWN, next_t1_ed);
+                TIMESTAMP t = enduse_sync(hdr, next_t1_ed,PC_PRETOPDOWN);
                 if (t < t2) t2 = t;
                 n++; // Increment count only when we process an enduse
             }
@@ -1339,7 +1446,7 @@ extern "C" TIMESTAMP enduse_syncall(TIMESTAMP t1) {
     if (n_threads_ed < 2) { // Single-threaded case
         for (OBJECT *obj = object_get_first(); obj != nullptr; obj = obj->next) {
             if (obj->oclass == enduse::oclass) {
-                TIMESTAMP t3 = enduse_sync(obj, PC_PRETOPDOWN, t1);
+                TIMESTAMP t3 = enduse_sync(obj, t1, PC_PRETOPDOWN);
                 if (t3 < t2) t2 = t3;
             }
         }

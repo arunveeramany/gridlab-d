@@ -9,9 +9,9 @@ clock {
 object house {
 	name myhouse;
 	//load {
-		load.total 7;
-		load.demand 12;
-		load.energy 24;
+		panel.total 7;
+		panel.peak_demand 12;
+		panel.energy 24;
 	//};
 
 	object recorder {

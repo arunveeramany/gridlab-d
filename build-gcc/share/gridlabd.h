@@ -1284,7 +1284,7 @@ public:
     } loadshape;
     struct {
         int (*create)(struct s_enduse *e);
-        TIMESTAMP (*sync)(struct s_enduse *e, PASSCONFIG pass, TIMESTAMP t1);
+        TIMESTAMP (*sync)(struct s_enduse *e, TIMESTAMP t1, PASSCONFIG pass);
     } enduse;
     struct {
         double (*linear)(double t, double x0, double y0, double x1, double y1);
@@ -1559,7 +1559,7 @@ inline int32 gl_schedule_dtnext(SCHEDULE *sch, SCHEDULEINDEX index)
 
 inline TIMESTAMP gl_enduse_sync(enduse *e, TIMESTAMP t1)
 {
-	return callback->enduse.sync(e,PC_BOTTOMUP,t1); //*(callback->global_clock));
+	return callback->enduse.sync(e,t1,PC_BOTTOMUP); //*(callback->global_clock));
 }
 
 // DOUBLE ARRAY IMPLEMENTATION

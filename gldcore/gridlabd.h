@@ -2778,7 +2778,6 @@ static PROPERTYSTRUCT nullpstruct;
 /// Property container
 class gld_property
 {
-
 private: // data
 	PROPERTYSTRUCT pstruct;
 	OBJECT *obj;
@@ -3056,10 +3055,13 @@ public: // special operations
 	{
 		// gld_core::wlock(&obj->lock);
 		// replace wlock with SharedMutexManager
-		auto &v = SharedMutexManager::get_mutex(&obj->lock);
-		std::unique_lock<std::shared_mutex> lock(v);
 
-		*(T *)get_addr() = value;
+		static std::shared_mutex property_mutex;
+		std::scoped_lock lock(property_mutex);
+		*static_cast<T*>(get_addr()) = value;
+			
+
+		// *(T *)get_addr() = value;
 		// gld_core::wunlock(&obj->lock);
 	};
 	// template <class T> inline void getp(T& value, gld_rlock&) { value = *(T*)get_addr(); };
@@ -3076,10 +3078,16 @@ public: // special operations
 	template <class T>
 	inline void setp(T &value, unsigned int &wl)
 	{
-		auto &v = SharedMutexManager::get_mutex(&wl);
-		std::unique_lock<std::shared_mutex> lock(v);
+		// auto &v = SharedMutexManager::get_mutex(&wl);
+		// std::unique_lock<std::shared_mutex> lock(v);
 
-		*(T *)get_addr() = value;
+		// *(T *)get_addr() = value;
+
+		static std::shared_mutex property_mutex;
+		std::scoped_lock lock(property_mutex);
+		*static_cast<T*>(get_addr()) = value;
+
+
 	};
 	inline void setp(enumeration value)
 	{

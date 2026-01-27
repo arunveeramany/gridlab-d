@@ -130,6 +130,8 @@ TIMESTAMP enduse_syncall(TIMESTAMP t1);
 }
 #endif
 
+
+
 int convert_to_enduse(char *string, void *data, PROPERTY *prop);
 int convert_from_enduse(char *string,int size,void *data, PROPERTY *prop);
 int enduse_publish(CLASS *oclass, PROPERTYADDR struct_address, char *prefix);

@@ -597,8 +597,15 @@ TIMESTAMP triplex_meter::postsync(TIMESTAMP t0, TIMESTAMP t1)
 
 	measured_power = indiv_measured_power[0] + indiv_measured_power[1] + indiv_measured_power[2];
 
+	gl_debug("triplex_meter:%d indiv_power[0]=%.2f, [1]=%.2f, [2]=%.2f, sum=%.2f",
+		obj->id,
+		indiv_measured_power[0].Re(),
+		indiv_measured_power[1].Re(), 
+		indiv_measured_power[2].Re(),
+		indiv_measured_power[0].Re() + indiv_measured_power[1].Re() + indiv_measured_power[2].Re());
+
 	measured_real_power = (indiv_measured_power[0]).Re()
-						+ (indiv_measured_power[1]).Re()
+						+ (indiv_measured_power[1]).Re();
 						+ (indiv_measured_power[2]).Re();
 
 	// measured_power += power_1 + power_2 + power_12;

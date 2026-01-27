@@ -219,18 +219,18 @@ int enum_assert::init(OBJECT *parent)
             gl_error("enum_assert: parent is null");
             return 0;
         }
-        std::cerr << "enum_assert::init: parent OK" << std::endl;
+        // std::cerr << "enum_assert::init: parent OK" << std::endl;
 
-        std::cerr << "enum_assert::init: getting target" << std::endl;
+        // std::cerr << "enum_assert::init: getting target" << std::endl;
         const char* prop_name = target;  // Use raw member directly!
-        std::cerr << "enum_assert::init: target = '" << (prop_name ? prop_name : "(null)") << "'" << std::endl;
+        // std::cerr << "enum_assert::init: target = '" << (prop_name ? prop_name : "(null)") << "'" << std::endl;
         
         if (!prop_name || *prop_name == '\0') {
             gl_error("enum_assert: target property name is empty");
             return 0;
         }
 
-        std::cerr << "enum_assert::init: resolving property on parent" << std::endl;
+        // std::cerr << "enum_assert::init: resolving property on parent" << std::endl;
         // Resolve target property on parent
         gld_property target_prop(pobj->my(), const_cast<char*>(prop_name));    
         if (!target_prop.is_valid()) {
@@ -240,11 +240,11 @@ int enum_assert::init(OBJECT *parent)
             return 0;
         }
 
-        std::cerr << "enum_assert::init: parsing value text" << std::endl;
+        // std::cerr << "enum_assert::init: parsing value text" << std::endl;
         // Parse expected "value" (text) into value_code
         int tmp = 0;
         const char* vt = value_text;  // Use raw member directly!
-        std::cerr << "enum_assert::init: value_text = '" << (vt ? vt : "(null)") << "'" << std::endl;
+        // std::cerr << "enum_assert::init: value_text = '" << (vt ? vt : "(null)") << "'" << std::endl;
         
         if (!vt || !*vt) {
             gl_error("enum_assert: expected value text is empty");
@@ -261,7 +261,7 @@ int enum_assert::init(OBJECT *parent)
         }
         set_value_code(tmp);
         
-        std::cerr << "enum_assert::init: completed successfully" << std::endl;
+        // std::cerr << "enum_assert::init: completed successfully" << std::endl;
         return 1;
     }
     catch (const char* msg) {

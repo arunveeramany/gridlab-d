@@ -114,13 +114,13 @@
 #include <cstdlib>
 #include <fstream>
 #include <string>
+#include <ctype.h>
 
 #include "solvers.h"
 #include "house_e.h"
 #include "gld_complex.h"
 
 extern "C" CALLBACKS *callback;
-
 
 #ifndef WIN32
 char *_strlwr(char *s)
@@ -199,12 +199,13 @@ double house_e::system_dwell_time = 1; // seconds
 /** House object constructor:  Registers the class and publishes the variables that can be set by the user. 
 Sets default randomized values for published variables.
 **/
-house_e::house_e(MODULE *mod) 
+house_e::house_e(MODULE *mod) : residential_enduse(mod)
 {
 	// first time init
 	if (oclass==nullptr)
 	{
 		// register the class definition
+		// oclass = gl_register_class(mod,"house",sizeof(house_e),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_AUTOLOCK);
 		oclass = gld_class::create(mod,"house",sizeof(house_e),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			throw "unable to register class house";
@@ -458,24 +459,9 @@ house_e::house_e(MODULE *mod)
 			PT_complex,"hvac_power[kVA]",PADDR(hvac_power),PT_DESCRIPTION,"describes hvac load complex power consumption",
 			PT_double,"total_load[kVA]",PADDR(total_load),
 			PT_enduse,"panel",PADDR(total),PT_DESCRIPTION,"total panel enduse load",
-			PT_enduse, "load", PADDR(total), PT_DESCRIPTION, "legacy alias for panel enduse load",			
-
-			PT_complex, "load.total",  PADDR(total.total),  PT_DESCRIPTION, "alias to panel/total enduse total",
-			PT_complex, "load.demand", PADDR(total.demand), PT_DESCRIPTION, "alias to panel/total enduse demand",
-			PT_complex, "load.energy", PADDR(total.energy), PT_DESCRIPTION, "alias to panel/total enduse energy",
-			
-			// PT_complex,"panel.energy[kVAh]",PADDR(total.energy),PT_DESCRIPTION,"total energy consumed by the panel", 
-			
-			//PT_complex, "panel.power[kVA]", PADDR(total.power), PT_DESCRIPTION, "The total power consumption of the load (complex)",
-			PT_complex, "total.current[kVA]", PADDR(total.current), PT_DESCRIPTION, "The total current portion of the load (complex)",
-			PT_complex, "total.admittance[kVA]", PADDR(total.admittance), PT_DESCRIPTION, "The total admittance portion of the load (complex)",
-			PT_complex, "total.energy[kVAh]", PADDR(total.energy), PT_DESCRIPTION, "The total energy consumed by the load since the last meter reading",
-			PT_double, "panel.energy.real[kVAh]", PADDR(panel_energy_real), PT_DESCRIPTION, "Real component of total energy consumed",
-        	PT_double, "panel.energy.imag[kVAh]", PADDR(panel_energy_imag), PT_DESCRIPTION, "Imaginary component of total energy consumed",
-
 			PT_double,"design_internal_gain_density[W/sf]",PADDR(design_internal_gain_density),PT_DESCRIPTION,"average density of heat generating devices in the house",
 			PT_bool,"compressor_on",PADDR(compressor_on),
-			PT_int32,"compressor_count",PADDR(compressor_count),
+			PT_int64,"compressor_count",PADDR(compressor_count),
 			PT_timestamp,"hvac_last_on",PADDR(hvac_last_on),
 			PT_timestamp,"hvac_last_off",PADDR(hvac_last_off),
 			PT_double,"hvac_period_length[s]",PADDR(hvac_period_length),
@@ -596,8 +582,6 @@ int house_e::create()
 	hvac_power_factor = 0;
 	Tmaterials = 0.0;
 
-	compressor_count = 0;
-
 	cooling_supply_air_temp = 50.0;
 	heating_supply_air_temp = 150.0;
 	
@@ -625,6 +609,13 @@ int house_e::create()
 	//Set thermal storage flag
 	thermal_storage_present = false;
 	thermal_storage_inuse = false;
+
+	thermostat_last_cycle_time = 0;
+    thermostat_last_on_cycle_time = 0;
+    thermostat_last_off_cycle_time = 0;
+    thermostat_cycle_time = 0;
+    thermostat_off_cycle_time = -1;
+    thermostat_on_cycle_time = -1;
 
 	//Null out circuit pointer
 	pHVAC_EnduseLoad = nullptr;
@@ -684,33 +675,30 @@ int house_e::create()
 					// memset(item,0,sizeof(IMPLICITENDUSE));
 					// gl_enduse_create(&(item->load));
 
-					// IMPLICITENDUSE *item = new IMPLICITENDUSE();
-
 					MODULE *mod = object_header(this)->oclass->module;
-					IMPLICITENDUSE *item = new IMPLICITENDUSE(mod);
+                    IMPLICITENDUSE *item = new IMPLICITENDUSE(mod);	
 
 					if (!item)
-					{
-						gl_error("memory allocation failed for implicit enduse");
-						return FAILED;
+					{       
+							gl_error("memory allocation failed for implicit enduse");
+							return FAILED;
 					}
 					item->load.create(); // Call the C++ create method
-
-					// item->load.shape = gl_loadshape_create(sched);
 
 					item->load.shape = new loadshape();
 					if (item->load.shape)
 					{
-						item->load.shape->schedule = sched;
+							item->load.shape->schedule = sched;
 					}
 					else
 					{
-						gl_error("memory allocation failed for implicit loadshape");
-						delete item;
-						return FAILED;
-					}
+							gl_error("memory allocation failed for implicit loadshape");
+							delete item;
+							return FAILED;
+					}     	
 
 
+					// item->load.shape = gl_loadshape_create(sched);
 					if (gl_set_value_by_type(PT_loadshape,item->load.shape, strdup(eu->shape))==0)
 					{
 						gl_error("loadshape '%s' could not be created", name);
@@ -878,6 +866,18 @@ int house_e::create()
 	//dump house parameters stuff
 	dump_house_parameters = false;
 
+	for (IMPLICITENDUSE *item = implicit_enduse_list; item != nullptr; item = item->next)
+	{
+		gl_warning("house_e::create: implicit enduse '%s' - power_fraction=%g, current_fraction=%g, impedance_fraction=%g, power_factor=%g, amps=%g, is220=%d",
+			item->load.name ? item->load.name : "unnamed",
+			item->load.power_fraction,
+			item->load.current_fraction,
+			item->load.impedance_fraction,
+			item->load.power_factor,
+			item->amps,
+			item->is220);
+	}
+
 	return result;
 }
 
@@ -978,7 +978,7 @@ int house_e::init_climate()
 			if((obj->flags & OF_INIT) != OF_INIT){
 				char objname[256];
 				gl_verbose("house::init(): deferring initialization on %s", gl_name(obj, objname, 255));
-				return 2; // defer
+				return 0; // defer
 			}
 		}
 	}
@@ -1385,12 +1385,39 @@ and internal gain variables.
 
 int house_e::init(OBJECT *parent)
 {
-
 	OBJECT *hdr = object_header(this);
 	parent = hdr->parent;
 
+	gl_warning("house_e:%d init() - parent=%p, parent->oclass=%s", 
+        hdr->id, 
+        (void*)parent,
+        parent ? (parent->oclass ? parent->oclass->name : "null oclass") : "null parent");
+    
+
+	// Debug: Check parent type
+    if (parent != nullptr) {
+        gl_verbose("house_e:%d init() parent=%s class=%s", 
+            hdr->id, 
+            parent->name ? parent->name : "unnamed",
+            parent->oclass->name);
+            
+        bool is_triplex = gl_object_isa(parent, "triplex_meter", "powerflow");
+        bool is_triplex_node = gl_object_isa(parent, "triplex_node", "powerflow");
+        bool is_triplex_load = gl_object_isa(parent, "triplex_load", "powerflow");
+        
+        gl_warning("house_e:%d - is_triplex_meter=%d, is_triplex_node=%d, is_triplex_load=%d",
+            hdr->id, is_triplex, is_triplex_node, is_triplex_load);
+			
+    } else {
+        gl_warning("house_e:%d has no parent triplex_meter defined; using static voltages", hdr->id);
+    }
+    
+	gl_warning("house_e:%d proper_meter_parent=%s", hdr->id, 
+    proper_meter_parent ? "true" : "false");
+
 	gld_property *temp_gld_property;
-	unsigned int test_rlock = 0;
+	// gld_wlock *test_rlock;
+	unsigned int *test_rlock = new unsigned int(0);
 	bool temp_bool_val;
 
 	if(parent != nullptr){
@@ -1400,7 +1427,6 @@ int house_e::init(OBJECT *parent)
 			return 2; // defer
 		}
 	}
-	// OBJECT *hdr = object_header(this);
 	hdr->flags |= OF_SKIPSAFE;
 
 	heat_start = false;
@@ -1410,12 +1436,17 @@ int house_e::init(OBJECT *parent)
 
 	if (parent!=nullptr && (gl_object_isa(parent,"triplex_meter","powerflow") || gl_object_isa(obj->parent,"triplex_node","powerflow") || gl_object_isa(parent,"triplex_load","powerflow")))	// for single-phase houses
 	{
+		gl_warning("house_e:%d - Entering triplex_meter parent block", obj->id);
+
 		//Map to the triplex variable for houses
 		temp_gld_property = new gld_property(parent,"house_present");
 
 		//Make sure it worked
 		if ((temp_gld_property->is_valid() != true) || (temp_gld_property->is_bool() != true))
 		{
+			gl_warning("house_e:%d - house_present mapping FAILED (valid=%d, is_bool=%d)", 
+            	obj->id, temp_gld_property->is_valid(), temp_gld_property->is_bool());
+
 			gl_error("house:%d - %s - Failed to map powerflow variable",obj->id,(obj->name ? obj->name : "Unnamed"));
 			/*  TROUBLESHOOT
 			While attempting to map the house variables to the required powerflow variables,
@@ -1425,15 +1456,24 @@ int house_e::init(OBJECT *parent)
 			return 0;
 		}
 
+		gl_warning("house_e:%d - house_present mapping succeeded, calling setp", obj->id);
+
+
 		//Set the value
 		temp_bool_val = true;
-		temp_gld_property->setp<bool>(temp_bool_val,test_rlock);
+		temp_gld_property->setp<bool>(temp_bool_val,*test_rlock);
 
 		//Remove the temp property
 		delete temp_gld_property;
 
+		gl_warning("house_e:%d - Starting voltage mapping", obj->id);
+
+
 		//Map the other properties - voltage
 		pCircuit_V[0] = map_complex_value(parent,"voltage_12");
+		if (pCircuit_V[0] == nullptr) {
+			gl_warning("house_e:%d failed to map voltage_12 from parent", hdr->id);
+		}
 		pCircuit_V[1] = map_complex_value(parent,"voltage_1N");
 		pCircuit_V[2] = map_complex_value(parent,"voltage_2N");
 
@@ -1471,6 +1511,8 @@ int house_e::init(OBJECT *parent)
 
 		//Set flag
 		proper_meter_parent = true;
+		gl_warning("house_e:%d - proper_meter_parent set to TRUE", obj->id);
+
 		commercial_load_parent = false;
 		if (external_pf_mode != XPFV_NONE) {
 			external_pf_mode = XPFV_NONE;
@@ -1493,7 +1535,7 @@ int house_e::init(OBJECT *parent)
 		}
 
 		//Pull the value to a temporary
-		temp_gld_property->getp<bool>(temp_bool_val,test_rlock);
+		temp_gld_property->getp<bool>(temp_bool_val,*test_rlock);
 
 		//Delete the link
 		delete temp_gld_property;
@@ -1512,7 +1554,7 @@ int house_e::init(OBJECT *parent)
 		}
 
 		//Pull the value to a temporary
-		temp_gld_property->getp<bool>(temp_bool_val,test_rlock);
+		temp_gld_property->getp<bool>(temp_bool_val,*test_rlock);
 
 		//Delete the link
 		delete temp_gld_property;
@@ -1531,7 +1573,7 @@ int house_e::init(OBJECT *parent)
 		}
 
 		//Pull the value to a temporary
-		temp_gld_property->getp<double>(powerflow_impedance_conversion_level,test_rlock);
+		temp_gld_property->getp<double>(powerflow_impedance_conversion_level,*test_rlock);
 
 		//Delete the link
 		delete temp_gld_property;
@@ -1551,7 +1593,7 @@ int house_e::init(OBJECT *parent)
 
 		//Set the value
 		temp_bool_val = true;
-		temp_gld_property->setp<bool>(temp_bool_val,test_rlock);
+		temp_gld_property->setp<bool>(temp_bool_val,*test_rlock);
 
 		//Remove the temp property
 		delete temp_gld_property;
@@ -1621,6 +1663,8 @@ int house_e::init(OBJECT *parent)
 
 		// set flags for the powerflow interface
 		proper_meter_parent = true;
+		gl_warning("house_e:%d - proper_meter_parent set to TRUE", obj->id);
+
 		commercial_load_parent = true;
 		if (external_pf_mode != XPFV_NONE) {
 			external_pf_mode = XPFV_NONE;
@@ -1640,7 +1684,7 @@ int house_e::init(OBJECT *parent)
 		}
 
 		//Pull the value to a temporary
-		temp_gld_property->getp<bool>(temp_bool_val,test_rlock);
+		temp_gld_property->getp<bool>(temp_bool_val,*test_rlock);
 
 		//Delete the link
 		delete temp_gld_property;
@@ -1659,7 +1703,7 @@ int house_e::init(OBJECT *parent)
 		}
 
 		//Pull the value to a temporary
-		temp_gld_property->getp<bool>(temp_bool_val,test_rlock);
+		temp_gld_property->getp<bool>(temp_bool_val,*test_rlock);
 
 		//Delete the link
 		delete temp_gld_property;
@@ -1678,7 +1722,7 @@ int house_e::init(OBJECT *parent)
 		}
 
 		//Pull the value to a temporary
-		temp_gld_property->getp<double>(powerflow_impedance_conversion_level,test_rlock);
+		temp_gld_property->getp<double>(powerflow_impedance_conversion_level,*test_rlock);
 
 		//Delete the link
 		delete temp_gld_property;
@@ -2102,8 +2146,15 @@ int house_e::init(OBJECT *parent)
 
 void house_e::attach_implicit_enduses()
 {
+	gl_warning("house_e: attach_implicit_enduses - implicit_enduse_list=%p", (void*)implicit_enduse_list);
+
 	IMPLICITENDUSE *item;
 	for (item=implicit_enduse_list; item!=nullptr; item=item->next){
+
+		gl_warning("house_e: attaching implicit enduse '%s', amps=%g, is220=%d", 
+            item->load.name ? item->load.name : "unnamed",
+            item->amps, item->is220);
+
 		attach(nullptr,item->amps,item->is220,&(item->load));
 		if (item->is220)
 			item->load.config |= EUC_IS220;
@@ -2697,6 +2748,7 @@ void house_e::update_system(double dt)
 **/
 TIMESTAMP house_e::presync(TIMESTAMP t0, TIMESTAMP t1) 
 {
+	
 	OBJECT *obj = object_header(this);
 	const double dt = (double)((t1-t0)*TS_SECOND)/3600;
 
@@ -2967,7 +3019,7 @@ TIMESTAMP house_e::sync(TIMESTAMP t0, TIMESTAMP t1)
 	update_Tevent();
 
 	/* solve for the time to the next event */
-	double dt2 = TS_NEVER;
+	double dt2;
 	
 	/* dt2 is for the next thermal event ... avoid calculating the next time to a given
 		temperature until the cycle time has elapse.
@@ -3116,12 +3168,74 @@ void house_e::update_Tevent()
 	}
 }
 
+
+
+
+// helper: case-insensitive strcmp (portable)
+static int str_ieq(const char* a, const char* b) {
+    if (!a || !b) return 0;
+    while (*a && *b) {
+        if (tolower((unsigned char)*a) != tolower((unsigned char)*b)) return 0;
+        ++a; ++b;
+    }
+    return *a == '\0' && *b == '\0';
+}
+
+loadshape* house_e::get_enduse_shape_by_name(const char* enduse_name) const
+{
+    if (!enduse_name || !*enduse_name) return nullptr;
+
+    CIRCUIT *cur = panel.circuits;  // linked list head
+    while (cur != nullptr) {
+        ::enduse *eu = cur->pLoad;  // global ::enduse
+        if (eu && eu->name) {
+            // Optional: enumerate once to see what's there
+            // gl_verbose("house_e: circuit id=%d enduse name='%s' shape=%p", cur->id, eu->name, (void*)eu->shape);
+
+            if (str_ieq(eu->name, enduse_name)) {
+                return eu->shape;   // loadshape* (may be nullptr)
+            }
+        }
+        cur = cur->next;
+    }
+    return nullptr;
+}
+
+
 /** The PLC control code for house_e thermostat.  The heat or cool mode is based
     on the house_e air temperature, thermostat setpoints and deadband.  This
     function will update T<mode>{On,Off} as necessary to maintain the setpoints.
 **/
 TIMESTAMP house_e::sync_thermostat(TIMESTAMP t0, TIMESTAMP t1)
 {
+
+ 	// If timestamps are invalid, don’t error-out into a path
+    // that prevents air temp from being available to children.
+    // if (t1 <= t0) {
+    //     // Log once (optional), but do not zero-out air temp or invalidate parent state.
+    //     // This keeps indoor ambient accessible to w1.
+    //     // Return TS_NEVER or t1 to avoid rescheduling tight loops.
+    //     // Example:
+    //     gl_warning("house_e::sync_thermostat: sync_thermostat guard: t1<=t0; preserving air_temperature");
+    //     return TS_NEVER;  // prevents unnecessary resync
+    // }
+
+
+	// Initialize on first call
+    if (thermostat_last_cycle_time == 0)
+    {
+        thermostat_last_cycle_time = t0;
+        thermostat_last_on_cycle_time = t0;
+        thermostat_last_off_cycle_time = t0;
+    }
+
+	// Validate timestamps
+    if (t0 <= 0 || t1 <= 0 || t0 > TS_MAX || t1 > TS_MAX)
+    {
+        gl_warning("house_e: invalid timestamp in sync_thermostat");
+        return TS_NEVER;
+    }
+
 	double terr = dTair/3600; // this is the time-error of 1 second uncertainty
 	bool turned_on = false, turned_off = false;
 
@@ -3267,8 +3381,8 @@ TIMESTAMP house_e::sync_thermostat(TIMESTAMP t0, TIMESTAMP t1)
 	*/
 	// change control mode if necessary
 
-	//DATETIME t_next;
-	//gl_localtime(t1,&t_next);
+	DATETIME t_next;
+	gl_localtime(t1,&t_next);
 
 	if (thermostat_control!=TC_NONE)
 	{
@@ -3423,10 +3537,12 @@ TIMESTAMP house_e::sync_thermostat(TIMESTAMP t0, TIMESTAMP t1)
 
 double house_e::sync_panel(double t0_dbl, double t1_dbl)
 {
+	
 	double t2_dbl = TS_NEVER_DBL;
 	OBJECT *obj = object_header(this);
 	bool perform_impedance_conversion;
 
+	
 	//Set impedance default - don't do conversion
 	perform_impedance_conversion = false;
 
@@ -3434,7 +3550,12 @@ double house_e::sync_panel(double t0_dbl, double t1_dbl)
 	if(((t0_dbl >= simulation_beginning_time_dbl) && (t1_dbl > t0_dbl)) || (!heat_start)){
 		total.heatgain = 0;
 	}
-	total.total = total.power = total.current = total.admittance = total.energy = gld::complex(0,0);
+	total.total = total.power = total.current = total.admittance = gld::complex(0,0);
+
+	// Debug: Check voltage values
+    gl_warning("house_e: sync_panel - proper_meter_parent=%s, value_Circuit_V[0]=(%g,%g)", 
+        proper_meter_parent ? "true" : "false",
+        value_Circuit_V[0].Re(), value_Circuit_V[0].Im());
 
 	//Pull in the current powerflow values, if relevant
 	if (proper_meter_parent == true)
@@ -3446,10 +3567,20 @@ double house_e::sync_panel(double t0_dbl, double t1_dbl)
 		check_external_voltage();
 	}
 
+	gl_warning("house_e: sync_panel - panel.circuits=%p", (void*)panel.circuits);
+
+
 	// gather load power and compute current for each circuit
 	CIRCUIT *c;
 	for (c=panel.circuits; c!=nullptr; c=c->next)
 	{
+		gl_warning("house_e: circuit %d - pLoad->power=(%g,%g), pLoad->total=(%g,%g), pLoad->name=%s, status=%d",
+        c->id,
+        c->pLoad->power.Re(), c->pLoad->power.Im(),
+        c->pLoad->total.Re(), c->pLoad->total.Im(),
+        c->pLoad->name ? c->pLoad->name : "unnamed",
+        (int)c->status);
+
 		// get circuit type
 		int n = (int)c->type;
 		if (n<0 || n>2)
@@ -3587,9 +3718,16 @@ double house_e::sync_panel(double t0_dbl, double t1_dbl)
 				}
 
 				total.power += c->pLoad->power;
+
+				// After the accumulation line: total.power += c->pLoad->power;
+				gl_warning("house_e: sync_panel circuit %d: AFTER accumulation - total.power=(%g,%g), total.total=(%g,%g)",
+					c->id,
+					total.power.Re(), total.power.Im(),
+					total.total.Re(), total.total.Im());
+
+
 				total.current += c->pLoad->current;
 				total.admittance += c->pLoad->admittance;
-				total.energy += c->pLoad->power * (t1_dbl - t0_dbl) / 3600.0;
 				if(((t0_dbl != 0) && (t1_dbl > t0_dbl)) || (!heat_start)){
 					total.heatgain += c->pLoad->heatgain;
 				}
@@ -3607,9 +3745,6 @@ double house_e::sync_panel(double t0_dbl, double t1_dbl)
 
 	total_load = total.total.Mag();
 
-	panel_energy_real = total.energy.Re();
-	panel_energy_imag = total.energy.Im();
-
 	//Push up the values, if need to do so
 	//Pull in the current powerflow values, if relevant
 	if (proper_meter_parent == true)
@@ -3617,32 +3752,121 @@ double house_e::sync_panel(double t0_dbl, double t1_dbl)
 		push_complex_powerflow_values();
 	}
 
+	// At the end of sync_panel:
+	gl_warning("house_e: sync_panel FINAL: total.power=(%g,%g), total.total=(%g,%g), total_load=%g",
+		total.power.Re(), total.power.Im(),
+		total.total.Re(), total.total.Im(),
+		total_load);
+
 	return t2_dbl;
 }
 
+// TIMESTAMP house_e::sync_enduses(TIMESTAMP t0, TIMESTAMP t1)
+// {
+// 	TIMESTAMP t2 = TS_NEVER;
+// 	IMPLICITENDUSE *eu;
+// 	//OBJECT *obj = object_header(this);
+// 	//char one[128], two[128];
+// 	for (eu=implicit_enduse_list; eu!=nullptr; eu=eu->next)
+// 	{
+// 		// Debug the shape
+//         if (eu->load.shape != nullptr)
+//         {
+//             gl_warning("house_e: sync_enduses '%s': shape->load=%g, shape->type=%d, shape->t2=%lld",
+//                 eu->load.name ? eu->load.name : "unnamed",
+//                 eu->load.shape->load,
+//                 (int)eu->load.shape->type,
+//                 (long long)eu->load.shape->t2);
+//         }
+
+// 		TIMESTAMP t = 0;
+// 		// t = gl_enduse_sync(&(eu->load),t1);
+// 		t = eu->load.postsync(gl_globalclock, t1);
+
+// 		gl_warning("house_e: synced implicit enduse '%s', power=(%g,%g)", 
+//         eu->load.name ? eu->load.name : "unnamed",
+//         eu->load.power.Re(), eu->load.power.Im());
+
+// 		if (t<t2) t2 = t;
+// 	}
+// 	//DATETIME dt1, dt2;
+// 	//gl_localtime(t1,&dt1);
+// 	//gl_strftime(&dt1, two, 127);
+// 	//gl_localtime(t2,&dt2);
+// 	//gl_strftime(&dt2, one, 127);
+// 	//gl_verbose("house_e:%d ~ sync_eu %s at %s", obj->id, one, two);
+// 	//if(0 == strcmp("(invalid time)", gl_strftime(t2))){
+// 		//gl_verbose("TAKE NOTE OF THIS TIMESTEP");
+// 	//}
+// 	return t2;
+// }
+
+
 TIMESTAMP house_e::sync_enduses(TIMESTAMP t0, TIMESTAMP t1)
 {
-	TIMESTAMP t2 = TS_NEVER;
-	IMPLICITENDUSE *eu;
-	//OBJECT *obj = object_header(this);
-	//char one[128], two[128];
-	for (eu=implicit_enduse_list; eu!=nullptr; eu=eu->next)
-	{
-		TIMESTAMP t = 0;
-		// t = gl_enduse_sync(&(eu->load),t1);
-		t = eu->load.postsync(gl_globalclock, t1);
-		if (t<t2) t2 = t;
-	}
-	//DATETIME dt1, dt2;
-	//gl_localtime(t1,&dt1);
-	//gl_strftime(&dt1, two, 127);
-	//gl_localtime(t2,&dt2);
-	//gl_strftime(&dt2, one, 127);
-	//gl_verbose("house_e:%d ~ sync_eu %s at %s", obj->id, one, two);
-	//if(0 == strcmp("(invalid time)", gl_strftime(t2))){
-		//gl_verbose("TAKE NOTE OF THIS TIMESTEP");
-	//}
-	return t2;
+	
+    TIMESTAMP t2 = TS_NEVER;
+    IMPLICITENDUSE *eu;
+    
+    for (eu = implicit_enduse_list; eu != nullptr; eu = eu->next)
+    {
+        // Sync the loadshape to compute shape->load from schedule
+        if (eu->load.shape != nullptr && eu->load.shape->schedule != nullptr)
+        {
+			gl_warning("house_e: BEFORE sync '%s': shape->load=%g, shape->type=%d, schedule->value=%g",
+                eu->load.name ? eu->load.name : "unnamed",
+                eu->load.shape->load,
+                (int)eu->load.shape->type,
+                eu->load.shape->schedule ? eu->load.shape->schedule->value : -999.0);
+
+            double dt = (double)(t1 - t0) / 3600.0;
+            
+            // Call the appropriate sync based on shape type
+            switch (eu->load.shape->type) {
+                case MT_ANALOG:
+                    // Compute load from schedule value
+                    if (eu->load.shape->params.analog.energy > 0)
+                        eu->load.shape->load = eu->load.shape->schedule->value * eu->load.shape->params.analog.energy * eu->load.shape->schedule->fraction * eu->load.shape->dPdV;
+                    else if (eu->load.shape->params.analog.power > 0)
+                        eu->load.shape->load = eu->load.shape->schedule->value * eu->load.shape->params.analog.power * eu->load.shape->dPdV;
+                    else
+                        eu->load.shape->load = eu->load.shape->schedule->value * eu->load.shape->dPdV;
+                    break;
+                default:
+                    // For other types, just use schedule value directly
+                    eu->load.shape->load = eu->load.shape->schedule->value;
+                    break;
+            }
+            
+            gl_warning("house_e: after loadshape sync '%s': schedule->value=%g, shape->load=%g, dPdV=%g", 
+                eu->load.name ? eu->load.name : "unnamed",
+                eu->load.shape->schedule->value,
+                eu->load.shape->load,
+                eu->load.shape->dPdV);
+        }
+
+		// Debug load fractions BEFORE postsync
+        gl_warning("house_e: '%s' BEFORE postsync: power_fraction=%g, current_fraction=%g, impedance_fraction=%g, power_factor=%g, voltage_factor=%g",
+            eu->load.name ? eu->load.name : "unnamed",
+            eu->load.power_fraction,
+            eu->load.current_fraction,
+            eu->load.impedance_fraction,
+            eu->load.power_factor,
+            eu->load.voltage_factor);
+        
+        TIMESTAMP t = eu->load.postsync(t0, t1);
+
+		// Debug AFTER postsync
+        gl_warning("house_e: '%s' AFTER postsync: total=(%g,%g), power=(%g,%g), current=(%g,%g), admittance=(%g,%g)",
+            eu->load.name ? eu->load.name : "unnamed",
+            eu->load.total.Re(), eu->load.total.Im(),
+            eu->load.power.Re(), eu->load.power.Im(),
+            eu->load.current.Re(), eu->load.current.Im(),
+            eu->load.admittance.Re(), eu->load.admittance.Im());
+        
+        if (t < t2) t2 = t;
+    }
+    return t2;
 }
 
 void house_e::check_controls()
@@ -3807,7 +4031,9 @@ void house_e::pull_complex_powerflow_values()
 void house_e::push_complex_powerflow_values()
 {
 	gld::complex temp_complex_val;
-	unsigned int test_rlock = 0;
+	// gld_wlock *test_rlock;
+	unsigned int *test_rlock = new unsigned int(0); 
+
 	int indexval;
 
 	if (commercial_load_parent == true) {
@@ -3867,7 +4093,7 @@ void house_e::push_complex_powerflow_values()
 //					gl_output ("  adding P to [%g +j%g] on phase mask %d",
 //										 temp_complex_val.Re(), temp_complex_val.Im(), mask);
 					temp_complex_val += balPower;
-					pPower[indexval]->setp<complex>(temp_complex_val,test_rlock);
+					pPower[indexval]->setp<complex>(temp_complex_val,*test_rlock);
 				}
 				if (insertS > 0) {
 					temp_complex_val = pShunt[indexval]->get_complex();
@@ -3876,7 +4102,7 @@ void house_e::push_complex_powerflow_values()
 					temp_complex_val += balShunt;
 
 					//Push it back up
-					pShunt[indexval]->setp<complex>(temp_complex_val,test_rlock);
+					pShunt[indexval]->setp<complex>(temp_complex_val,*test_rlock);
 				}
 				if (insertI > 0) {
 					temp_complex_val = pLine_I[indexval]->get_complex();
@@ -3885,7 +4111,7 @@ void house_e::push_complex_powerflow_values()
 					temp_complex_val += balCurrent;
 
 					//Push the value back up
-					pLine_I[indexval]->setp<complex>(temp_complex_val,test_rlock);
+					pLine_I[indexval]->setp<complex>(temp_complex_val,*test_rlock);
 				}
 			}
 			mask *= 2;
@@ -3900,7 +4126,7 @@ void house_e::push_complex_powerflow_values()
             temp_complex_val += value_Line_I[indexval];
 
             //Push it back up
-            pLine_I[indexval]->setp<gld::complex>(temp_complex_val, test_rlock);
+            pLine_I[indexval]->setp<gld::complex>(temp_complex_val, *test_rlock);
 
             //**** shunt value ***/
             //Pull current value again, just in case
@@ -3910,7 +4136,7 @@ void house_e::push_complex_powerflow_values()
             temp_complex_val += value_Shunt[indexval];
 
             //Push it back up
-            pShunt[indexval]->setp<gld::complex>(temp_complex_val, test_rlock);
+            pShunt[indexval]->setp<gld::complex>(temp_complex_val, *test_rlock);
 
             //**** Power value ***/
             //Pull current value again, just in case
@@ -3920,7 +4146,7 @@ void house_e::push_complex_powerflow_values()
             temp_complex_val += value_Power[indexval];
 
             //Push it back up
-            pPower[indexval]->setp<gld::complex>(temp_complex_val, test_rlock);
+            pPower[indexval]->setp<gld::complex>(temp_complex_val, *test_rlock);
         }
 	}
 }
@@ -3951,6 +4177,13 @@ void house_e::circuit_voltage_factor_update()
 
 	for (c=panel.circuits; c!=nullptr; c=c->next)
 	{
+		gl_warning("house_e: circuit %d - pLoad->power=(%g,%g), pLoad->total=(%g,%g), pLoad->name=%s, status=%d",
+        c->id,
+        c->pLoad->power.Re(), c->pLoad->power.Im(),
+        c->pLoad->total.Re(), c->pLoad->total.Im(),
+        c->pLoad->name ? c->pLoad->name : "unnamed",
+        (int)c->status);
+
 		// get circuit type
 		int n = (int)c->type;
 		if (n<0 || n>2)
@@ -4186,27 +4419,20 @@ STATUS house_e::post_deltaupdate()
 
 EXPORT int create_house(OBJECT **obj, OBJECT *parent)
 {
+	(void)parent;  // IMPORTANT: Ignore this parameter - it may contain garbage!
+                   // Parent is set via resolve_pending_parent_links() after all objects are created
+    
 	try
 	{
+
 		*obj = gl_create_object(house_e::oclass);
 		if (*obj!=nullptr)
 		{
 			house_e *my = object_data<house_e>(*obj);
-
-			if (!my) {
-				gl_error("create_house: obj->data is null for class 'house'");
-				return 0;
-			}
 			// if (parent != nullptr)
-			// {
-			// 	gl_set_parent(*obj, parent);
-			// }
-			// else
-			// {
-			// 	gl_warning("create_house: parent is null — skipping gl_set_parent");
-			// }
-
-			// gl_set_parent(*obj,parent);
+            // {
+            //     gl_set_parent(*obj, parent);
+            // }
 			my->create();
 			return 1;
 		}
@@ -4220,6 +4446,16 @@ EXPORT int init_house(OBJECT *obj)
 {
 	try {
 		house_e *my = object_data<house_e>(obj);
+
+		gl_warning("house_e:%d init_house called, obj->parent=%p", obj->id, (void*)obj->parent);
+
+		if (obj->parent == nullptr) {
+            gl_warning("house_e:%d has no parent at init time", obj->id);
+        } else {
+            gl_verbose("house_e:%d parent is %s", obj->id, 
+                obj->parent->name ? obj->parent->name : "unnamed");
+        }
+
 		int rv = my->init_climate();
 		if(rv == 0){// climate object has not initialized
 			return 2;
@@ -4240,6 +4476,7 @@ EXPORT int isa_house(OBJECT *obj, char *classname)
 }
 
 // EXPORT TIMESTAMP sync_house(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+// {
 extern "C" TIMESTAMP sync_house(void *object, ...)
 {
     va_list args;
@@ -4248,25 +4485,18 @@ extern "C" TIMESTAMP sync_house(void *object, ...)
     PASSCONFIG pass = va_arg(args, PASSCONFIG);
     va_end(args);
 
-    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
-
+    OBJECT *obj = (OBJECT*)object;  
+    
 	if (!callback) {
-        gl_error("callback is null in sync_house");
+        gl_error("callback is null in init_house");
         return 0;  // Fail module load
     }
 
-	    // Add structure validation
-    // std::cerr << "Callback structure size check:" << std::endl;
-    // std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
-    // std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
-    // std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
-    
 
 	if (!callback->time.local_datetime) {
         gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
         return FAILED;
     }
-
 
 	try {
 		house_e *my = object_data<house_e>(obj);

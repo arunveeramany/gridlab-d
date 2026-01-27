@@ -47,6 +47,17 @@ add_library(${GLD_MODULE_NAME} SHARED
         elcap2010.h
 )
 
+#Apply conservative FP flags only on Apple Silicon + AppleClang
+if(APPLE AND CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64")
+  if(CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
+    add_compile_options(-ffp-contract=off -fno-fast-math)
+  endif()
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+    add_compile_options(-ffp-contract=off -fno-fast-math)
+  endif()
+
+endif()
+
 target_compile_options(${GLD_MODULE_NAME} PRIVATE ${GLD_COMPILE_OPTIONS})
 set_target_properties(${GLD_MODULE_NAME} PROPERTIES PREFIX "")
 

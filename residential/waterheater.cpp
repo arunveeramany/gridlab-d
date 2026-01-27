@@ -75,6 +75,8 @@ void RUN_WH_FC (
 //////////////////////////////////////////////////////////////////////////
 CLASS* waterheater::oclass = nullptr;
 CLASS* waterheater::pclass = nullptr;
+extern "C" CALLBACKS *callback;
+
 
 /**  Register the class and publish water heater object properties
  **/
@@ -84,6 +86,7 @@ waterheater::waterheater(MODULE *module) : residential_enduse(module){
 	{
 		pclass = residential_enduse::oclass;
 		// register the class definition
+		// oclass = gl_register_class(module,"waterheater",sizeof(waterheater),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_AUTOLOCK);
 		oclass = gld_class::create(module,"waterheater",sizeof(waterheater),PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_AUTOLOCK);
 		if (oclass==nullptr)
 			GL_THROW("unable to register object class implemented by %s",__FILE__);
@@ -255,8 +258,6 @@ int waterheater::create()
 int waterheater::init(OBJECT *parent)
 {
 	OBJECT *hdr = object_header(this);
-	parent = hdr->parent;
-
 
 	nominal_voltage = (2.0 * default_line_voltage); //@TODO:  Determine if this should be published or how we want to obtain this from the equipment/network
 	actual_voltage = nominal_voltage;
@@ -486,9 +487,9 @@ int waterheater::init(OBJECT *parent)
 //										 CWATER *	// BTU/degF / gal
 //										 KWBTUPH /	// kW/gal
 //										 1000.0;	// W/gal
-				water_demand = shape.load / 2.4449;
+				water_demand =  shape.load / 2.4449 ;//; shape.load / 2.4449;
 			} else {
-				water_demand = shape.load; /* unitless ~ drive gpm */
+				water_demand =  shape.load;//shape.load; /* unitless ~ drive gpm */
 			}
 			break;
 		case MT_PULSED:
@@ -1050,6 +1051,8 @@ void waterheater::sync_energytake()
 
 TIMESTAMP waterheater::sync(TIMESTAMP t0, TIMESTAMP t1) 
 {
+	
+
 	double internal_gain = 0.0;
 	double nHours = (gl_tohours(t1) - gl_tohours(t0))/TS_SECOND;
 	double Tamb = get_Tambient(location);
@@ -2082,11 +2085,7 @@ EXPORT int create_waterheater(OBJECT **obj, OBJECT *parent)
 		if (*obj!=nullptr)
 		{
 			waterheater *my = object_data<waterheater>(*obj);;
-			if (!my) {
-				gl_error("create_waterheater: obj->data is null for class 'recloser'");
-				return 0;
-			}
-			// gl_set_parent(*obj,parent);
+			//gl_set_parent(*obj,parent);
 			my->create();
 			return 1;
 		}
@@ -2116,8 +2115,8 @@ EXPORT int isa_waterheater(OBJECT *obj, char *classname)
 }
 
 
-//EXPORT TIMESTAMP sync_waterheater(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
-//{
+// EXPORT TIMESTAMP sync_waterheater(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+// {
 
 extern "C" TIMESTAMP sync_waterheater(void *object, ...)
 {
@@ -2128,6 +2127,23 @@ extern "C" TIMESTAMP sync_waterheater(void *object, ...)
     va_end(args);
 
     OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
+    
+	if (!callback) {
+        gl_error("callback is null in sync_waterheater");
+        return 0;  // Fail module load
+    }
+
+	    // Add structure validation
+    // std::cerr << "Callback structure size check:" << std::endl;
+    // std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
+    // std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
+    // std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
+    
+
+	if (!callback->time.local_datetime) {
+        gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
+        return FAILED;
+    }
 
 
 

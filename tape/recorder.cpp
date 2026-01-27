@@ -634,7 +634,7 @@ static char* expand_enduse_property(OBJECT *obj, const char* prop_name)
     
     if (offset > 0)
     {
-        gl_warning("recorder: expanding enduse '%s' to '%s'", prop_name, buffer);
+        // gl_warning("recorder: expanding enduse '%s' to '%s'", prop_name, buffer);
         return strdup(buffer);
     }
     return NULL;
@@ -676,27 +676,43 @@ PROPERTY *link_properties(struct recorder *rec, OBJECT *obj, char *property_list
         // === Check for enduse expansion FIRST ===
         PROPERTY *check_prop = gl_get_property(target_obj, item, nullptr);
         if (check_prop != nullptr && check_prop->ptype == PT_enduse) {
-            char prefix[256];
-            snprintf(prefix, sizeof(prefix), "%s.", item);
-            size_t prefix_len = strlen(prefix);
+
+			PROPERTY *prop_copy = (PROPERTY *)malloc(sizeof(PROPERTY));
+			memcpy(prop_copy, check_prop, sizeof(PROPERTY));
+			prop_copy->next = nullptr;
+
+			if (first == nullptr) first = prop_copy;
+			else last->next = prop_copy;
+			last = prop_copy;
+			
+			continue;
+			
+            // char prefix[256];
+            // snprintf(prefix, sizeof(prefix), "%s.", item);
+            // size_t prefix_len = strlen(prefix);
             
-            gl_warning("recorder:%d: expanding enduse '%s'", obj->id, item);
+            // gl_warning("recorder:%d: expanding enduse '%s'", obj->id, item);
             
-            for (PROPERTY *p = target_obj->oclass->pmap; p != nullptr; p = p->next) {
-                if (strncmp(p->name, prefix, prefix_len) == 0) {
-                    const char *remainder = p->name + prefix_len;
-                    if (strchr(remainder, '.') == nullptr) {
-                        PROPERTY *prop_copy = (PROPERTY *)malloc(sizeof(PROPERTY));
-                        memcpy(prop_copy, p, sizeof(PROPERTY));
-                        prop_copy->next = nullptr;
+            // for (PROPERTY *p = target_obj->oclass->pmap; p != nullptr; p = p->next) {
+            //     if (strncmp(p->name, prefix, prefix_len) == 0) {
+            //         const char *remainder = p->name + prefix_len;
+            //         if (strchr(remainder, '.') == nullptr) {
+            //             PROPERTY *prop_copy = (PROPERTY *)malloc(sizeof(PROPERTY));
+            //             memcpy(prop_copy, p, sizeof(PROPERTY));
+            //             prop_copy->next = nullptr;
                         
-                        if (first == nullptr) first = prop_copy;
-                        else last->next = prop_copy;
-                        last = prop_copy;
-                    }
-                }
-            }
-            continue;
+            //             if (first == nullptr) first = prop_copy;
+            //             else last->next = prop_copy;
+            //             last = prop_copy;
+            //         }
+            //     }
+            // }
+
+			// if (first == nullptr) {
+			// 	gl_warning("recorder:%d: enduse '%s' has no expandable sub-properties", 
+			// 			obj->id, item);
+			// }
+            // continue;
         }
         // === END enduse expansion ===
         
@@ -713,20 +729,26 @@ PROPERTY *link_properties(struct recorder *rec, OBJECT *obj, char *property_list
         
         prop = (PROPERTY *)malloc(sizeof(PROPERTY));
         
-        cpart = strchr(item, '.');
-        if (cpart != nullptr)
-        {
-            if (strcmp("imag", cpart + 1) == 0)
-            {
-                cid = (int)((int64) & (oblig.Im()) - (int64)&oblig);
-                *cpart = 0;
-            }
-            else if (strcmp("real", cpart + 1) == 0)
-            {
-                cid = (int)((int64) & (oblig.Re()) - (int64)&oblig);
-                *cpart = 0;
-            }
-        }
+        cpart = strrchr(item, '.');
+		if (cpart != nullptr)
+		{
+			if (strcmp("imag", cpart + 1) == 0)
+			{
+				cid = (int)((int64) & (oblig.Im()) - (int64)&oblig);
+				*cpart = 0;  // Truncate "panel.power.imag" -> "panel.power"
+			}
+			else if (strcmp("real", cpart + 1) == 0)
+			{
+				cid = (int)((int64) & (oblig.Re()) - (int64)&oblig);
+				*cpart = 0;  // Truncate "panel.power.real" -> "panel.power"
+			}
+			else
+			{
+				// Not a .real or .imag suffix, reset
+				cpart = nullptr;
+				cid = -1;
+			}
+		}
         
         // === FIX: Use target_obj instead of obj ===
         target = gl_get_property(target_obj, item, nullptr);
@@ -977,152 +999,30 @@ extern "C" TIMESTAMP sync_recorder(void *object, ...)
 	struct recorder *my = object_data<struct recorder>(obj);
 
 
-    // --- "LAZY LINKING" BLOCK (fixed to resolve FULL dotted paths, with trailing .real/.imag support) ---
-    if (my->target_obj == nullptr) // link once, lazily
+	// --- SIMPLIFIED LAZY LINKING using link_properties ---
+    if (my->target == nullptr && my->target_obj == nullptr)
     {
-        char *item;
-        PROPERTY *first = nullptr, *last = nullptr;
-        PROPERTY *prop_copy;
-        PROPERTY *original_prop;
-        char1024 property_list_copy;
         OBJECT *target_obj = obj->parent;
         if (target_obj == nullptr) {
             gl_error("recorder:%d: has no parent object to record from", obj->id);
             my->status = TS_ERROR;
             return TS_INVALID;
         }
-        strcpy(property_list_copy, my->property.get_string());
-        for (item = strtok(property_list_copy, ","); item != nullptr; item = strtok(nullptr, ",")) {
-            while (isspace(*item)) item++; // trim leading spaces
-            // Work on a full copy (preserve the dotted chain)
-            char full_path[1024];
-            strncpy(full_path, item, sizeof(full_path)-1);
-            full_path[sizeof(full_path)-1] = '\0';
-
-		    
-			// === Check for PT_enduse and expand ===
-			// PROPERTY *check_prop = gl_get_property(target_obj, full_path, nullptr);
-
-			// === Check for PT_enduse and expand ===
-			PROPERTY *check_prop = gl_get_property(target_obj, full_path, nullptr);
-
-			// Add debug to see what's happening
-			gl_debug("recorder:%d: checking property '%s' on class '%s', check_prop=%p, ptype=%d", 
-					obj->id, full_path, 
-					target_obj->oclass->name,
-					check_prop, 
-					check_prop ? check_prop->ptype : -1);
-
-			// If gl_get_property failed, try class_find_property which searches hierarchy
-			if (check_prop == nullptr) {
-				check_prop = class_find_property(target_obj->oclass, full_path);
-				gl_debug("recorder:%d: class_find_property returned %p for '%s'", 
-						obj->id, check_prop, full_path);
-			}
-			if (check_prop != nullptr && check_prop->ptype == PT_enduse) {
-				char prefix[256];
-				snprintf(prefix, sizeof(prefix), "%s.", full_path);
-				size_t prefix_len = strlen(prefix);
-				
-				gl_warning("recorder:%d: expanding enduse '%s'", obj->id, full_path);
-				int expanded_count = 0;
-				
-				// Iterate through the ENTIRE class hierarchy
-				CLASS *cls = target_obj->oclass;
-				while (cls != nullptr) {
-					for (PROPERTY *p = cls->pmap; p != nullptr && p->oclass == cls; p = p->next) {
-						// Match "panel.total", "panel.energy", etc. but not "panel.energy.real"
-						if (strncmp(p->name, prefix, prefix_len) == 0) {
-							const char *remainder = p->name + prefix_len;
-							if (strchr(remainder, '.') == nullptr) {  // first-level only
-								prop_copy = (PROPERTY *)malloc(sizeof(PROPERTY));
-								if (!prop_copy) {
-									gl_error("recorder:%d: memory allocation failed", obj->id);
-									my->status = TS_ERROR;
-									return TS_INVALID;
-								}
-								memcpy(prop_copy, p, sizeof(PROPERTY));
-								prop_copy->next = nullptr;
-								
-								if (first == nullptr) first = prop_copy;
-								else last->next = prop_copy;
-								last = prop_copy;
-								expanded_count++;
-								
-								gl_debug("recorder:%d: expanded '%s'", obj->id, p->name);
-							}
-						}
-					}
-					cls = cls->parent;  // Move to parent class
-				}
-				
-				if (expanded_count == 0) {
-					gl_error("recorder:%d: enduse '%s' has no expandable sub-properties", obj->id, full_path);
-					my->status = TS_ERROR;
-					while (first != nullptr) { prop_copy = first; first = first->next; free(prop_copy); }
-					return TS_INVALID;
-				}
-				continue;
-			}
-			
-            // Detect ONLY trailing ".real"/".imag" and strip that final segment
-            bool use_real = false, use_imag = false;
-            char *lastdot = strrchr(full_path, '.');
-            if (lastdot != nullptr) {
-                if (strcmp(lastdot+1, "real") == 0) { use_real = true; *lastdot = '\0'; }
-                else if (strcmp(lastdot+1, "imag") == 0) { use_imag = true; *lastdot = '\0'; }
-            }
-
-            // Resolve the ENTIRE dotted path (e.g., "current_market.clearing_quantity")
-            original_prop = gl_get_property(target_obj, full_path, nullptr);
-            if (original_prop == nullptr) {
-                my->status = TS_ERROR;
-                gl_debug("Returning TS_INVALID: property lookup failed for '%s'", item);
-                // cleanup partial list
-                while (first != nullptr) { prop_copy = first; first = first->next; free(prop_copy); }
-                return TS_INVALID;
-            }
-
-
-			// If a complex part was requested, verify the base property really is complex
-			if ((use_real || use_imag) && original_prop->ptype != PT_complex) {
-				my->status = TS_ERROR;
-				gl_error("recorder:%d: property '%s' is not complex; cannot use '.%s'",
-						obj->id, full_path, use_real ? "real" : "imag");
-				// cleanup partial list
-				while (first != nullptr) { prop_copy = first; first = first->next; free(prop_copy); }
-				return TS_INVALID;
-			}
-
-
-            // Copy the resolved PROPERTY node
-            prop_copy = (PROPERTY *)malloc(sizeof(PROPERTY));
-            if (!prop_copy) { gl_error("recorder:%d: memory allocation failed", obj->id); my->status = TS_ERROR; return TS_INVALID; }
-            memcpy(prop_copy, original_prop, sizeof(PROPERTY));
-            prop_copy->next = nullptr;
-
-            // Preserve full path in name (helpful later for re-resolution/unit handling)
-            strncpy(prop_copy->name, full_path, sizeof(prop_copy->name)-1);
-            prop_copy->name[sizeof(prop_copy->name)-1] = '\0';
-
-            // If trailing .real/.imag was requested, expose complex component as double via address offset
-            // if (use_real || use_imag) {
-            //     complex dummy;
-            //     int64 cid = (int64)((use_real ? &dummy.Re() : &dummy.Im()) - (int64) &dummy);
-            //     prop_copy->ptype = PT_double;
-            //     prop_copy->addr  = (PROPERTYADDR)((int64)prop_copy->addr + cid);
-            // }
-
-            // Link into our lazy list
-            if (first == nullptr) first = prop_copy; else last->next = prop_copy;
-            last = prop_copy;
-        }
-        my->target     = first;
+        
+        // Use link_properties to do all the work
+        char property_list_copy[1024];
+        strncpy(property_list_copy, my->property.get_string(), sizeof(property_list_copy)-1);
+        property_list_copy[sizeof(property_list_copy)-1] = '\0';
+        
+        my->target = link_properties(my, obj, property_list_copy);
         my->target_obj = target_obj;
-        if (my->target == nullptr) { my->status = TS_ERROR; return TS_INVALID; }
-	}
-	// --- END OF LINKING BLOCK ---
-
+        
+        if (my->target == nullptr) {
+            my->status = TS_ERROR;
+            return TS_INVALID;
+        }
+    }
+    // --- END SIMPLIFIED LAZY LINKING ---
 
 	typedef enum
 	{

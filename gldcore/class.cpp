@@ -393,6 +393,8 @@ int class_property_to_string(PROPERTY *prop, /**< the property type */
 							 char *value,	 /**< the value buffer to which the string is to be written */
 							 int size)		 /**< the maximum number of characters that can be written to the \p value buffer*/
 {
+	// std::cerr << "class_property_to_string: prop->name=" << prop->name 
+    //           << ", prop->ptype=" << prop->ptype << std::endl;
 	int rv = 0;
 	if (prop->ptype == PT_delegated)
 	{
@@ -927,7 +929,7 @@ int class_define_map(CLASS *oclass, /**< the object class */
 		{
 			char *name = va_arg(arg, char *);
 			PROPERTYADDR addr = va_arg(arg, PROPERTYADDR);
-			fprintf(stderr,"class_define_map(%s): expanding enduse '%s'", oclass->name, name?name:"(null)");
+			// fprintf(stderr,"class_define_map(%s): expanding enduse '%s'", oclass->name, name?name:"(null)");
 
 			if (enduse_publish(oclass, addr, name) <= 0)
 			{

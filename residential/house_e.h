@@ -523,6 +523,14 @@ public:
 	gld_property *map_complex_value(OBJECT *obj, const char *name);
 	gld_property *map_double_value(OBJECT *obj, const char *name);
 	void pull_climate_values(void);
+
+public:	
+
+
+	// Add this method to house_e's public interface
+	loadshape* get_enduse_shape_by_name(const char* enduse_name) const;
+
+
 };
 
 #endif

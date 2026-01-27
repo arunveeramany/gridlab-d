@@ -39,6 +39,9 @@
 static std::mutex subprocess_launch_mutex;
 static std::shared_mutex report_data_lock;
 
+static FILE *error_log_fp = nullptr;
+static unsigned int error_log_lock = 0;
+
 /** validating result counter */
 class counters
 {
@@ -206,6 +209,51 @@ static char report_file[1024] = "validate_win32.txt";
 static char report_file[1024] = "validate.txt";
 #endif
 
+
+static std::string get_last_error_line(const char *dir) {
+    std::string last_error = "";
+    
+    // Check both gridlabd.out and gridlabd.err
+    const char* files_to_check[] = {"gridlabd.out", "gridlabd.err"};
+    
+    for (const char* filename : files_to_check) {
+        char output_file[1024];
+        sprintf(output_file, "%s/%s", dir, filename);
+        
+        FILE *fp = fopen(output_file, "r");
+        if (fp) {
+            char line[4096];
+            while (fgets(line, sizeof(line), fp)) {
+                // Check if line starts with "ERROR"
+                if (strncmp(line, "ERROR", 5) == 0) {
+                    last_error = line;
+                    // Remove trailing newline if present
+                    if (!last_error.empty() && last_error.back() == '\n') {
+                        last_error.pop_back();
+                    }
+                }
+            }
+            fclose(fp);
+        }
+    }
+    return last_error;
+}
+
+static void log_test_error(const char *file, char result_type, const std::string &error_msg) {
+	std::unique_lock<std::shared_mutex> lock(SharedMutexManager::get_mutex(&error_log_lock));
+    if (error_log_fp) {
+        fprintf(error_log_fp, "%c %s\n", result_type, file);
+        if (!error_msg.empty()) {
+            fprintf(error_log_fp, "— %s\n", error_msg.c_str());
+        //} else {
+          //  fprintf(error_log_fp, "— (no ERROR line found in output)\n");
+        }
+        // fprintf(error_log_fp, "\n");\
+
+        fflush(error_log_fp);
+    }
+}
+
 static const char *report_ext = nullptr;
 static const char *report_col = "    ";
 static const char *report_eol = "\n";
@@ -234,6 +282,41 @@ static bool report_open(void)
 			report_eot = "\n";
 		}
 		report_fp = fopen(report_file, "w");
+
+		// Create validate_errors.txt in the SAME directory as validate.txt
+        char error_log_file[1024];
+        strcpy(error_log_file, report_file);
+
+		// In the validation initialization code (where report_fp is opened)
+		// char error_log_file[1024];
+		snprintf(error_log_file, sizeof(error_log_file), "%s/validate_errors.txt", global_workdir);
+		error_log_fp = fopen(error_log_file, "w");
+		if (error_log_fp) {
+			fprintf(error_log_fp, "Validation Error Details\n");
+			fprintf(error_log_fp, "========================\n\n");
+		}
+
+		// Find the last '/' or '\' to get directory
+        char *last_sep = strrchr(error_log_file, '/');
+#ifdef _WIN32
+        char *last_backslash = strrchr(error_log_file, '\\');
+        if (last_backslash > last_sep) last_sep = last_backslash;
+#endif
+        
+        if (last_sep != nullptr) {
+            // Has directory path - replace filename
+            strcpy(last_sep + 1, "validate_errors.txt");
+        } else {
+            // No directory path - just use filename in current directory
+            strcpy(error_log_file, "validate_errors.txt");
+        }
+        
+        error_log_fp = fopen(error_log_file, "w");
+        if (error_log_fp) {
+            fprintf(error_log_fp, "Validation Error Details\n");
+            fprintf(error_log_fp, "========================\n\n");
+        }
+
 	}
 	// wunlock(&report_lock);
 	return report_fp != nullptr;
@@ -314,8 +397,15 @@ static int report_close(void)
 	// wlock(&report_lock);
 	//  replace the above with SharedMutexManager
 	std::unique_lock<std::shared_mutex> lock(SharedMutexManager::get_mutex(&report_lock));
-	if (report_fp)
+	if (report_fp){
 		fclose(report_fp);
+		// At the end of validation (where report_fp is closed)
+		if (error_log_fp) {
+			fclose(error_log_fp);
+			error_log_fp = nullptr;
+			output_message("See '%s/validate_errors.txt' for error details", global_workdir);
+		}
+	}
 	report_fp = nullptr;
 	// wunlock(&report_lock);
 	return report_rows;
@@ -618,12 +708,19 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 	char *ext = strrchr(dir, '.');
 	char *name = strrchr(dir, '/') + 1;
 	char *char_result;
+
+	
 	if (ext == nullptr || strcmp(ext, ".glm") != 0)
 	{
 		output_error("run_test(char *file='%s'): file is not a GLM", file);
 		return result;
 	}
 	*ext = '\0'; // remove extension from dir
+
+	// Define the output capture file path - GridLAB-D writes errors to gridlabd.err when --redirect all is used
+	char output_capture_file[1024];
+	sprintf(output_capture_file, "%s/gridlabd.out", dir);
+
 	char cwd[1024];
 	char_result = getcwd(cwd, sizeof(cwd));
 	if (clean && !destroy_dir(dir))
@@ -661,6 +758,12 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 		result.inc_access(file);
 		return result;
 	}
+
+	
+	sprintf(out, "%s/%s.glm", dir, name);
+
+	sprintf(output_capture_file, "%s/gridlabd.err", dir);
+
 	int64 dt = exec_clock();
 	result.inc_files(file);
 	// 	unsigned int code = vsystem("\"%s\" -W %s %s %s.glm ",
@@ -734,10 +837,39 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
     // Windows uses the existing vsystem which wraps std::system
     code = vsystem(command_line.c_str());
 #else
-    // macOS/Linux use the new robust implementation
-    // code = vsystem_posix(command_line.c_str());
-	std::vector<std::string> argv({executable_to_run_path.string(), "-W",dir, command_line}) ;
-	code = vsystem_posix_exec_argv(argv);
+
+	// For macOS/Linux: Build a proper argument vector, PREPENDING stdbuf
+	std::vector<std::string> test_args;
+
+	// *** THIS IS THE FIX ***
+	// Use stdbuf to force the child process to be unbuffered.
+	// This ensures all output is written to the file immediately, even on a crash.
+	// test_args.push_back("stdbuf");
+	// test_args.push_back("-o0"); 
+
+	// Now add the original command and its arguments
+	test_args.push_back(executable_to_run_path.string());
+	test_args.push_back("-W");
+	test_args.push_back(dir);
+
+	// Tokenize the child command arguments string and add each part
+	std::string args_str = validate_child_cmdargs;
+	std::stringstream ss(args_str);
+	std::string token;
+	while (ss >> token)
+	{
+		test_args.push_back(token);
+	}
+	
+	// Finally, add the model file itself
+	test_args.push_back(std::format("{}.glm", name));
+
+	std::string full_cmd_for_debug;
+	for(const auto& arg : test_args) { full_cmd_for_debug += arg + " "; }
+	output_debug("Thread %zu launching subprocess: %s", std::hash<std::thread::id>{}(std::this_thread::get_id()), full_cmd_for_debug.c_str());
+
+	code = vsystem_posix_exec_argv(test_args);		
+
 #endif
 	}
 
@@ -801,6 +933,8 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 		{
 			result.inc_exceptions(file, code, t);
 			problem = true;
+			std::string last_error = get_last_error_line(dir) + '\n';
+    		log_test_error(file, 'X', last_error);
 		}
 		else if (code == XC_SUCCESS && is_err) // unexpected success
 		{
@@ -808,12 +942,16 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 						 name, code, t);
 			result.inc_success(file, code, t);
 			problem = true;
+			std::string last_error = get_last_error_line(dir) + '\n';
+    		log_test_error(file, 'S', last_error);
 		}
 		else if (code != XC_SUCCESS && !is_err) // unexpected error
 		{
 			// A test that should pass actually failed
 			result.inc_failed(file, code, t);
 			problem = true;
+			std::string last_error = get_last_error_line(dir) + '\n';
+    		log_test_error(file, 'E', last_error);
 		}
 	}
 	else if (signaled && is_err) {
@@ -836,8 +974,16 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 		{
 			result.inc_exceptions(file, code, t);
 			problem = true;
+			std::string last_error = get_last_error_line(dir);
+        	log_test_error(file, 'X', last_error);
 		}
 	}
+
+	std::string last_error_for_logging = "";
+	if (problem) {
+		last_error_for_logging = get_last_error_line(dir);
+	}
+
 	output_debug("run_test(char *file='%s') done", file);
 	if (!problem && clean && !destroy_dir(dir))
 	{
@@ -1073,6 +1219,7 @@ char *encode_result(std::atomic<char> *data, size_t sz)
 /** main validation routine */
 int validate(int argc, char *argv[])
 {
+
 	struct sigaction sa;
     sa.sa_handler = &sigchld_handler; // Set the handler
     sigemptyset(&sa.sa_mask);
@@ -1406,6 +1553,13 @@ int validate(int argc, char *argv[])
 	report_newrow();
 
 	fclose(report_fp);
+
+	// At the end of validation (where report_fp is closed)
+	if (error_log_fp) {
+		fclose(error_log_fp);
+		error_log_fp = nullptr;
+		output_message("See '%s/validate_errors.txt' for error details", global_workdir);
+	}
 
 #ifndef WIN32
 #ifdef __APPLE__
