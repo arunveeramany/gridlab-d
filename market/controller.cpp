@@ -10,6 +10,9 @@
 
 CLASS* controller::oclass = nullptr;
 controller* controller::defaults = nullptr;
+extern "C" CALLBACKS *callback;
+
+
 
 controller::controller(MODULE *module){
 	if (oclass==nullptr)
@@ -807,14 +810,30 @@ int controller::init(OBJECT *parent){
 			gl_error("state property name '%s' is not published by parent object '%s'", state, get_object(parent)->get_name());
 			return 0;
 		}
-		PS_OFF = powerstate_prop.find_keyword("OFF");
-		PS_ON = powerstate_prop.find_keyword("ON");
-		PS_UNKNOWN = powerstate_prop.find_keyword("UNKNOWN");
-		if ( PS_OFF==nullptr || PS_ON==nullptr || PS_UNKNOWN==nullptr )
-		{
-			gl_error("state property '%s' of object '%s' does not published all required keywords OFF, ON, and UNKNOWN", state,get_object(parent)->get_name());
+		// PS_OFF = powerstate_prop.find_keyword("OFF");
+		// PS_ON = powerstate_prop.find_keyword("ON");
+		// PS_UNKNOWN = powerstate_prop.find_keyword("UNKNOWN");
+		// if ( PS_OFF==nullptr || PS_ON==nullptr || PS_UNKNOWN==nullptr )
+		// {
+		// 	gl_error("state property '%s' of object '%s' does not published all required keywords OFF, ON, and UNKNOWN", state,get_object(parent)->get_name());
+		// }
+		// last_pState = *PS_UNKNOWN;
+
+
+		powerstate_keywords_bound = powerstate_prop.is_valid() && PS_ON && PS_OFF && PS_UNKNOWN;
+
+		if (powerstate_keywords_bound) {
+			PS_ON_VAL      = PS_ON->get_enumeration_value();
+			PS_OFF_VAL     = PS_OFF->get_enumeration_value();
+			PS_UNKNOWN_VAL = PS_UNKNOWN->get_enumeration_value();
+			last_pState    = PS_UNKNOWN_VAL;        // safe numeric init
+		} else {
+			// No keywords or property invalid; set a safe default
+			last_pState    = 0;                     // or -1 if you prefer
+			gl_warning("controller:%d power_state keywords not fully bound; guarded comparisons will be used",
+					object_header(this)->id);
 		}
-		last_pState = *PS_UNKNOWN;
+
 	}
 
 	if(heating_state[0] != 0){
@@ -903,6 +922,8 @@ int controller::init(OBJECT *parent){
 	market_flag = -1;
 	engaged = 0;
 	locked = 0;
+
+
 
 	return 1;
 }
@@ -1226,6 +1247,15 @@ TIMESTAMP controller::sync(TIMESTAMP t0, TIMESTAMP t1){
 	enumeration ps = -1; // ps==-1 means the powerstate is not found -- -1 should never be used
 	if ( powerstate_prop.is_valid() )
 		powerstate_prop.getp(ps);
+
+	bool have_powerstate = false;
+	if (powerstate_prop.is_valid() && PS_ON && PS_OFF && PS_UNKNOWN) {
+		PS_ON_VAL      = PS_ON->get_enumeration_value();
+		PS_OFF_VAL     = PS_OFF->get_enumeration_value();
+		PS_UNKNOWN_VAL = PS_UNKNOWN->get_enumeration_value();
+		have_powerstate = true;
+	}
+	
 	if((t1 < next_run) && (marketId == lastmkt_id)){
 		if(t1 <= next_run - bid_delay){
 			if(use_predictive_bidding == true && (((control_mode == CN_RAMP || control_mode == CN_DOUBLE_PRICE) && last_setpoint != setpoint0) || (control_mode == CN_DOUBLE_RAMP && (last_heating_setpoint != heating_setpoint0 || last_cooling_setpoint != cooling_setpoint0)))) {
@@ -1308,12 +1338,14 @@ TIMESTAMP controller::sync(TIMESTAMP t0, TIMESTAMP t1){
 
 			if ( use_override==OU_ON && override_prop.is_valid() )
 			{
-				if ( clear_price<=last_p )
-				{
-					// if we're willing to pay as much as, or for more than the offered price, then run.
-					override_prop.setp(OV_ON->get_enumeration_value()); // *pOverride = 1;
-				} else {
-					override_prop.setp(OV_OFF->get_enumeration_value()); // *pOverride = -1;
+				if (OV_ON && OV_OFF) {
+					if ( clear_price<=last_p )
+					{
+						// if we're willing to pay as much as, or for more than the offered price, then run.
+						override_prop.setp(OV_ON->get_enumeration_value()); // *pOverride = 1;
+					} else {
+						override_prop.setp(OV_OFF->get_enumeration_value()); // *pOverride = -1;
+					}
 				}
 			}
 
@@ -1330,17 +1362,17 @@ TIMESTAMP controller::sync(TIMESTAMP t0, TIMESTAMP t1){
 
 		if(dir > 0){
 			if(use_predictive_bidding == true){
-				if ( ps == *PS_OFF && monitor > (max - deadband_shift)){
+				if ( have_powerstate && ps == PS_OFF_VAL && monitor > (max - deadband_shift)){
 					bid = pCap;
 				}
-				else if ( ps != *PS_OFF && monitor < (min + deadband_shift)){
+				else if ( have_powerstate && ps != PS_OFF_VAL && monitor < (min + deadband_shift)){
 					bid = 0.0;
 					no_bid = 1;
 				}
-				else if ( ps != *PS_OFF && monitor > max){
+				else if ( have_powerstate && ps != PS_OFF_VAL && monitor > max){
 					bid = pCap;
 				}
-				else if ( ps == *PS_OFF && monitor < min){
+				else if ( have_powerstate && ps == PS_OFF_VAL && monitor < min){
 					bid = 0.0;
 					no_bid = 1;
 				}
@@ -1354,20 +1386,20 @@ TIMESTAMP controller::sync(TIMESTAMP t0, TIMESTAMP t1){
 			}
 		} else if(dir < 0){
 			if(use_predictive_bidding == true){
-				if ( ps==*PS_OFF && monitor < (min + deadband_shift) )
+				if ( have_powerstate && ps==PS_OFF_VAL && monitor < (min + deadband_shift) )
 				{
 					bid = pCap;
 				}
-				else if ( ps != *PS_OFF && monitor > (max - deadband_shift) )
+				else if ( have_powerstate && ps != PS_OFF_VAL && monitor > (max - deadband_shift) )
 				{
 					bid = 0.0;
 					no_bid = 1;
 				}
-				else if ( ps != *PS_OFF && monitor < min)
+				else if ( have_powerstate && ps != PS_OFF_VAL && monitor < min)
 				{
 					bid = pCap;
 				}
-				else if ( ps == *PS_OFF && monitor > max)
+				else if ( have_powerstate && ps == PS_OFF_VAL && monitor > max)
 				{
 					bid = 0.0;
 					no_bid = 1;
@@ -1385,11 +1417,11 @@ TIMESTAMP controller::sync(TIMESTAMP t0, TIMESTAMP t1){
 				if(direction == 0.0) {
 					gl_error("the variable direction did not get set correctly.");
 				}
-				else if ( (monitor > max + deadband_shift || (ps != *PS_OFF && monitor > min - deadband_shift)) && direction > 0 )
+				else if ( (monitor > max + deadband_shift || (have_powerstate && ps != PS_OFF_VAL && monitor > min - deadband_shift)) && direction > 0 )
 				{
 					bid = pCap;
 				}
-				else if ( (monitor < min - deadband_shift || ( ps != *PS_OFF && monitor < max + deadband_shift)) && direction < 0 )
+				else if ( (monitor < min - deadband_shift || ( have_powerstate && ps != PS_OFF_VAL && monitor < max + deadband_shift)) && direction < 0 )
 				{
 					bid = pCap;
 				} else {
@@ -1449,7 +1481,7 @@ TIMESTAMP controller::sync(TIMESTAMP t0, TIMESTAMP t1){
 			controller_bid.price = last_p;
 			controller_bid.quantity = -last_q;
 			if( powerstate_prop.is_valid() ){
-				if ( ps == *PS_ON ) {
+				if ( have_powerstate && ps == PS_ON_VAL ) {
 					controller_bid.state = BS_ON;
 				} else {
 					controller_bid.state = BS_OFF;
@@ -1592,14 +1624,14 @@ TIMESTAMP controller::sync(TIMESTAMP t0, TIMESTAMP t1){
 
 		if(dir > 0){
 			if(use_predictive_bidding == true){
-				if(ps == *PS_OFF && monitor > (max - deadband_shift)){
+				if(have_powerstate && ps == PS_OFF_VAL && monitor > (max - deadband_shift)){
 					bid = pCap;
-				} else if(ps != *PS_OFF && monitor < (min + deadband_shift)){
+				} else if(have_powerstate && ps != PS_OFF_VAL && monitor < (min + deadband_shift)){
 					bid = 0.0;
 					no_bid = 1;
-				} else if(ps != *PS_OFF && monitor > max){
+				} else if(have_powerstate && ps != PS_OFF_VAL && monitor > max){
 					bid = pCap;
-				} else if(ps == *PS_OFF && monitor < min){
+				} else if(have_powerstate && ps == PS_OFF_VAL && monitor < min){
 					bid = 0.0;
 					no_bid = 1;
 				}
@@ -1613,14 +1645,14 @@ TIMESTAMP controller::sync(TIMESTAMP t0, TIMESTAMP t1){
 			}
 		} else if(dir < 0){
 			if(use_predictive_bidding == true){
-				if(ps == *PS_OFF && monitor < (min + deadband_shift)){
+				if(have_powerstate && ps == PS_OFF_VAL && monitor < (min + deadband_shift)){
 					bid = pCap;
-				} else if(ps != *PS_OFF && monitor > (max - deadband_shift)){
+				} else if(have_powerstate && ps != PS_OFF_VAL && monitor > (max - deadband_shift)){
 					bid = 0.0;
 					no_bid = 1;
-				} else if(ps != *PS_OFF && monitor < min){
+				} else if(have_powerstate && ps != PS_OFF_VAL && monitor < min){
 					bid = pCap;
-				} else if(ps == *PS_OFF && monitor > max){
+				} else if(have_powerstate && ps == PS_OFF_VAL && monitor > max){
 					bid = 0.0;
 					no_bid = 1;
 				}
@@ -1636,9 +1668,9 @@ TIMESTAMP controller::sync(TIMESTAMP t0, TIMESTAMP t1){
 			if(use_predictive_bidding == true){
 				if(direction == 0.0) {
 					gl_error("the variable direction did not get set correctly.");
-				} else if((monitor > max + deadband_shift || (ps != *PS_OFF && monitor > min - deadband_shift)) && direction > 0){
+				} else if((monitor > max + deadband_shift || (have_powerstate && ps != PS_OFF_VAL && monitor > min - deadband_shift)) && direction > 0){
 					bid = pCap;
-				} else if((monitor < min - deadband_shift || (ps != *PS_OFF && monitor < max + deadband_shift)) && direction < 0){
+				} else if((monitor < min - deadband_shift || (have_powerstate && ps != PS_OFF_VAL && monitor < max + deadband_shift)) && direction < 0){
 					bid = pCap;
 				} else {
 					bid = 0.0;
@@ -1687,7 +1719,7 @@ TIMESTAMP controller::sync(TIMESTAMP t0, TIMESTAMP t1){
 			last_p = bid;
 			last_q = demandP;
 			
-			if(ps == *PS_ON){
+			if(have_powerstate && ps == PS_ON_VAL){
 				if(0 != strcmp(market_unit2, "")){
 					if(0 == gl_convert("kW", market_unit2, &(last_q))){
 						gl_error("unable to convert bid units from 'kW' to '%s'", market_unit2);
@@ -1723,7 +1755,7 @@ TIMESTAMP controller::sync(TIMESTAMP t0, TIMESTAMP t1){
 						return TS_INVALID;
 					}
 				}
-			} else if (ps == *PS_OFF) {
+			} else if (have_powerstate && ps == PS_OFF_VAL) {
 				if(0 != strcmp(market_unit, "")){
 					if(0 == gl_convert("kW", market_unit, &(last_q))){
 						gl_error("unable to convert bid units from 'kW' to '%s'", market_unit);
@@ -1883,16 +1915,19 @@ TIMESTAMP controller::sync(TIMESTAMP t0, TIMESTAMP t1){
 							override_prop.setp(OV_OFF->get_enumeration_value()); // *pOverride = -1;
 						} else if(marginMode == AM_PROB){
 							double r = gl_random_uniform(RNGSTATE,0, 1.0);
-							if ( r<marginalFraction )
-							{
-								override_prop.setp(OV_ON->get_enumeration_value()); // *pOverride = 1;
-							}
-							else
-							{
-								override_prop.setp(OV_OFF->get_enumeration_value()); // *pOverride = -1;
+							if (OV_ON && OV_OFF) {	
+								if ( r<marginalFraction )
+								{
+									override_prop.setp(OV_ON->get_enumeration_value()); // *pOverride = 1;
+								}
+								else
+								{
+									override_prop.setp(OV_OFF->get_enumeration_value()); // *pOverride = -1;
+								}
 							}
 						}
-					} else if ( clrP<=last_p )
+					} 
+					else if ( clrP<=last_p )
 					{
 						override_prop.setp(OV_ON->get_enumeration_value()); // *pOverride = 1;
 					}
@@ -1987,7 +2022,7 @@ TIMESTAMP controller::sync(TIMESTAMP t0, TIMESTAMP t1){
 
 		if(last_q > 0.001){
 			if( powerstate_prop.is_valid() ){
-				if ( ps == *PS_ON ) {
+				if ( have_powerstate && ps == PS_ON_VAL ) {
 					controller_bid.state = BS_ON;
 				} else {
 					controller_bid.state = BS_OFF;
@@ -2009,14 +2044,20 @@ TIMESTAMP controller::sync(TIMESTAMP t0, TIMESTAMP t1){
 			{
 				KEY bid = (KEY)(lastmkt_id == marketId ? lastbid_id : -1);
 				double my_bid = -pCap;
-				if ( ps != *PS_OFF  )
+				if ( have_powerstate && ps != PS_OFF_VAL  )
 					my_bid = last_p;
 
-				if ( ps == *PS_ON ) {
+				if ( have_powerstate && ps == PS_ON_VAL ) {
 					controller_bid.state = BS_ON;
 				} else {
 					controller_bid.state = BS_OFF;
 				}
+
+				if (!submit) {
+					gl_error("%s: submit function pointer is null", gl_name(hdr, nullptr, 0));
+					return next_run;          // return a valid future time; don't propagate TS_INVALID
+				}
+
 				((void (*)(char *, char *, const char *, const char *, void *, size_t))(*submit))((char *)gl_name(hdr, ctrname, 1024), (char *)(&pMkt), "submit_bid_state", "auction", (void *)&controller_bid, (size_t)sizeof(controller_bid));
 				if(controller_bid.bid_accepted == false){
 					return TS_INVALID;
@@ -2068,6 +2109,10 @@ TIMESTAMP controller::postsync(TIMESTAMP t0, TIMESTAMP t1){
 			if ( powerstate_prop.is_valid() )
 				powerstate_prop.getp(ps);
 
+			
+			bool have_powerstate = powerstate_prop.is_valid() && powerstate_keywords_bound;
+
+
 			if(bidmode != BM_PROXY){
 				pAvg->getp(avgP);
 				pStd->getp(stdP);
@@ -2094,17 +2139,17 @@ TIMESTAMP controller::postsync(TIMESTAMP t0, TIMESTAMP t1){
 			
 			if(dir > 0){
 				if(use_predictive_bidding == true){
-					if ( ps == *PS_OFF && monitor > (max - deadband_shift)){
+					if ( have_powerstate && ps == PS_OFF_VAL && monitor > (max - deadband_shift)){
 						bid = pCap;
 					}
-					else if ( ps != *PS_OFF && monitor < (min + deadband_shift)){
+					else if (have_powerstate &&  ps != PS_OFF_VAL && monitor < (min + deadband_shift)){
 						bid = 0.0;
 						no_bid = 1;
 					}
-					else if ( ps != *PS_OFF && monitor > max){
+					else if ( have_powerstate &&  ps != PS_OFF_VAL && monitor > max){
 						bid = pCap;
 					}
-					else if ( ps == *PS_OFF && monitor < min){
+					else if ( have_powerstate && ps == PS_OFF_VAL && monitor < min){
 						bid = 0.0;
 						no_bid = 1;
 					}
@@ -2122,16 +2167,16 @@ TIMESTAMP controller::postsync(TIMESTAMP t0, TIMESTAMP t1){
 					{
 						bid = pCap;
 					}
-					else if ( ps != *PS_OFF && monitor > (max - deadband_shift) )
+					else if ( have_powerstate && ps != PS_OFF_VAL && monitor > (max - deadband_shift) )
 					{
 						bid = 0.0;
 						no_bid = 1;
 					}
-					else if ( ps != *PS_OFF && monitor < min)
+					else if ( have_powerstate && ps != PS_OFF_VAL && monitor < min)
 					{
 						bid = pCap;
 					}
-					else if ( ps == *PS_OFF && monitor > max)
+					else if ( have_powerstate && ps == PS_OFF_VAL && monitor > max)
 					{
 						bid = 0.0;
 						no_bid = 1;
@@ -2149,11 +2194,11 @@ TIMESTAMP controller::postsync(TIMESTAMP t0, TIMESTAMP t1){
 					if(direction == 0.0) {
 						gl_error("the variable direction did not get set correctly.");
 					}
-					else if ( (monitor > max + deadband_shift || (ps != *PS_OFF && monitor > min - deadband_shift)) && direction > 0 )
+					else if ( (monitor > max + deadband_shift || (have_powerstate && ps != PS_OFF_VAL && monitor > min - deadband_shift)) && direction > 0 )
 					{
 						bid = pCap;
 					}
-					else if ( (monitor < min - deadband_shift || ( ps != *PS_OFF && monitor < max + deadband_shift)) && direction < 0 )
+					else if ( (monitor < min - deadband_shift || ( have_powerstate && ps != PS_OFF_VAL && monitor < max + deadband_shift)) && direction < 0 )
 					{
 						bid = pCap;
 					} else {

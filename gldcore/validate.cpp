@@ -28,6 +28,18 @@
 #include <atomic>
 #include <vector>
 
+
+#include <deque>
+#include <algorithm>
+#include <cctype>     // for std::isspace
+
+#include <string>
+
+
+#include <deque>
+#include <sstream>
+
+
 #include "globals.h"
 #include "output.h"
 #include "validate.h"
@@ -210,43 +222,124 @@ static char report_file[1024] = "validate.txt";
 #endif
 
 
-static std::string get_last_error_line(const char *dir) {
-    std::string last_error = "";
-    
-    // Check both gridlabd.out and gridlabd.err
-    const char* files_to_check[] = {"gridlabd.out", "gridlabd.err"};
-    
-    for (const char* filename : files_to_check) {
-        char output_file[1024];
-        sprintf(output_file, "%s/%s", dir, filename);
-        
-        FILE *fp = fopen(output_file, "r");
-        if (fp) {
-            char line[4096];
-            while (fgets(line, sizeof(line), fp)) {
-                // Check if line starts with "ERROR"
-                if (strncmp(line, "ERROR", 5) == 0) {
-                    last_error = line;
-                    // Remove trailing newline if present
-                    if (!last_error.empty() && last_error.back() == '\n') {
-                        last_error.pop_back();
-                    }
-                }
-            }
-            fclose(fp);
+
+static bool line_has_error_token(const char* buf) {
+    static const char* TOKENS[] = { "ERROR", "EXCEPTION", "FATAL", "CRITICAL" };
+    for (auto t : TOKENS) {
+        if (std::strstr(buf, t)) return true;
+    }
+    return false;
+}
+
+// Keep last N matching lines from one file (append into a shared ring)
+static void collect_last_error_lines_from_file(const std::string& filename,
+                                               size_t max_matches,
+                                               std::deque<std::string>& last) {
+    FILE* fp = std::fopen(filename.c_str(), "r");
+    if (!fp) return;
+    char buf[8192];
+    while (std::fgets(buf, sizeof(buf), fp)) {
+        size_t len = std::strlen(buf);
+        while (len && (buf[len-1]=='\n' || buf[len-1]=='\r')) buf[--len] = '\0';
+        if (line_has_error_token(buf)) {
+            if (last.size() == max_matches) last.pop_front();
+            last.emplace_back(buf);
         }
     }
-    return last_error;
+    std::fclose(fp);
 }
+
+// Tail helper (unchanged, but increase window to be safe)
+static std::string tail_file(const std::string& path, size_t max_lines = 500) {
+    std::deque<std::string> q;
+    FILE* fp = std::fopen(path.c_str(), "r");
+    if (!fp) return {};
+    char buf[8192];
+    while (std::fgets(buf, sizeof(buf), fp)) {
+        size_t len = std::strlen(buf);
+        while (len && (buf[len-1]=='\n' || buf[len-1]=='\r')) buf[--len] = '\0';
+        q.emplace_back(buf);
+        if (q.size() > max_lines) q.pop_front();
+    }
+    std::fclose(fp);
+    std::string out;
+    for (size_t i=0; i<q.size(); ++i) { if (i) out.push_back('\n'); out += q[i]; }
+    return out;
+}
+
+
+
+static std::string get_all_error_lines(const char* dir) {
+    struct FileInfo {
+        std::string path;
+        time_t      mtime;
+        off_t       size;
+    };
+
+	static const char* kPaths[] = {
+		"/gridlabd.err.pipe", "/gridlabd.out.pipe",
+		"/gridlabd.err",      "/gridlabd.out",
+		"/gridlabd.wrn",      "/gridlabd.dbg", "/gridlabd.inf", "/gridlabd.prg", "/gridlabd.pro"
+	};
+
+
+    std::vector<FileInfo> files;
+    files.reserve(sizeof(kPaths) / sizeof(kPaths[0]));
+
+
+
+    for (const char* f:  kPaths) 
+	{
+        std::string p = std::string(dir) + f;
+        struct stat st{};
+        time_t mt = 0; off_t sz = 0;
+        if (stat(p.c_str(), &st) == 0) { mt = st.st_mtime; sz = st.st_size; }
+        files.push_back({ p, mt, sz });
+    }
+
+    // Sort newest-first (tie-break larger size)
+    std::sort(files.begin(), files.end(), [](const auto& a, const auto& b)
+              {
+                  if (a.mtime != b.mtime) return a.mtime > b.mtime;
+                  return a.size > b.size;
+              });
+
+    // 1) Last-N token lines across ALL files
+    std::deque<std::string> last_tokens;
+    constexpr size_t MAX_TOKENS = 50; // keep last 50 token lines overall
+    for (const auto& fi : files) {
+        collect_last_error_lines_from_file(fi.path, MAX_TOKENS, last_tokens);
+    }
+    if (!last_tokens.empty()) {
+        std::string result;
+        for (size_t i = 0; i < last_tokens.size(); ++i) {
+            if (i) result.push_back('\n');
+            result += last_tokens[i];
+        }
+        return result;
+    }
+
+    // 2) No token lines at all: tail newest file for context
+    for (const auto& fi : files) {
+        auto t = tail_file(fi.path, 500);
+        if (!t.empty()) return t;
+    }
+
+    // 3) Nothing available
+    return std::string();
+}
+
+
+
 
 static void log_test_error(const char *file, char result_type, const std::string &error_msg) {
 	std::unique_lock<std::shared_mutex> lock(SharedMutexManager::get_mutex(&error_log_lock));
     if (error_log_fp) {
-        fprintf(error_log_fp, "%c %s\n", result_type, file);
+        fprintf(error_log_fp, "\n%c %s\n", result_type, file);
         if (!error_msg.empty()) {
             fprintf(error_log_fp, "— %s\n", error_msg.c_str());
-        //} else {
-          //  fprintf(error_log_fp, "— (no ERROR line found in output)\n");
+        } else {
+            fprintf(error_log_fp, "— (no ERROR line found in output)\n");
         }
         // fprintf(error_log_fp, "\n");\
 
@@ -552,22 +645,105 @@ static int vsystem(const char *fmt, ...)
 #include <sys/wait.h>
 int vsystem_posix_exec_argv(const std::vector<std::string> & argv)
 {
-pid_t pid = fork();
-if (pid == -1) return -1;
+	pid_t pid = fork();
+	if (pid == -1) return -1;
 
-if (pid == 0) {
-std::vector<char*> cargs;
-cargs.reserve(argv.size() + 1);
-for (auto &s : argv) cargs.push_back(const_cast<char*>(s.c_str()));
-cargs.push_back(nullptr);
-execvp(cargs[0], cargs.data()); // exec the test directly
-_exit(127); // exec failed
-} else {
-int status;
-if (waitpid(pid, &status, 0) == -1) return -1;
-return status;
+	if (pid == 0) {
+		std::vector<char*> cargs;
+		cargs.reserve(argv.size() + 1);
+		for (auto &s : argv) cargs.push_back(const_cast<char*>(s.c_str()));
+		cargs.push_back(nullptr);
+		execvp(cargs[0], cargs.data()); // exec the test directly
+		_exit(127); // exec failed
+	} else {
+		int status;
+		if (waitpid(pid, &status, 0) == -1) return -1;
+		return status;
+	}
 }
+
+
+// Same forwarder you already have
+static void forward_fd_to_file(int fd, const std::string& path) {
+    FILE* fp = std::fopen(path.c_str(), "w");
+    if (!fp) {
+        // Drain pipe to avoid blocking if file can't be opened
+        char sink[4096];
+        while (read(fd, sink, sizeof(sink)) > 0) {}
+        return;
+    }
+    char buf[4096];
+    ssize_t n;
+    while ((n = read(fd, buf, sizeof(buf))) > 0) {
+        std::fwrite(buf, 1, static_cast<size_t>(n), fp);
+        std::fflush(fp);
+    }
+    std::fclose(fp);
 }
+
+int vsystem_posix_exec_argv_capture(const std::vector<std::string>& argv,
+                                    const std::string& out_path,
+                                    const std::string& err_path)
+{
+    int out_pipe[2], err_pipe[2];
+    if (pipe(out_pipe) == -1 || pipe(err_pipe) == -1) {
+        return -1;
+    }
+
+    pid_t pid = fork();
+    if (pid == -1) {
+        close(out_pipe[0]); close(out_pipe[1]);
+        close(err_pipe[0]); close(err_pipe[1]);
+        return -1;
+    }
+
+    if (pid == 0) {
+        // Child
+        (void)dup2(out_pipe[1], STDOUT_FILENO);
+        (void)dup2(err_pipe[1], STDERR_FILENO);
+        close(out_pipe[0]); close(out_pipe[1]);
+        close(err_pipe[0]); close(err_pipe[1]);
+
+        std::vector<char*> cargs;
+        cargs.reserve(argv.size() + 1);
+        for (auto &s : argv) cargs.push_back(const_cast<char*>(s.c_str()));
+        cargs.push_back(nullptr);
+        execvp(cargs[0], cargs.data());
+        _exit(127); // exec failed
+    }
+
+    // Parent
+    close(out_pipe[1]);
+    close(err_pipe[1]);
+
+    std::thread t_out(forward_fd_to_file, out_pipe[0], out_path);
+    std::thread t_err(forward_fd_to_file, err_pipe[0], err_path);
+
+    int status = 0;
+    if (waitpid(pid, &status, 0) == -1) {
+        status = -1;
+    }
+
+    t_out.join();
+    t_err.join();
+
+	struct stat st_out{}, st_err{};
+	stat(out_path.c_str(), &st_out);
+	stat(err_path.c_str(), &st_err);
+	
+	std::cerr << "captured sizes: out=" << static_cast<long long>(st_out.st_size)
+			<< ", err=" << static_cast<long long>(st_err.st_size) << std::endl;
+
+
+    // Optional: decode and log (for debugging)
+    // if (status != -1) {
+    //     if (WIFEXITED(status)) output_debug("child exit code=%d", WEXITSTATUS(status));
+    //     else if (WIFSIGNALED(status)) output_debug("child term sig=%d", WTERMSIG(status));
+    // }
+
+    return status; // RAW status; caller must use WIFEXITED/WEXITSTATUS/WIFSIGNALED/WTERMSIG
+}
+
 #endif
 
 
@@ -680,6 +856,8 @@ static bool copyfile(char *from, char *to)
 	fclose(out);
 	return true;
 }
+
+
 
 /** routine to run a validation test */
 static counters run_test(char *file, double *elapsed_time = nullptr)
@@ -841,11 +1019,12 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 	// For macOS/Linux: Build a proper argument vector, PREPENDING stdbuf
 	std::vector<std::string> test_args;
 
-	// *** THIS IS THE FIX ***
 	// Use stdbuf to force the child process to be unbuffered.
 	// This ensures all output is written to the file immediately, even on a crash.
-	// test_args.push_back("stdbuf");
+	// on macos, needs brew install coreutils
+	// test_args.push_back("gstdbuf");
 	// test_args.push_back("-o0"); 
+	// test_args.push_back("-e0"); // stderr unbuffered
 
 	// Now add the original command and its arguments
 	test_args.push_back(executable_to_run_path.string());
@@ -868,7 +1047,13 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 	for(const auto& arg : test_args) { full_cmd_for_debug += arg + " "; }
 	output_debug("Thread %zu launching subprocess: %s", std::hash<std::thread::id>{}(std::this_thread::get_id()), full_cmd_for_debug.c_str());
 
-	code = vsystem_posix_exec_argv(test_args);		
+	// code = vsystem_posix_exec_argv_capture(test_args);		
+
+
+	std::string out_path = std::string(dir) + "/gridlabd.out.pipe";
+	std::string err_path = std::string(dir) + "/gridlabd.err.pipe";
+	code = vsystem_posix_exec_argv_capture(test_args, out_path, err_path);
+
 
 #endif
 	}
@@ -886,21 +1071,39 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 	//  		output_warning("%s exit code %x is outside normal exit code range and may be interpreted incorrectly", name, code);
 	// #endif
 
-	// Update the validation logic to treat UNHANDLED EXCEPTION as expected for error tests
-	// Simpler approach - just check if this is an error test and the code indicates an error
-	if (is_err && (code != XC_SUCCESS || code == XC_TSTERR ||
-				   code == XC_EXCEPTION || code == (XC_SIGNAL | SIGABRT)))
-	{
-		// Any non-success exit for an error test is expected
-		output_verbose("%s error was expected (code %d) in %.1f seconds", name, code, t);
-		// Don't mark this as a problem
-		return result;
-	}
+	// // Update the validation logic to treat UNHANDLED EXCEPTION as expected for error tests
+	// // Simpler approach - just check if this is an error test and the code indicates an error
+	// if (is_err && (code != XC_SUCCESS || code == XC_TSTERR ||
+	// 			   code == XC_EXCEPTION || code == (XC_SIGNAL | SIGABRT)))
+	// {
+	// 	// Any non-success exit for an error test is expected
+	// 	output_verbose("%s error was expected (code %d) in %.1f seconds", name, code, t);
+	// 	// Don't mark this as a problem
+	// 	return result;
+	// }
 
 	bool exited = WIFEXITED(code);
 	bool signaled = WIFSIGNALED(code);
-	int exit_code = WEXITSTATUS(code);
+	// int exit_code = WEXITSTATUS(code);
+	int  exit_code = exited   ? WEXITSTATUS(code) : -1;
 	bool problem = false;
+	int  term_sig  = signaled ? WTERMSIG(code)    : 0;
+
+
+
+	// Short-circuit for _err tests: any non-success exit OR any signal is "expected fail"
+	if (is_err && ((exited && exit_code != XC_SUCCESS) || signaled)) {
+
+
+		std::string errs = get_all_error_lines(dir);
+		log_test_error(file, 'E', errs); // use a different flag e.g., 'e' for expected error if you prefer
+		output_verbose("%s error was expected (exit=%d, sig=%d) in %.1f seconds",
+					name, exit_code, term_sig, t);
+
+		return result;
+	}
+
+
 	if (exited)
 	{
 		code = WEXITSTATUS(code);
@@ -928,13 +1131,14 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 		else if (code == XC_SUCCESS && !(is_exc || is_err)) // expected success and got it
 		{
 			output_verbose("%s success was expected, code %d in %.1f seconds", name, code, t);
+			
 		}
 		else if (code == XC_EXCEPTION) // unexpected exception
 		{
 			result.inc_exceptions(file, code, t);
 			problem = true;
-			std::string last_error = get_last_error_line(dir) + '\n';
-    		log_test_error(file, 'X', last_error);
+			// std::string last_error = get_all_error_lines(dir) + '\n';
+    		// log_test_error(file, 'X', last_error);
 		}
 		else if (code == XC_SUCCESS && is_err) // unexpected success
 		{
@@ -942,16 +1146,16 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 						 name, code, t);
 			result.inc_success(file, code, t);
 			problem = true;
-			std::string last_error = get_last_error_line(dir) + '\n';
-    		log_test_error(file, 'S', last_error);
+			// std::string last_error = get_all_error_lines(dir) + '\n';
+    		// log_test_error(file, 'S', last_error);
 		}
 		else if (code != XC_SUCCESS && !is_err) // unexpected error
 		{
 			// A test that should pass actually failed
 			result.inc_failed(file, code, t);
 			problem = true;
-			std::string last_error = get_last_error_line(dir) + '\n';
-    		log_test_error(file, 'E', last_error);
+			// std::string last_error = get_all_error_lines(dir) + '\n';
+    		// log_test_error(file, 'E', last_error);
 		}
 	}
 	else if (signaled && is_err) {
@@ -974,16 +1178,17 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 		{
 			result.inc_exceptions(file, code, t);
 			problem = true;
-			std::string last_error = get_last_error_line(dir);
-        	log_test_error(file, 'X', last_error);
+			// std::string last_error = get_all_error_lines(dir);
+        	// log_test_error(file, 'X', last_error);
 		}
 	}
 
-	std::string last_error_for_logging = "";
-	if (problem) {
-		last_error_for_logging = get_last_error_line(dir);
+	if(problem){
+		std::string last_error = get_all_error_lines(dir);
+        log_test_error(file, 'Z', last_error);
 	}
 
+	
 	output_debug("run_test(char *file='%s') done", file);
 	if (!problem && clean && !destroy_dir(dir))
 	{
@@ -1264,7 +1469,7 @@ int validate(int argc, char *argv[])
 	}
 	if (!redirect_found)
 	{
-		strcat(validate_child_cmdargs, " --redirect all");
+		//strcat(validate_child_cmdargs, " --redirect all");
 	}
 	strcat(validate_child_cmdargs, " --threadcount 1"); // Force single internal thread for each test run
 

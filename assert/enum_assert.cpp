@@ -242,24 +242,41 @@ int enum_assert::init(OBJECT *parent)
 
         // std::cerr << "enum_assert::init: parsing value text" << std::endl;
         // Parse expected "value" (text) into value_code
-        int tmp = 0;
-        const char* vt = value_text;  // Use raw member directly!
-        // std::cerr << "enum_assert::init: value_text = '" << (vt ? vt : "(null)") << "'" << std::endl;
+        // int tmp = 0;
+        // const char* vt = value_text;  // Use raw member directly!
+        // // std::cerr << "enum_assert::init: value_text = '" << (vt ? vt : "(null)") << "'" << std::endl;
         
-        if (!vt || !*vt) {
-            gl_error("enum_assert: expected value text is empty");
-            return 0;
-        }
+        // if (!vt || !*vt) {
+        //     gl_error("enum_assert: expected value text is empty");
+        //     return 0;
+        // }
         
-        if (std::isdigit(static_cast<unsigned char>(vt[0])) || vt[0] == '-') {
-            tmp = std::atoi(vt);
-        } else {
-            if (!map_enum_name_to_code(vt, &tmp)) {
-                gl_error("enum_assert: cannot parse value '%s' as numeric or known enum name", vt);
-                return 0;
-            }
-        }
-        set_value_code(tmp);
+        // if (std::isdigit(static_cast<unsigned char>(vt[0])) || vt[0] == '-') {
+        //     tmp = std::atoi(vt);
+        // } else {
+        //     if (!map_enum_name_to_code(vt, &tmp)) {
+        //         gl_error("enum_assert: cannot parse value '%s' as numeric or known enum name", vt);
+        //         return 0;
+        //     }
+        // }
+        // set_value_code(tmp);
+
+
+		const char* vt = value_text;
+		if (!vt || !*vt) {
+			gl_verbose("enum_assert: expected value is empty at init; will parse at runtime");
+			// leave value_code as default (0) for now; player will set 'value' later
+		} else {
+			int tmp = 0;
+			if (std::isdigit(static_cast<unsigned char>(vt[0])) || vt[0] == '-') {
+			tmp = std::atoi(vt);
+			} else if (!map_enum_name_to_code(vt, &tmp)) {
+			gl_error("enum_assert: cannot parse value '%s' as numeric or known enum name", vt);
+			return 0;
+			}
+			set_value_code(tmp);
+		}
+
         
         // std::cerr << "enum_assert::init: completed successfully" << std::endl;
         return 1;
@@ -506,9 +523,79 @@ EXPORT SIMULATIONMODE update_enum_assert(OBJECT *obj, TIMESTAMP t0, unsigned int
 				*/
 				return SM_ERROR;
 			}
+			// else if (da->get_status() == da->ASSERT_TRUE)
+			// {
+			// 	if (*x != da->get_value_code())
+			// 	{
+			// 		// Calculate time
+			// 		if (delta_time >= dt) // After first iteration
+			// 			del_clock = (double)t0 + (double)(delta_time - dt) / (double)DT_SECOND;
+			// 		else // First second different, don't back out
+			// 			del_clock = (double)t0 + (double)(delta_time) / (double)DT_SECOND;
+
+			// 		del_clock_int = (TIMESTAMP)del_clock;									  /* Whole seconds - update from global clock because we could be in delta for over 1 second */
+			// 		del_microseconds = (int)((del_clock - (int)(del_clock)) * 1000000 + 0.5); /* microseconds roll-over - biased upward (by 0.5) */
+
+			// 		// Convert out
+			// 		gl_localtime(del_clock_int, &delta_dt_val);
+
+			// 		// Determine output format
+			// 		gl_global_getvar("dateformat", dateformat, sizeof(dateformat));
+
+			// 		// Output date appropriately
+			// 		if (strcmp(dateformat, "ISO") == 0)
+			// 			sprintf(datebuff, "ERROR    [%04d-%02d-%02d %02d:%02d:%02d.%.06d %s] : ", delta_dt_val.year, delta_dt_val.month, delta_dt_val.day, delta_dt_val.hour, delta_dt_val.minute, delta_dt_val.second, del_microseconds, delta_dt_val.tz);
+			// 		else if (strcmp(dateformat, "US") == 0)
+			// 			sprintf(datebuff, "ERROR    [%02d-%02d-%04d %02d:%02d:%02d.%.06d %s] : ", delta_dt_val.month, delta_dt_val.day, delta_dt_val.year, delta_dt_val.hour, delta_dt_val.minute, delta_dt_val.second, del_microseconds, delta_dt_val.tz);
+			// 		else if (strcmp(dateformat, "EURO") == 0)
+			// 			sprintf(datebuff, "ERROR    [%02d-%02d-%04d %02d:%02d:%02d.%.06d %s] : ", delta_dt_val.day, delta_dt_val.month, delta_dt_val.year, delta_dt_val.hour, delta_dt_val.minute, delta_dt_val.second, del_microseconds, delta_dt_val.tz);
+			// 		else
+			// 			sprintf(datebuff, "ERROR    %.09f : ", del_clock);
+
+			// 		// Actual error part
+			// 		sprintf(error_output_buff, "Assert failed on %s - %s (%d) did not match %d", gl_name(obj->parent, buff, 64), da->get_target().c_str(), *x, da->get_value_code());
+
+			// 		// Send it out
+			// 		gl_output("%s%s", datebuff, error_output_buff);
+
+			// 		return SM_ERROR;
+			// 	}
+			// 	else
+			// 	{
+			// 		gl_verbose("Assert passed on %s", gl_name(obj->parent, buff, 64));
+			// 		return SM_EVENT;
+			// 	}
+			// }
+
 			else if (da->get_status() == da->ASSERT_TRUE)
 			{
-				if (*x != da->get_value_code())
+				// --- Determine the expected code from the CURRENT 'value' string ---
+				int expected_code = 0;
+				std::string expected = da->get_value_text(); // live value fed by player
+
+				if (!expected.empty())
+				{
+					const char* et = expected.c_str();
+					// numeric text (e.g., "0", "3", "-1")
+					if (std::isdigit(static_cast<unsigned char>(et[0])) || et[0] == '-')
+					{
+						expected_code = std::atoi(et);
+					}
+					// keyword text (e.g., "RUNNING", "TRIPPED", etc.)
+					else if (!map_enum_name_to_code(expected, &expected_code))
+					{
+						// Fallback to last parsed numeric (from init) if keyword unrecognized
+						expected_code = da->get_value_code();
+					}
+				}
+				else
+				{
+					// Empty string; fallback to last parsed numeric (from init or default)
+					expected_code = da->get_value_code();
+				}
+
+				// --- Actual comparison on the parent enumeration value ---
+				if (*x != expected_code)
 				{
 					// Calculate time
 					if (delta_time >= dt) // After first iteration
@@ -516,7 +603,7 @@ EXPORT SIMULATIONMODE update_enum_assert(OBJECT *obj, TIMESTAMP t0, unsigned int
 					else // First second different, don't back out
 						del_clock = (double)t0 + (double)(delta_time) / (double)DT_SECOND;
 
-					del_clock_int = (TIMESTAMP)del_clock;									  /* Whole seconds - update from global clock because we could be in delta for over 1 second */
+					del_clock_int = (TIMESTAMP)del_clock;                                      /* Whole seconds - update from global clock because we could be in delta for over 1 second */
 					del_microseconds = (int)((del_clock - (int)(del_clock)) * 1000000 + 0.5); /* microseconds roll-over - biased upward (by 0.5) */
 
 					// Convert out
@@ -527,16 +614,30 @@ EXPORT SIMULATIONMODE update_enum_assert(OBJECT *obj, TIMESTAMP t0, unsigned int
 
 					// Output date appropriately
 					if (strcmp(dateformat, "ISO") == 0)
-						sprintf(datebuff, "ERROR    [%04d-%02d-%02d %02d:%02d:%02d.%.06d %s] : ", delta_dt_val.year, delta_dt_val.month, delta_dt_val.day, delta_dt_val.hour, delta_dt_val.minute, delta_dt_val.second, del_microseconds, delta_dt_val.tz);
+						sprintf(datebuff, "ERROR    [%04d-%02d-%02d %02d:%02d:%02d.%.06d %s] : ",
+								delta_dt_val.year, delta_dt_val.month, delta_dt_val.day,
+								delta_dt_val.hour, delta_dt_val.minute, delta_dt_val.second,
+								del_microseconds, delta_dt_val.tz);
 					else if (strcmp(dateformat, "US") == 0)
-						sprintf(datebuff, "ERROR    [%02d-%02d-%04d %02d:%02d:%02d.%.06d %s] : ", delta_dt_val.month, delta_dt_val.day, delta_dt_val.year, delta_dt_val.hour, delta_dt_val.minute, delta_dt_val.second, del_microseconds, delta_dt_val.tz);
+						sprintf(datebuff, "ERROR    [%02d-%02d-%04d %02d:%02d:%02d.%.06d %s] : ",
+								delta_dt_val.month, delta_dt_val.day, delta_dt_val.year,
+								delta_dt_val.hour, delta_dt_val.minute, delta_dt_val.second,
+								del_microseconds, delta_dt_val.tz);
 					else if (strcmp(dateformat, "EURO") == 0)
-						sprintf(datebuff, "ERROR    [%02d-%02d-%04d %02d:%02d:%02d.%.06d %s] : ", delta_dt_val.day, delta_dt_val.month, delta_dt_val.year, delta_dt_val.hour, delta_dt_val.minute, delta_dt_val.second, del_microseconds, delta_dt_val.tz);
+						sprintf(datebuff, "ERROR    [%02d-%02d-%04d %02d:%02d:%02d.%.06d %s] : ",
+								delta_dt_val.day, delta_dt_val.month, delta_dt_val.year,
+								delta_dt_val.hour, delta_dt_val.minute, delta_dt_val.second,
+								del_microseconds, delta_dt_val.tz);
 					else
 						sprintf(datebuff, "ERROR    %.09f : ", del_clock);
 
-					// Actual error part
-					sprintf(error_output_buff, "Assert failed on %s - %s (%d) did not match %d", gl_name(obj->parent, buff, 64), da->get_target().c_str(), *x, da->get_value_code());
+					// Actual error part — use the computed expected_code
+					sprintf(error_output_buff,
+							"Assert failed on %s - %s (%d) did not match %d",
+							gl_name(obj->parent, buff, 64),
+							da->get_target().c_str(),
+							*x,
+							expected_code);
 
 					// Send it out
 					gl_output("%s%s", datebuff, error_output_buff);
@@ -549,6 +650,7 @@ EXPORT SIMULATIONMODE update_enum_assert(OBJECT *obj, TIMESTAMP t0, unsigned int
 					return SM_EVENT;
 				}
 			}
+
 			else if (da->get_status() == da->ASSERT_FALSE)
 			{
 				if (*x == da->get_value_code())

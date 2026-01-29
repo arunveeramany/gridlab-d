@@ -1051,41 +1051,128 @@ void auction::clear_market(void)
 			if (verbose){
 				gl_output("   ...  demand curve");
 			}
-			for (unsigned int i=0; i<asks.getcount(); i++){
-				if (verbose){
-					// --- Inside your loop that iterates with 'i' ---
+			// for (unsigned int i=0; i<asks.getcount(); i++){
+			// 	if (!verbose) continue;
+			// 	//if (verbose){
+			// 		// --- Inside your loop that iterates with 'i' ---
 
-					// 1. Call the function ONCE and store the result in a local pointer variable.
-					auto bid = asks.getbid(i); // Or use the specific pointer type, e.g., const BidObject* bid = ...
+			// 		// 1. Call the function ONCE and store the result in a local pointer variable.
+			// 		const BID* bid = asks.getbid(i); // Or use the specific pointer type, e.g., const BidObject* bid = ...
 
-					// 2. *** ALWAYS CHECK THE POINTER FOR NULL BEFORE USING IT. ***
-					if (bid != nullptr)
-					{
-						// 3. Now that we know 'bid' is a valid pointer, it is safe to access its members.
-						// We should also continue to apply the lessons from before and check other pointers like 'unit'.
-						//const char* safe_unit_str = unit ? unit : "N/A";
-						const char* safe_unit_str = unit ? static_cast<const char*>(unit) : "N/A";
-						const char* safe_from_str = bid->from ? bid->from : "unknown_source";
+			// 		if (!bid) {
+			// 				gl_warning("ask bid at index %u is NULL and was skipped.", i);
+			// 				continue;
+			// 		}
 
-						gl_output("   ...  %4d: %s asks %.3f %s at %.2f $/%s",
-							i,
-							safe_from_str,
-							bid->quantity,
-							safe_unit_str,
-							bid->price,
-							safe_unit_str);
-					}
-					else
-					{
-						// 4. (Optional but highly recommended) The pointer was NULL.
-						// Log a warning so you know why some output might be missing.
-						gl_warning("ask bid at index %d is NULL and was skipped.", i);
-					}
 
-					// --- Continue the loop ---
-					//gl_output("   ...  %4d: %s asks %.3f %s at %.2f $/%s",i,asks.getbid(i)->from, asks.getbid(i)->quantity,unit,asks.getbid(i)->price,unit);
+			// 		// 2. *** ALWAYS CHECK THE POINTER FOR NULL BEFORE USING IT. ***
+			// 		//if (bid != nullptr)
+			// 		//{
+			// 			// 3. Now that we know 'bid' is a valid pointer, it is safe to access its members.
+			// 			// We should also continue to apply the lessons from before and check other pointers like 'unit'.
+			// 			//const char* safe_unit_str = unit ? unit : "N/A";
+			// 			char safe_from[256];
+			// 			// const char* safe_unit_str = unit ? static_cast<const char*>(unit) : "N/A";
+			// 			// const char* safe_from_str = bid->from ? bid->from : "unknown_source";
+
+			// 			// gl_output("   ...  %4d: %s asks %.3f %s at %.2f $/%s",
+			// 			// 	i,
+			// 			// 	safe_from_str,
+			// 			// 	bid->quantity,
+			// 			// 	safe_unit_str,
+			// 			// 	bid->price,
+			// 			// 	safe_unit_str);
+
+			// 			if (bid->from && bid->from[0] != '\0') {
+			// 					// bounded copy + force termination
+			// 					strncpy(safe_from, bid->from, sizeof(safe_from) - 1);
+			// 					safe_from[sizeof(safe_from) - 1] = '\0';
+			// 				} else {
+			// 					// If the bid structure carries the bidder OBJECT*, prefer that name; else use a literal
+			// 					if (bid->source != nullptr) {
+			// 						char objname[256];
+			// 						gl_name(bid->source, objname, sizeof(objname) - 1);
+			// 						objname[sizeof(objname) - 1] = '\0';
+			// 						strncpy(safe_from, objname, sizeof(safe_from) - 1);
+			// 						safe_from[sizeof(safe_from) - 1] = '\0';
+			// 					} else {
+			// 						snprintf(safe_from, sizeof(safe_from), "unknown_source[%u]", i);
+			// 					}
+			// 				}
+
+			// 				// --- Safe unit string ---
+			// 				const char* unit_ptr = unit; // market unit
+			// 				char safe_unit[32];
+			// 				if (unit_ptr && unit_ptr[0] != '\0') {
+			// 					strncpy(safe_unit, unit_ptr, sizeof(safe_unit) - 1);
+			// 					safe_unit[sizeof(safe_unit) - 1] = '\0';
+			// 				} else {
+			// 					// pick a sensible default if auction.unit is empty
+			// 					strncpy(safe_unit, "kW", sizeof(safe_unit) - 1);
+			// 					safe_unit[sizeof(safe_unit) - 1] = '\0';
+			// 				}
+
+			// 				// --- Numeric sanity (avoid NaN/inf in output) ---
+			// 				double q = std::isfinite(bid->quantity) ? bid->quantity : 0.0;
+			// 				double p = std::isfinite(bid->price)    ? bid->price    : 0.0;
+
+			// 				gl_output("   ...  %4u: %s asks %.3f %s at %.2f $/%s",
+			// 						i, safe_from, q, safe_unit, p, safe_unit);
+
+			// 		// }
+			// 		// else
+			// 		// {
+			// 		// 	// 4. (Optional but highly recommended) The pointer was NULL.
+			// 		// 	// Log a warning so you know why some output might be missing.
+			// 		// 	gl_warning("ask bid at index %d is NULL and was skipped.", i);
+			// 		// }
+
+			// 		// --- Continue the loop ---
+			// 	//}
+			// }
+
+
+			for (unsigned int i = 0; i < asks.getcount(); ++i)
+			{
+				if (!verbose) continue;
+
+				// Fetch once and validate
+				const BID* bid = asks.getbid(i);
+				if (!bid) {
+					gl_warning("ask bid at index %u is NULL and was skipped.", i);
+					continue;
 				}
+
+				// --- Safe bidder name (bounded copy or fallback) ---
+				char safe_from[256];
+				if (bid->from && bid->from[0] != '\0') {
+					// bounded copy + force termination
+					strncpy(safe_from, bid->from, sizeof(safe_from) - 1);
+					safe_from[sizeof(safe_from) - 1] = '\0';
+				} else {
+					// no 'source' member in s_bid in your build, so just use a stable fallback
+					snprintf(safe_from, sizeof(safe_from), "unknown_source[%u]", i);
+				}
+
+				// --- Safe unit string ---
+				const char* unit_ptr = unit; // market unit
+				char safe_unit[32];
+				if (unit_ptr && unit_ptr[0] != '\0') {
+					strncpy(safe_unit, unit_ptr, sizeof(safe_unit) - 1);
+					safe_unit[sizeof(safe_unit) - 1] = '\0';
+				} else {
+					strncpy(safe_unit, "kW", sizeof(safe_unit) - 1);  // default if auction.unit is empty
+					safe_unit[sizeof(safe_unit) - 1] = '\0';
+				}
+
+				// --- Numeric sanity (avoid NaN/inf) ---
+				double q = std::isfinite(bid->quantity) ? bid->quantity : 0.0;
+				double p = std::isfinite(bid->price)    ? bid->price    : 0.0;
+
+				gl_output("   ...  %4u: %s asks %.3f %s at %.2f $/%s",
+						i, safe_from, q, safe_unit, p, safe_unit);
 			}
+
 			if(fixed_price * fixed_quantity != 0.0){
 				gl_warning("fixed_price and fixed_quantity are set in the same single auction market ~ only fixed_price will be used");
 			}
@@ -1293,7 +1380,6 @@ void auction::clear_market(void)
 						gl_warning("Ask at index %d is NULL and was skipped.", i);
 					}
 
-					/*gl_output("   ...  %4d: %s asks %.3f %s at %.2f $/%s",i,asks.getbid(i)->from, asks.getbid(i)->quantity,unit,asks.getbid(i)->price,unit);*/
 				}
 				if(asks.getbid(i)->price == pricecap){
 					unresponsive_buy += asks.getbid(i)->quantity;
@@ -1764,7 +1850,49 @@ int auction::submit_nolock(char *from, double quantity, double real_price, KEY k
 			//	gl_name(object_header(this),myname,sizeof(myname)), quantity<0?"ask":"offer", from,
 			//	fabs(quantity), unit, price, unit, gl_strtime(&dt,buffer,sizeof(buffer))?buffer:"unknown time");
 		}
-		BID bid = {from,b_id,fabs(quantity),price,state};
+		// BID bid = {from,b_id,fabs(quantity),price,state};
+		// if (quantity < 0){
+		// 	result = offers.remove_bid(bid.bid_id);
+		// 	out = asks.resubmit(&bid);
+		// } else if (quantity > 0){
+		// 	result = asks.remove_bid(bid.bid_id);
+		// 	out = offers.resubmit(&bid);
+		// } else {
+		// 	int rslt = offers.remove_bid(bid.bid_id);
+		// 	result = asks.remove_bid(bid.bid_id);
+		// 	gl_debug("zero quantity bid from %s is ignored", from);
+		// 	if(rslt == -1 || result == -1){
+		// 		return 0;
+		// 	} else {
+		// 		return 1;
+		// 	}
+		// }
+
+		// if (out == -1 || result == -1){
+		// 	return 0;
+		// }
+
+		// record_bid(from, quantity, real_price, state);
+
+
+		// --- BEGIN: own a stable copy of 'from' ---
+		char frombuf[256];
+		const char* src = (from && from[0] != '\0') ? from : "unknown_source";
+		strncpy(frombuf, src, sizeof(frombuf) - 1);
+		frombuf[sizeof(frombuf) - 1] = '\0';
+
+		// Allocate a heap copy that will live with the bid in the container.
+		// (Most builds free this during asks.clear()/offers.clear().)
+		char* owned_from = (char*)malloc(strlen(frombuf) + 1);
+		if (owned_from) {
+			strcpy(owned_from, frombuf);
+		} else {
+			owned_from = (char*)"unknown_source"; // safe fallback if malloc fails
+		}
+		// --- END
+
+		BID bid = {owned_from, b_id, fabs(quantity), price, state};
+
 		if (quantity < 0){
 			result = offers.remove_bid(bid.bid_id);
 			out = asks.resubmit(&bid);
@@ -1772,21 +1900,13 @@ int auction::submit_nolock(char *from, double quantity, double real_price, KEY k
 			result = asks.remove_bid(bid.bid_id);
 			out = offers.resubmit(&bid);
 		} else {
-			int rslt = offers.remove_bid(bid.bid_id);
-			result = asks.remove_bid(bid.bid_id);
-			gl_debug("zero quantity bid from %s is ignored", from);
-			if(rslt == -1 || result == -1){
-				return 0;
-			} else {
-				return 1;
-			}
+			gl_debug("zero quantity bid from %s is ignored", owned_from);
+			return 1;
 		}
 
-		if (out == -1 || result == -1){
-			return 0;
-		}
+		// Use the bounded copy for the transaction log, too
+		record_bid(frombuf, quantity, real_price, state);
 
-		record_bid(from, quantity, real_price, state);
 		return 1;
 	} else if (mkt_id == market_id && rebid == false){
 		char myname[64];
@@ -1822,7 +1942,21 @@ int auction::submit_nolock(char *from, double quantity, double real_price, KEY k
 				//gl_name(object_header(this),myname,sizeof(myname)), quantity<0?"ask":"offer", from,
 				//fabs(quantity), unit, price, unit, gl_strtime(&dt,buffer,sizeof(buffer))?buffer:"unknown time");
 		}
-		BID bid = {from,b_id,fabs(quantity),price,state};
+
+
+		char frombuf[256];
+		const char* src = (from && from[0] != '\0') ? from : "unknown_source";
+		strncpy(frombuf, src, sizeof(frombuf) - 1);
+		frombuf[sizeof(frombuf) - 1] = '\0';
+
+		char* owned_from = (char*)malloc(strlen(frombuf) + 1);
+		if (owned_from) {
+			strcpy(owned_from, frombuf);
+		} else {
+			owned_from = (char*)"unknown_source"; // safe fallback if malloc fails
+		}
+
+		BID bid = {owned_from,b_id,fabs(quantity),price,state};
 		if (quantity<0){
 			out = asks.submit(&bid);
 		} else if (quantity>0){
@@ -1836,7 +1970,7 @@ int auction::submit_nolock(char *from, double quantity, double real_price, KEY k
 		biddef.bid_type = (quantity > 0 ? BID_SELL : BID_BUY);
 		write_bid(out, biddef.market, biddef.bid, biddef.bid_type);
 		// interject transaction log file writing here
-		record_bid(from, quantity, real_price, state);
+		record_bid(frombuf, quantity, real_price, state);
 		biddef.raw = out;
 		return 1;
 	} else { // key between cleared market and 'market_id' ~ points to an old market

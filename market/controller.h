@@ -144,6 +144,12 @@ public:
 	int64 bid_id;
 
 private:
+	
+	enumeration PS_ON_VAL      = 0;
+	enumeration PS_OFF_VAL     = 0;
+	enumeration PS_UNKNOWN_VAL = 0;
+	bool powerstate_keywords_bound = false;
+
 	TIMESTAMP next_run;
 	TIMESTAMP last_run;
 	TIMESTAMP fast_reg_run;		//Ebony
