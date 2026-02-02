@@ -77,46 +77,46 @@ KEYWORD oflags[] = {
 	{"DELTAMODE", OF_DELTAMODE, nullptr},
 };
 
+static std::unordered_map<OBJECT *, std::string> g_pending_parent;
 
-static std::unordered_map<OBJECT*, std::string> g_pending_parent;
-
-
-static void register_pending_parent_link(OBJECT* child, const char* parent_name) 
+static void register_pending_parent_link(OBJECT *child, const char *parent_name)
 {
-    if (child && parent_name && *parent_name) 
+	if (child && parent_name && *parent_name)
 	{
-        g_pending_parent[child] = parent_name;
-    }
+		g_pending_parent[child] = parent_name;
+	}
 }
-
 
 // Resolve after al l objects are created, before init_all()
-void resolve_pending_parent_links() {
-    std::cerr << "Resolving deferred parent links, count=" << g_pending_parent.size() << std::endl;
-    for (auto& kv : g_pending_parent) {
-        OBJECT* child = kv.first;
-        const std::string& pname = kv.second;
-        OBJECT* parent = object_find_name(pname.c_str());
-        if (parent) {
-            object_set_parent(child, parent);
+void resolve_pending_parent_links()
+{
+	std::cerr << "Resolving deferred parent links, count=" << g_pending_parent.size() << std::endl;
+	for (auto &kv : g_pending_parent)
+	{
+		OBJECT *child = kv.first;
+		const std::string &pname = kv.second;
+		OBJECT *parent = object_find_name(pname.c_str());
+		if (parent)
+		{
+			object_set_parent(child, parent);
 
-
-			if (parent && child && child->oclass && strcmp(child->oclass->name,"solar")==0) {
+			if (parent && child && child->oclass && strcmp(child->oclass->name, "solar") == 0)
+			{
 				output_verbose("Linked solar '%s' → parent '%s' (class=%s)",
-							child->name ? child->name : "(unnamed)",
-							parent->name ? parent->name : "(unnamed)",
-							parent->oclass->name ? parent->oclass->name : "(null class)");
+							   child->name ? child->name : "(unnamed)",
+							   parent->name ? parent->name : "(unnamed)",
+							   parent->oclass->name ? parent->oclass->name : "(null class)");
 			}
-
-        } else {
-            // Leave it null; modules may support no-parent operation (e.g., solar static voltages)
-            output_verbose("Deferred parent '%s' still not found for object %s:%d",
-                           pname.c_str(), child->oclass->name, child->id);
-        }
-    }
-    g_pending_parent.clear();
+		}
+		else
+		{
+			// Leave it null; modules may support no-parent operation (e.g., solar static voltages)
+			output_verbose("Deferred parent '%s' still not found for object %s:%d",
+						   pname.c_str(), child->oclass->name, child->id);
+		}
+	}
+	g_pending_parent.clear();
 }
-
 
 /* WARNING: untested. -d3p988 30 Jan 08 */
 int object_get_oflags(KEYWORD **extflags)
@@ -425,8 +425,6 @@ OBJECT *object_create_single(CLASS *oclass)
 	}
 
 	memset(obj, 0, sz + oclass->size);
-	
-
 
 	tp_next %= tp_count;
 
@@ -1002,7 +1000,7 @@ static int set_header_value(OBJECT *obj, char *name, char *value)
 			object_set_name(obj, value);
 			return SUCCESS;
 		}
-	}	
+	}
 	else if (strcmp(name, "parent") == 0)
 	{
 		// Empty string means "no parent" -- clear any existing parent
@@ -1032,9 +1030,9 @@ static int set_header_value(OBJECT *obj, char *name, char *value)
 		{
 			// Defer: remember desired parent name for post-parse resolution
 			register_pending_parent_link(obj, value);
-			return SUCCESS; 
+			return SUCCESS;
 		}
-	}	
+	}
 	else if (strcmp(name, "rank") == 0)
 	{
 		if (object_set_rank(obj, atoi(value)) < 0)
@@ -1185,12 +1183,12 @@ int object_set_value_by_name(OBJECT *obj,		/**< the object to change */
 							 PROPERTYNAME name, /**< the name of the property to change */
 							 char *value)		/**< the value to set */
 {
-	//if (global_verbose_mode)
-		// std::cerr << "Setting property " << name
-		// 		  << " to value " << value
-		// 		  << " on object type " << obj->oclass->name
-		// 		  << " with id " << obj->id
-		// 		  << std::endl;
+	// if (global_verbose_mode)
+	//  std::cerr << "Setting property " << name
+	//  		  << " to value " << value
+	//  		  << " on object type " << obj->oclass->name
+	//  		  << " with id " << obj->id
+	//  		  << std::endl;
 
 	// Step 1: Check if value could be a schedule reference
 	bool might_be_schedule = false;
@@ -1702,6 +1700,7 @@ int object_set_rank(OBJECT *obj,	 /**< the object to set */
 int object_set_parent(OBJECT *obj,	  /**< the object to set */
 					  OBJECT *parent) /**< the new parent of the object */
 {
+	parent = obj->parent;
 	if (obj == nullptr)
 	{
 		output_error("object_set_parent was called with a null pointer");
@@ -1716,7 +1715,8 @@ int object_set_parent(OBJECT *obj,	  /**< the object to set */
 
 	obj->parent = parent;
 
-	if (parent != nullptr){
+	if (parent != nullptr)
+	{
 		parent->child_count++;
 		return set_rank(parent, obj->rank, nullptr);
 	}
@@ -1794,7 +1794,6 @@ void object_profile(OBJECT *obj, OBJECTPROFILEITEM pass, clock_t t)
 	}
 }
 
-
 // TIMESTAMP _object_sync(OBJECT *obj,		/**< the object to synchronize */
 // 					   TIMESTAMP ts,	/**< the desire clock to sync to */
 // 					   PASSCONFIG pass) /**< the pass configuration */
@@ -1802,14 +1801,13 @@ void object_profile(OBJECT *obj, OBJECTPROFILEITEM pass, clock_t t)
 
 extern "C" TIMESTAMP _object_sync(void *object, ...)
 {
-    va_list args;
-    va_start(args, object);
-    TIMESTAMP ts = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
+	va_list args;
+	va_start(args, object);
+	TIMESTAMP ts = va_arg(args, TIMESTAMP);
+	PASSCONFIG pass = va_arg(args, PASSCONFIG);
+	va_end(args);
 
-    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
-
+	OBJECT *obj = (OBJECT *)object; // ← Move this outside try block
 
 	CLASS *oclass = obj->oclass;
 	TIMESTAMP plc_time = TS_NEVER, sync_time;
@@ -1921,14 +1919,13 @@ extern "C" TIMESTAMP _object_sync(void *object, ...)
 
 extern "C" TIMESTAMP object_sync(void *object, ...)
 {
-    va_list args;
-    va_start(args, object);
-    TIMESTAMP ts = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
+	va_list args;
+	va_start(args, object);
+	TIMESTAMP ts = va_arg(args, TIMESTAMP);
+	PASSCONFIG pass = va_arg(args, PASSCONFIG);
+	va_end(args);
 
-    OBJECT *obj = (OBJECT*)object;
-    
+	OBJECT *obj = (OBJECT *)object;
 
 	clock_t t = (clock_t)exec_clock();
 	TIMESTAMP t2 = TS_NEVER;
@@ -1995,67 +1992,68 @@ int object_init(OBJECT *obj) /**< the object to initialize */
 {
 
 	if (obj->oclass == nullptr || obj->oclass->magic != CLASSVALID)
-    {
-        char oname[256];
-        output_error("object_init(): object '%s' (id %d) has invalid class pointer %p (magic=%08x)",
-                     object_name(obj, oname, sizeof(oname)),
-                     obj->id,
-                     (void*)obj->oclass,
-                     obj->oclass ? (unsigned)obj->oclass->magic : 0);
-        exec_setexitcode(XC_EXCEPTION);
-        return FAILED;
-    }
+	{
+		char oname[256];
+		output_error("object_init(): object '%s' (id %d) has invalid class pointer %p (magic=%08x)",
+					 object_name(obj, oname, sizeof(oname)),
+					 obj->id,
+					 (void *)obj->oclass,
+					 obj->oclass ? (unsigned)obj->oclass->magic : 0);
+		exec_setexitcode(XC_EXCEPTION);
+		return FAILED;
+	}
 
 	clock_t t = (clock_t)exec_clock();
 	int rv = 1;
 	obj->clock = global_starttime;
 
-	    // VALIDATION WITH DEBUG OUTPUT
-    if (obj->parent != nullptr)
-    {
-        char objname[256];
-        bool parent_valid = false;
-        
-        // fprintf(stderr, "DEBUG: Validating parent %p for object %s\n", 
-                // obj->parent, object_name(obj, objname, sizeof(objname)));
-        
-        // Check: parent must be in the global object list
-        OBJECT *check = object_get_first();
-        int check_count = 0;
-        while (check != nullptr)
-        {
-            check_count++;
-            if (check == obj->parent)
-            {
-                parent_valid = true;
-                // fprintf(stderr, "DEBUG: Found valid parent at position %d\n", check_count);
-                break;
-            }
-            check = check->next;
-        }
-        
-        // fprintf(stderr, "DEBUG: Checked %d objects, parent_valid = %d\n", check_count, parent_valid);
-        
-        if (!parent_valid)
-        {
-            output_error("object %s (id:%d) has INVALID parent pointer (%p)!", 
-                object_name(obj, objname, sizeof(objname)), obj->id, obj->parent);
-            output_error("Parent was NOT found in object list of %d objects", check_count);
-            // obj->parent = nullptr;
-            return 0;
-        }
-        
-        // Verify oclass
-        if (obj->parent->oclass == nullptr)
-        {
-            output_error("object %s has corrupted parent (null oclass)!", 
-                object_name(obj, objname, sizeof(objname)));
-            obj->parent = nullptr;
-            return 0;
-        }
-    }
-	
-	if (obj->oclass->init != nullptr){
+	// VALIDATION WITH DEBUG OUTPUT
+	if (obj->parent != nullptr)
+	{
+		char objname[256];
+		bool parent_valid = false;
+
+		// fprintf(stderr, "DEBUG: Validating parent %p for object %s\n",
+		// obj->parent, object_name(obj, objname, sizeof(objname)));
+
+		// Check: parent must be in the global object list
+		OBJECT *check = object_get_first();
+		int check_count = 0;
+		while (check != nullptr)
+		{
+			check_count++;
+			if (check == obj->parent)
+			{
+				parent_valid = true;
+				// fprintf(stderr, "DEBUG: Found valid parent at position %d\n", check_count);
+				break;
+			}
+			check = check->next;
+		}
+
+		// fprintf(stderr, "DEBUG: Checked %d objects, parent_valid = %d\n", check_count, parent_valid);
+
+		if (!parent_valid)
+		{
+			output_error("object %s (id:%d) has INVALID parent pointer (%p)!",
+						 object_name(obj, objname, sizeof(objname)), obj->id, obj->parent);
+			output_error("Parent was NOT found in object list of %d objects", check_count);
+			// obj->parent = nullptr;
+			return 0;
+		}
+
+		// Verify oclass
+		if (obj->parent->oclass == nullptr)
+		{
+			output_error("object %s has corrupted parent (null oclass)!",
+						 object_name(obj, objname, sizeof(objname)));
+			obj->parent = nullptr;
+			return 0;
+		}
+	}
+
+	if (obj->oclass->init != nullptr)
+	{
 		rv = (int)(*(obj->oclass->init))(obj, obj->parent);
 		if (rv == 1)
 		{

@@ -1,10 +1,13 @@
 #include "group_recorder.h"
+#include "gridlabd.h"
 
 #include <sstream>
 
 CLASS *group_recorder::oclass = nullptr;
 CLASS *group_recorder::pclass = nullptr;
 group_recorder *group_recorder::defaults = nullptr;
+extern "C" CALLBACKS *callback;
+
 
 void new_group_recorder(MODULE *mod)
 {
@@ -839,51 +842,86 @@ int group_recorder::write_line(TIMESTAMP t1, double t1dbl, bool deltacall)
 
 	// write time_str
 	// recorder.c uses multiple formats, in the sense of "formatted or not".  This has been fixed to match
-	if (!format)
-	{
-		if (!deltacall)
-		{
-			if (0 == gl_localtime(t1, &dt))
-			{
-				gl_error("group_recorder::write_line(): error when converting the sync time");
-				/* TROUBLESHOOT
-					Unprintable timestamp.
-				 */
-				tape_status = TS_ERROR;
-				return 0;
-			}
-		}
-		else // delta call
-		{
-			if (0 == gl_localtime_delta(t1dbl, &dt))
-			{
-				gl_error("group_recorder::write_line(): error when converting the sync time");
-				/* TROUBLESHOOT
-					Unprintable timestamp.
-				 */
-				tape_status = TS_ERROR;
-				return 0;
-			}
-		}
+	// if (!format)
+	// {
+	// 	if (!deltacall)
+	// 	{
+	// 		if (0 == gl_localtime(t1, &dt))
+	// 		{
+	// 			gl_error("group_recorder::write_line(): error when converting the sync time");
+	// 			/* TROUBLESHOOT
+	// 				Unprintable timestamp.
+	// 			 */
+	// 			tape_status = TS_ERROR;
+	// 			return 0;
+	// 		}
+	// 	}
+	// 	else // delta call
+	// 	{
+	// 		if (0 == gl_localtime_delta(t1dbl, &dt))
+	// 		{
+	// 			gl_error("group_recorder::write_line(): error when converting the sync time");
+	// 			/* TROUBLESHOOT
+	// 				Unprintable timestamp.
+	// 			 */
+	// 			tape_status = TS_ERROR;
+	// 			return 0;
+	// 		}
+	// 	}
 
-		if (0 == gl_strtime(&dt, time_str, sizeof(time_str)))
-		{
-			gl_error("group_recorder::write_line(): error when writing the sync time as a string");
-			/* TROUBLESHOOT
-				Error printing the timestamp.
-			 */
-			tape_status = TS_ERROR;
-			return 0;
-		}
-	}
-	else // Just converting TIMESTAMP to char array
-	{
-		// ************* TODO: This needs to be fixed for deltamode *****************//
-		std::string number;
-		std::stringstream strstream;
-		strstream << (long long)t1;
-		strstream >> number;
-		strcpy(time_str, number.c_str());
+	// 	if (0 == gl_strtime(&dt, time_str, sizeof(time_str)))
+	// 	{
+	// 		gl_error("group_recorder::write_line(): error when writing the sync time as a string");
+	// 		/* TROUBLESHOOT
+	// 			Error printing the timestamp.
+	// 		 */
+	// 		tape_status = TS_ERROR;
+	// 		return 0;
+	// 	}
+	// }
+	// else // Just converting TIMESTAMP to char array
+	// {
+	// 	// ************* TODO: This needs to be fixed for deltamode *****************//
+	// 	std::string number;
+	// 	std::stringstream strstream;
+	// 	strstream << (long long)t1;
+	// 	strstream >> number;
+	// 	strcpy(time_str, number.c_str());
+	// }
+
+
+	
+    if (!format) {
+        if (!deltacall) {
+            if (0 == gl_localtime(t1, &dt)) {
+                gl_error("group_recorder::write_line(): error when converting the sync time");
+                tape_status = TS_ERROR;
+                return 0;
+            }
+            if (0 == gl_strtime(&dt, time_str, sizeof(time_str))) {
+                gl_error("group_recorder::write_line(): error when writing the sync time as a string");
+                tape_status = TS_ERROR;
+                return 0;
+            }
+        } else { // delta call -- use the delta-safe conversion
+            if (0 == convert_from_deltatime_timestamp(t1dbl, time_str, sizeof(time_str))) {
+                gl_error("group_recorder::write_line(): error when converting deltamode timestamp");
+                tape_status = TS_ERROR;
+                return 0;
+            }
+        }
+    } else {
+        // Raw timestamp mode: print the integer timestamp for event mode,
+        // and preserve fractional time for deltamode.
+        if (!deltacall) {
+            snprintf(time_str, sizeof(time_str), "%lld", (long long)t1);
+        } else {
+            if (0 == convert_from_deltatime_timestamp(t1dbl, time_str, sizeof(time_str))) {
+                gl_error("group_recorder::write_line(): error when converting deltamode timestamp (format=true)");
+                tape_status = TS_ERROR;
+                return 0;
+            }
+        }
 	}
 
 	// print line to file
