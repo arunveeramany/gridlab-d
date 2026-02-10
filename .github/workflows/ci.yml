@@ -1,0 +1,311 @@
+
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:   
+    inputs:
+      config:
+        description: 'CMake build config'
+        required: false
+        default: 'Release'
+
+jobs:
+  # ------------------------------
+  # Windows: Visual Studio 2022 + vcpkg manifest mode
+  # ------------------------------
+  build-and-validate-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4        
+        with:
+            submodules: recursive   # init + update submodules (and nested ones)
+            fetch-depth: 0          # optional; full history helps some tools
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup vcpkg (manifest mode + cache)
+        uses: lukka/run-vcpkg@v11 
+        with:
+          runVcpkgInstall: true
+          logCollectionRegExps: |                
+            .*/CMakeOutput\.log$
+            .*/CMakeError\.log$
+            .*/vcpkg/buildtrees/.+\.log$
+      
+      - name: Discover vcpkg & CMake logs (on failure)
+        if: failure()
+        shell: pwsh
+        run: |
+          Write-Host "Workspace: $pwd"
+          Write-Host "Searching for vcpkg buildtrees logs..."
+          Get-ChildItem -Path $pwd -Recurse -Filter *.log |
+            Where-Object { $_.FullName -match '\\vcpkg\\buildtrees\\' } |
+            Select-Object FullName
+          Write-Host "Searching for CMakeOutput.log / CMakeError.log..."
+          Get-ChildItem -Path $pwd -Recurse -Include CMakeOutput.log,CMakeError.log |
+            Select-Object FullName
+
+      - name: vcpkg version & env (on failure)
+        if: failure()
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Continue'
+          Write-Host "Attempting to locate vcpkg.exe..."
+          Get-ChildItem -Path $pwd -Recurse -Filter vcpkg.exe | Select-Object FullName
+          Write-Host "Print vcpkg version if found:"
+          $vcpkg = Get-ChildItem -Path $pwd -Recurse -Filter vcpkg.exe | Select-Object -First 1
+          if ($vcpkg) { & $vcpkg.FullName version }
+          Write-Host "Environment:"
+
+      - name: Diagnose vcpkg bootstrap failure (on failure)
+        if: failure()
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Continue'
+          Write-Host "Workspace: $pwd"
+
+          Write-Host "Locate vcpkg.exe under workspace:"
+          Get-ChildItem -Path $pwd -Recurse -Filter vcpkg.exe | Select-Object FullName
+
+          Write-Host "Show any vcpkg buildtrees logs under workspace:"
+          Get-ChildItem -Path $pwd -Recurse -Filter *.log |
+            Where-Object { $_.FullName -match '\\vcpkg\\buildtrees\\' } |
+            Select-Object FullName
+
+      - name: Upload vcpkg & CMake logs (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vcpkg-and-cmake-logs
+          path: |
+            ${{ github.workspace }}/vcpkg/buildtrees/**/*.log
+            out/build/ci-windows/**/CMakeOutput.log
+            out/build/ci-windows/**/CMakeError.log
+
+      - name: Configure CMake (VS2022 + vcpkg toolchain)
+        shell: pwsh
+        run: |
+          # Clean build dir to avoid stale cache
+          Remove-Item -Recurse -Force out/build/ci-windows -ErrorAction SilentlyContinue
+
+          cmake -S . -B out/build/ci-windows `
+            -G "Visual Studio 17 2022" `
+            -DCMAKE_CONFIGURATION_TYPES="Debug;Release" `
+            -DVCPKG_TARGET_TRIPLET=x64-windows `
+            -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
+
+          # Diagnostics: verify curses/pdcurses in the cache
+          "=== CMakeCache CURSES/PDCurses entries ==="
+          Get-Content out/build/ci-windows/CMakeCache.txt | Select-String -Pattern "CURSES|PDCurses" | ForEach-Object { $_.Line }    
+            
+      - name: Build (Release)
+        shell: pwsh
+        run: cmake --build out/build/ci-windows --config Release
+
+      - name: Run gridlabd --validate
+        shell: pwsh
+        run: |
+          $buildDir = Resolve-Path "out/build/ci-windows"
+          $binDir   = Resolve-Path "out/build/ci-windows/bin/Release"
+          $shareDir = Resolve-Path "out/build/ci-windows/share"
+          $libDir   = Resolve-Path "out/build/ci-windows/lib"
+          $gldcore  = Resolve-Path "gldcore"
+
+          if (-not (Test-Path "$binDir/gridlabd.exe")) {
+            Write-Error "gridlabd.exe not found in $binDir"
+            Get-ChildItem -Recurse "out/build/ci-windows" | Select-Object FullName
+            exit 1
+          }
+
+          # Windows uses ';' as path separator
+          $env:GLPATH = "$pwd;$buildDir;$binDir;$libDir;$shareDir;$gldcore"
+          $env:PATH   = "$env:PATH;$binDir"
+
+          & "$binDir/gridlabd.exe" --validate
+
+      - name: Show validate.txt (always)
+        if: always()
+        shell: pwsh
+        run: |
+          $buildDir = Resolve-Path "out/build/ci-windows"
+          $file     = Join-Path $buildDir "validate.txt"
+
+          if (Test-Path $file) {
+            Write-Host "==== BEGIN validate.txt ===="
+            Get-Content $file
+            Write-Host "==== END validate.txt ===="
+
+            # Also write to the Actions job summary for easier viewing
+            "### validate.txt (Windows)" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+            Get-Content $file | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+          }
+          else {
+            Write-Warning "validate.txt not found at $file"
+            Write-Host "Listing $buildDir to help debug:"
+            Get-ChildItem -Recurse $buildDir | Select-Object FullName
+          }
+
+      - name: Upload validate.txt (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validate-windows
+          path: out/build/ci-windows/validate.txt
+          if-no-files-found: ignore
+
+      - name: (Optional) Run CTest
+        shell: pwsh
+        working-directory: out/build/ci-windows
+        run: ctest -C Release --output-on-failure
+
+      - name: Upload artifact (gridlabd Windows Release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: gridlabd-windows-release
+          path: |
+            out/build/ci-windows/bin/Release/*
+            out/build/ci-windows/share/**
+            out/build/ci-windows/lib/**
+
+  # ------------------------------
+  # macOS: AppleClang + Homebrew
+  # ------------------------------
+  build-and-validate-macos:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      # Optional: cache brew downloads to speed up CI runs
+      - name: Cache Homebrew
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/Homebrew
+            /Library/Caches/Homebrew
+          key: brew-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('ci/Brewfile') }}
+          restore-keys: |
+            brew-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Install build tools and Eigen via Homebrew
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          if ! command -v brew >/dev/null 2>&1; then
+            echo "Homebrew not found"; exit 1
+          fi
+
+          brew update
+
+          # Prefer reproducible installs from Brewfile if present
+          if [[ -f ci/Brewfile ]]; then
+            brew bundle --no-lock --file=ci/Brewfile
+          else
+            # Fallback inline install — minimal set mirroring Windows vcpkg.json
+            brew install cmake ninja pkg-config eigen
+          fi
+
+          HOMEBREW_PREFIX="$(brew --prefix)"
+          echo "HOMEBREW_PREFIX=${HOMEBREW_PREFIX}"
+
+          # Help CMake find Homebrew-installed packages
+          export PKG_CONFIG_PATH="${HOMEBREW_PREFIX}/lib/pkgconfig:${HOMEBREW_PREFIX}/share/pkgconfig:${PKG_CONFIG_PATH:-}"
+          echo "PKG_CONFIG_PATH=${PKG_CONFIG_PATH}"
+          echo "CMAKE_PREFIX_PATH=${HOMEBREW_PREFIX}" >> "$GITHUB_ENV"
+          echo "PKG_CONFIG_PATH=${PKG_CONFIG_PATH}"   >> "$GITHUB_ENV"
+
+      - name: Configure CMake (AppleClang + Ninja)
+        shell: bash
+        env:
+          CMAKE_PREFIX_PATH: ${{ env.CMAKE_PREFIX_PATH }}
+          PKG_CONFIG_PATH:   ${{ env.PKG_CONFIG_PATH }}
+        run: |
+          set -euxo pipefail
+          BUILD_DIR="out/build/ci-macos"
+
+          cmake -S . -B "$BUILD_DIR" \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE="Release" \
+            -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH}"
+
+      - name: Build (Release)
+        shell: bash
+        run: |
+          cmake --build out/build/ci-macos --config Release -- -v
+
+      - name: Run gridlabd --validate
+        shell: bash
+        run: |
+          set -euxo pipefail
+          BUILD_DIR="$(pwd)/out/build/ci-macos"
+          BIN_DIR="$BUILD_DIR/bin"
+          SHARE_DIR="$BUILD_DIR/share"
+          LIB_DIR="$BUILD_DIR/lib"
+          GLDCORE_DIR="$(pwd)/gldcore"
+
+          if [ ! -x "$BIN_DIR/gridlabd" ] && [ ! -f "$BIN_DIR/gridlabd" ]; then
+            echo "gridlabd not found in $BIN_DIR"
+            find "$BUILD_DIR" -maxdepth 4 -type f | sed 's|^|  |'
+            exit 1
+          fi
+
+          # macOS uses ':' as path separator
+          export GLPATH="$(pwd):${BUILD_DIR}:${BIN_DIR}:${LIB_DIR}:${SHARE_DIR}:${GLDCORE_DIR}"
+          export PATH="${PATH}:${BIN_DIR}"
+
+          "$BIN_DIR/gridlabd" --validate
+
+      - name: Show validate.txt (always)
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          BUILD_DIR="out/build/ci-macos"
+          FILE="${BUILD_DIR}/validate.txt"
+
+          if [[ -f "${FILE}" ]]; then
+            echo "==== BEGIN validate.txt ===="
+            sed -n '1,200p' "${FILE}"
+            echo "==== END validate.txt ===="
+
+            {
+              echo "### validate.txt (macOS)"
+              sed -n '1,200p' "${FILE}"
+            } >> "${GITHUB_STEP_SUMMARY}"
+          else
+            echo "validate.txt not found at ${FILE}"
+            echo "Listing ${BUILD_DIR} to help debug:"
+            find "${BUILD_DIR}" -maxdepth 3 -type f | sed 's|^|  |'
+          fi
+
+      - name: Upload validate.txt (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validate-macos
+          path: out/build/ci-macos/validate.txt
+          if-no-files-found: ignore
+
+      - name: (Optional) Run CTest
+        shell: bash
+        working-directory: out/build/ci-macos
+        run: |
+          ctest --output-on-failure
+
+      - name: Upload artifact (gridlabd macOS Release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: gridlabd-macos-release
+          path: |
+            out/build/ci-macos/bin/*
+            out/build/ci-macos/share/**
