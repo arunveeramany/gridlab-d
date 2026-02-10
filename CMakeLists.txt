@@ -189,18 +189,18 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/headers)
 #include(cmake/ExternalLibraries.cmake)
 
 # --- Generate external ABI header (platform.h includes this) ---
-configure_file(${CMAKE_SOURCE_DIR}/gldcore/config_external.h.in
-               ${CMAKE_CURRENT_BINARY_DIR}/headers/config_external.h
-               @ONLY)
+#configure_file(${CMAKE_SOURCE_DIR}/gldcore/config_external.h.in
+#               ${CMAKE_CURRENT_BINARY_DIR}/headers/config_external.h
+#               @ONLY)
 
 # Install core generated headers under include/gldcore
-install(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/headers/config_external.h
-    ${CMAKE_CURRENT_BINARY_DIR}/headers/config.h
-    ${CMAKE_CURRENT_BINARY_DIR}/headers/version.h
-    DESTINATION include/gldcore
-    COMPONENT Runtime
-)
+#install(FILES
+#    ${CMAKE_CURRENT_BINARY_DIR}/headers/config_external.h
+#    ${CMAKE_CURRENT_BINARY_DIR}/headers/config.h
+#    ${CMAKE_CURRENT_BINARY_DIR}/headers/version.h
+#    DESTINATION include/gldcore
+#    COMPONENT Runtime
+#)
 
 # Install ALL public gldcore headers (not just a short list)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/gldcore/
@@ -488,7 +488,7 @@ add_subdirectory(tape_plot)
 
 # Add test_gldapi executable
 add_executable(test_gldapi gldcore/test_gldapi.cpp)
-target_link_libraries(test_gldapi PRIVATE gldapi ${DL_LIB} ${JSONCPP_LIB} ${SUPERLU_LIB} ${CURSES_LIBRARIES} Threads::Threads)
+target_link_libraries(test_gldapi PRIVATE gldapi ${DL_LIB} ${SUPERLU_LIB} ${CURSES_LIBRARIES} Threads::Threads)
 set_target_properties(test_gldapi PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin
 )
@@ -523,7 +523,6 @@ set(GLD_LIBS
 )
 set(GLD_DEPS
         ${SUPERLU_LIB}
-        ${JSONCPP_LIB}
         ${DL_LIB}
 )
 
