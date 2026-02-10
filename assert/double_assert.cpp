@@ -15,7 +15,7 @@
 
 EXPORT_CREATE(double_assert);
 EXPORT_INIT(double_assert);
-// EXPORT_COMMIT(double_assert);
+EXPORT_COMMIT(double_assert);
 //  EXPORT_NOTIFY(double_assert);
 
 CLASS *double_assert::oclass = nullptr;
