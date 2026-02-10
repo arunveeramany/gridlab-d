@@ -51,7 +51,7 @@ object fault_check {
 	output_filename testout.txt;
 }
 
-object eventgen {	//Closes in primary of secondary transformer
+object eventgen { //Closes in primary of secondary transformer
 	name testgendevB;
 	flags DELTAMODE;
 	fault_type "SW-ABC";     //Type of fault for the object to induce
@@ -169,7 +169,8 @@ object transformer {
 	from node_21b;
 	to node_3;
 	configuration wye_wye_stepdown;
-	object recorder {
+object recorder {
+		parent xform_23;
 		flags DELTAMODE;
 		property "current_in_A,current_in_B,current_in_C,current_out_A,current_out_B,current_out_C";
 		file transformer_currents.csv;
@@ -193,31 +194,40 @@ object transformer {
 		// file data_transformer_inrush_currents_C.csv;
 		// interval 1;
 	// };
-	object complex_assert {
+object complex_assert {
+		name auto_complex_assert_196;
+		parent xform_23;
 		flags DELTAMODE;
 		target "current_in_A";
 		within 0.1;
-		object player {
+object player {
+			parent auto_complex_assert_196;
 			flags DELTAMODE;
 			property value;
 			file "../data_transformer_inrush_currents_A.csv";
 		};
 	};
-	object complex_assert {
+object complex_assert {
+		name auto_complex_assert_206;
+		parent xform_23;
 		flags DELTAMODE;
 		target "current_in_B";
 		within 0.1;
-		object player {
+object player {
+			parent auto_complex_assert_206;
 			flags DELTAMODE;
 			property value;
 			file "../data_transformer_inrush_currents_B.csv";
 		};
 	};
-	object complex_assert {
+object complex_assert {
+		name auto_complex_assert_216;
+		parent xform_23;
 		flags DELTAMODE;
 		target "current_in_C";
 		within 0.1;
-		object player {
+object player {
+			parent auto_complex_assert_216;
 			flags DELTAMODE;
 			property value;
 			file "../data_transformer_inrush_currents_C.csv";

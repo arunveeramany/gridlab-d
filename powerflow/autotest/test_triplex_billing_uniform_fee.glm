@@ -111,69 +111,79 @@ object triplex_meter {
 //	 power_1 2;
 	 power_2 1;
 	 power_12 1;
-	 object recorder {
+object recorder {
+		parent triplex_node_A;
 		limit 7000;
 		interval 84000;
 		file uniform_bills.csv; 
 		property monthly_energy,monthly_bill,previous_monthly_bill,previous_monthly_energy,monthly_fee,bill_mode,bill_day,price,first_tier_price,second_tier_price,third_tier_price,first_tier_energy,second_tier_energy,third_tier_energy;
 	};
-	object double_assert{
+object double_assert{
+		parent triplex_node_A;
 		target monthly_bill; 
 		value 11.2816;
 		within .1; 
 		once ONCE_TRUE;
 		in '2006-01-11 00:00:00 CST';
 	};
-	object double_assert{
+object double_assert{
+		parent triplex_node_A;
 		target monthly_bill; 
 		value 11.5768;
 		within .1; 
 		once ONCE_TRUE;
 		in '2006-01-16 00:00:00 CST';
 	};
-	object double_assert{
+object double_assert{
+		parent triplex_node_A;
 		target monthly_bill; 
 		value 12.8584;
 		within .1; 
 		once ONCE_TRUE;
 		in '2006-01-26 00:00:00 CST';
 	};
-	object double_assert{
+object double_assert{
+		parent triplex_node_A;
 		target monthly_energy; 
 		value 1.2816;
 		within .1; 
 		once ONCE_TRUE;
 		in '2006-01-11 00:00:00 CST';
 	};
-	object double_assert{
+object double_assert{
+		parent triplex_node_A;
 		target monthly_energy; 
 		value 1.5768;
 		within .1; 
 		once ONCE_TRUE;
 		in '2006-01-16 00:00:00 CST';
 	};
-	object double_assert{
+object double_assert{
+		parent triplex_node_A;
 		target monthly_energy; 
 		value 2.8584;
 		within .1; 
 		once ONCE_TRUE;
 		in '2006-01-26 00:00:00 CST';
 	};
-	object double_assert{
+object double_assert{
+		parent triplex_node_A;
 		target previous_monthly_bill; 
 		value 13.8952;
 		within .1;  // @weird 
 		once ONCE_TRUE;
 		in '2006-02-08 00:00:00 CST';
 	};
-	object double_assert{
+object double_assert{
+		parent triplex_node_A;
 		target previous_monthly_energy; 
 		value 3.8952;
 		within .1;  // @weird 
 		once ONCE_TRUE;
 		in '2006-02-08 00:00:00 CST';
 	};
-	object player {
+object player {
+          parent triplex_node_A;
           file ../billing_power.player;
           loop 1;
           property power_1;

@@ -54,7 +54,8 @@ object triplex_meter {
 	voltage_1 124.0+0j;
 	voltage_2 116.0+0j;
 	nominal_voltage 120;
-	object complex_assert {
+object complex_assert {
+		parent tpm;
 		target measured_power;
 		value 3443.480+369.529j;
 		within 0.01;
@@ -89,47 +90,56 @@ object triplex_load {
 	current_pf_12 0.85;
 	impedance_fraction_12 0.5;
 	impedance_pf_12 0.9;
-	object complex_assert {
+object complex_assert {
+		parent tpl;
 		target constant_power_1;
 		value 593.750+195.156j;
 		within 0.01;
 	};
-	object complex_assert {
+object complex_assert {
+		parent tpl;
 		target constant_power_2;
 		value 0.000+200.000j;
 		within 0.01;
 	};
-	object complex_assert {
+object complex_assert {
+		parent tpl;
 		target constant_power_12;
 		value 900.000-435.890j;
 		within 0.01;
 	};
-	object complex_assert {
+object complex_assert {
+		parent tpl;
 		target constant_current_1;
 		value 1.875+0.908j;
 		within 0.01;
 	};
-	object complex_assert {
+object complex_assert {
+		parent tpl;
 		target constant_current_2;
 		value 2.833-1.756j;
 		within 0.01;
 	};
-	object complex_assert {
+object complex_assert {
+		parent tpl;
 		target constant_current_12;
 		value 0.000+0.000j;
 		within 0.01;
 	};
-	object complex_assert {
+object complex_assert {
+		parent tpl;
 		target constant_impedance_1;
 		value 115.200+0.000j;
 		within 0.01;
 	};
-	object complex_assert {
+object complex_assert {
+		parent tpl;
 		target constant_impedance_2;
 		value 34.200-11.241j;
 		within 0.01;
 	};
-	object complex_assert {
+object complex_assert {
+		parent tpl;
 		target constant_impedance_12;
 		value 51.840+25.107j;
 		within 0.01;

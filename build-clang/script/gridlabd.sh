@@ -33,7 +33,7 @@ fi
 #  export CXXFLAGS="$CXXFLAGS -fPIC"
 #fi
 
-export CXXFLAGS="-ffp-contract=off -fno-fast-math -ffp-contract=off -fno-fast-math -Werror=return-type -Werror=write-strings $<$<CONFIG:Debug>:-g -O0>"
+export CXXFLAGS="-Werror=return-type -Werror=write-strings $<$<CONFIG:Debug>:-g -O0>"
 
 if test "x$GRIDLABD_DEBUG" = "x"; then
   if test "x$HAS_MINGW" = "xyes"; then

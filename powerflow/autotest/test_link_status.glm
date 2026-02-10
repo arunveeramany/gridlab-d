@@ -67,7 +67,7 @@ object transformer_configuration {
 }
 
 // Phase Conductor for 721: 1,000,000 AA,CN
-object underground_line_conductor { 
+object underground_line_conductor {
 	name ulc7210;
 	outer_diameter 1.980000;
 	conductor_gmr 0.036800;
@@ -183,14 +183,16 @@ object load {
 	constant_power_B 900000.0+435889.8945j;
 	constant_power_C 1187500.0+390312.375j;
 	nominal_voltage 2401.777;
-	object complex_assert {			//Eventgen switch event
+object complex_assert { //Eventgen switch event
+		parent load4;
 		in '2000-01-01 00:00:10';
 		out '2000-01-01 00:00:19';
 		target "voltage_B";
 		value 0.0;
 		within 0.01;
 	};
-	object complex_assert {			//Player_1 toggle
+object complex_assert { //Player_1 toggle
+		parent load4;
 		in '2000-01-01 00:00:30';
 		out '2000-01-01 00:00:44';
 		target "voltage_B";
@@ -259,7 +261,8 @@ object node {
 	name node1C;
 	phases "ABCN";
 	nominal_voltage 7199.558;
-	object complex_assert {			//Player_2 status event
+object complex_assert { //Player_2 status event
+		parent node1C;
 		in '2000-01-01 00:00:55';
 		out '2000-01-01 00:01:14';
 		target "voltage_B";
@@ -314,14 +317,16 @@ object load {
 	constant_power_B +400500.0+435889.8945j;
 	constant_power_C +802500.0+390312.375j;
 	nominal_voltage 2401.777;
-	object complex_assert {			//Player_2 status event
+object complex_assert { //Player_2 status event
+		parent load4C;
 		in '2000-01-01 00:00:55';
 		out '2000-01-01 00:01:14';
 		target "voltage_B";
 		value 0.0;
 		within 0.01;
 	};
-	object complex_assert {			//Player_3 status event
+object complex_assert { //Player_3 status event
+		parent load4C;
 		in '2000-01-01 00:01:30';
 		out '2000-01-01 00:01:49';
 		target "voltage_B";
@@ -346,7 +351,8 @@ object node {
 	name node_removed;
 	phases "ABCN";
 	nominal_voltage 7199.558;
-	object complex_assert {			//Should be out of service/zero the whole time
+object complex_assert { //Should be out of service/zero the whole time
+		parent node_removed;
 		target "voltage_B";
 		value 0.0;
 		within 0.01;

@@ -20,6 +20,7 @@ events:
     names:
       - "uname"
     candidate_directories:
+      - "/Applications/Blender.app/Contents/MacOS/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
       - "/usr/local/bin/"
@@ -32,7 +33,9 @@ events:
       - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
       - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
       - "/opt/pmk/env/global/bin/"
+      - "/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/bin/"
     searched_directories:
+      - "/Applications/Blender.app/Contents/MacOS/uname"
       - "/opt/homebrew/bin/uname"
       - "/opt/homebrew/sbin/uname"
       - "/usr/local/bin/uname"
@@ -40,6 +43,7 @@ events:
     found: "/usr/bin/uname"
     search_context:
       ENV{PATH}:
+        - "/Applications/Blender.app/Contents/MacOS"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
         - "/usr/local/bin"
@@ -52,6 +56,7 @@ events:
         - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin"
         - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
         - "/opt/pmk/env/global/bin"
+        - "/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23//build-clang/bin"
   -
     kind: "message-v1"
     backtrace:
@@ -79,6 +84,7 @@ events:
     names:
       - "install_name_tool"
     candidate_directories:
+      - "/Applications/Blender.app/Contents/MacOS/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
       - "/usr/local/bin/"
@@ -91,7 +97,9 @@ events:
       - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
       - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
       - "/opt/pmk/env/global/bin/"
+      - "/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/bin/"
     searched_directories:
+      - "/Applications/Blender.app/Contents/MacOS/install_name_tool"
       - "/opt/homebrew/bin/install_name_tool"
       - "/opt/homebrew/sbin/install_name_tool"
       - "/usr/local/bin/install_name_tool"
@@ -99,6 +107,7 @@ events:
     found: "/usr/bin/install_name_tool"
     search_context:
       ENV{PATH}:
+        - "/Applications/Blender.app/Contents/MacOS"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
         - "/usr/local/bin"
@@ -111,5 +120,6 @@ events:
         - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin"
         - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
         - "/opt/pmk/env/global/bin"
+        - "/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23//build-clang/bin"
       CMAKE_INSTALL_PREFIX: "/usr/local"
 ...

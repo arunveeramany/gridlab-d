@@ -28,17 +28,14 @@
 #include <atomic>
 #include <vector>
 
-
 #include <deque>
 #include <algorithm>
-#include <cctype>     // for std::isspace
+#include <cctype> // for std::isspace
 
 #include <string>
 
-
 #include <deque>
 #include <sstream>
-
 
 #include "globals.h"
 #include "output.h"
@@ -221,130 +218,155 @@ static char report_file[1024] = "validate_win32.txt";
 static char report_file[1024] = "validate.txt";
 #endif
 
-
-
-static bool line_has_error_token(const char* buf) {
-    static const char* TOKENS[] = { "ERROR", "EXCEPTION", "FATAL", "CRITICAL" };
-    for (auto t : TOKENS) {
-        if (std::strstr(buf, t)) return true;
-    }
-    return false;
+static bool line_has_error_token(const char *buf)
+{
+	static const char *TOKENS[] = {"ERROR", "EXCEPTION", "FATAL", "CRITICAL"};
+	for (auto t : TOKENS)
+	{
+		if (std::strstr(buf, t))
+			return true;
+	}
+	return false;
 }
 
 // Keep last N matching lines from one file (append into a shared ring)
-static void collect_last_error_lines_from_file(const std::string& filename,
-                                               size_t max_matches,
-                                               std::deque<std::string>& last) {
-    FILE* fp = std::fopen(filename.c_str(), "r");
-    if (!fp) return;
-    char buf[8192];
-    while (std::fgets(buf, sizeof(buf), fp)) {
-        size_t len = std::strlen(buf);
-        while (len && (buf[len-1]=='\n' || buf[len-1]=='\r')) buf[--len] = '\0';
-        if (line_has_error_token(buf)) {
-            if (last.size() == max_matches) last.pop_front();
-            last.emplace_back(buf);
-        }
-    }
-    std::fclose(fp);
+static void collect_last_error_lines_from_file(const std::string &filename,
+											   size_t max_matches,
+											   std::deque<std::string> &last)
+{
+	FILE *fp = std::fopen(filename.c_str(), "r");
+	if (!fp)
+		return;
+	char buf[8192];
+	while (std::fgets(buf, sizeof(buf), fp))
+	{
+		size_t len = std::strlen(buf);
+		while (len && (buf[len - 1] == '\n' || buf[len - 1] == '\r'))
+			buf[--len] = '\0';
+		if (line_has_error_token(buf))
+		{
+			if (last.size() == max_matches)
+				last.pop_front();
+			last.emplace_back(buf);
+		}
+	}
+	std::fclose(fp);
 }
 
 // Tail helper (unchanged, but increase window to be safe)
-static std::string tail_file(const std::string& path, size_t max_lines = 500) {
-    std::deque<std::string> q;
-    FILE* fp = std::fopen(path.c_str(), "r");
-    if (!fp) return {};
-    char buf[8192];
-    while (std::fgets(buf, sizeof(buf), fp)) {
-        size_t len = std::strlen(buf);
-        while (len && (buf[len-1]=='\n' || buf[len-1]=='\r')) buf[--len] = '\0';
-        q.emplace_back(buf);
-        if (q.size() > max_lines) q.pop_front();
-    }
-    std::fclose(fp);
-    std::string out;
-    for (size_t i=0; i<q.size(); ++i) { if (i) out.push_back('\n'); out += q[i]; }
-    return out;
+static std::string tail_file(const std::string &path, size_t max_lines = 500)
+{
+	std::deque<std::string> q;
+	FILE *fp = std::fopen(path.c_str(), "r");
+	if (!fp)
+		return {};
+	char buf[8192];
+	while (std::fgets(buf, sizeof(buf), fp))
+	{
+		size_t len = std::strlen(buf);
+		while (len && (buf[len - 1] == '\n' || buf[len - 1] == '\r'))
+			buf[--len] = '\0';
+		q.emplace_back(buf);
+		if (q.size() > max_lines)
+			q.pop_front();
+	}
+	std::fclose(fp);
+	std::string out;
+	for (size_t i = 0; i < q.size(); ++i)
+	{
+		if (i)
+			out.push_back('\n');
+		out += q[i];
+	}
+	return out;
 }
 
-
-
-static std::string get_all_error_lines(const char* dir) {
-    struct FileInfo {
-        std::string path;
-        time_t      mtime;
-        off_t       size;
-    };
-
-	static const char* kPaths[] = {
-		"/gridlabd.err.pipe", "/gridlabd.out.pipe",
-		"/gridlabd.err",      "/gridlabd.out",
-		"/gridlabd.wrn",      "/gridlabd.dbg", "/gridlabd.inf", "/gridlabd.prg", "/gridlabd.pro"
+static std::string get_all_error_lines(const char *dir)
+{
+	struct FileInfo
+	{
+		std::string path;
+		time_t mtime;
+		off_t size;
 	};
 
+	static const char *kPaths[] = {
+		"/gridlabd.err.pipe", "/gridlabd.out.pipe",
+		"/gridlabd.err", "/gridlabd.out",
+		"/gridlabd.wrn", "/gridlabd.dbg", "/gridlabd.inf", "/gridlabd.prg", "/gridlabd.pro"};
 
-    std::vector<FileInfo> files;
-    files.reserve(sizeof(kPaths) / sizeof(kPaths[0]));
+	std::vector<FileInfo> files;
+	files.reserve(sizeof(kPaths) / sizeof(kPaths[0]));
 
-
-
-    for (const char* f:  kPaths) 
+	for (const char *f : kPaths)
 	{
-        std::string p = std::string(dir) + f;
-        struct stat st{};
-        time_t mt = 0; off_t sz = 0;
-        if (stat(p.c_str(), &st) == 0) { mt = st.st_mtime; sz = st.st_size; }
-        files.push_back({ p, mt, sz });
-    }
+		std::string p = std::string(dir) + f;
+		struct stat st{};
+		time_t mt = 0;
+		off_t sz = 0;
+		if (stat(p.c_str(), &st) == 0)
+		{
+			mt = st.st_mtime;
+			sz = st.st_size;
+		}
+		files.push_back({p, mt, sz});
+	}
 
-    // Sort newest-first (tie-break larger size)
-    std::sort(files.begin(), files.end(), [](const auto& a, const auto& b)
-              {
+	// Sort newest-first (tie-break larger size)
+	std::sort(files.begin(), files.end(), [](const auto &a, const auto &b)
+			  {
                   if (a.mtime != b.mtime) return a.mtime > b.mtime;
-                  return a.size > b.size;
-              });
+                  return a.size > b.size; });
 
-    // 1) Last-N token lines across ALL files
-    std::deque<std::string> last_tokens;
-    constexpr size_t MAX_TOKENS = 50; // keep last 50 token lines overall
-    for (const auto& fi : files) {
-        collect_last_error_lines_from_file(fi.path, MAX_TOKENS, last_tokens);
-    }
-    if (!last_tokens.empty()) {
-        std::string result;
-        for (size_t i = 0; i < last_tokens.size(); ++i) {
-            if (i) result.push_back('\n');
-            result += last_tokens[i];
-        }
-        return result;
-    }
+	// 1) Last-N token lines across ALL files
+	std::deque<std::string> last_tokens;
+	constexpr size_t MAX_TOKENS = 50; // keep last 50 token lines overall
+	for (const auto &fi : files)
+	{
+		collect_last_error_lines_from_file(fi.path, MAX_TOKENS, last_tokens);
+	}
+	if (!last_tokens.empty())
+	{
+		std::string result;
+		for (size_t i = 0; i < last_tokens.size(); ++i)
+		{
+			if (i)
+				result.push_back('\n');
+			result += last_tokens[i];
+		}
+		return result;
+	}
 
-    // 2) No token lines at all: tail newest file for context
-    for (const auto& fi : files) {
-        auto t = tail_file(fi.path, 500);
-        if (!t.empty()) return t;
-    }
+	// 2) No token lines at all: tail newest file for context
+	for (const auto &fi : files)
+	{
+		auto t = tail_file(fi.path, 500);
+		if (!t.empty())
+			return t;
+	}
 
-    // 3) Nothing available
-    return std::string();
+	// 3) Nothing available
+	return std::string();
 }
 
-
-
-
-static void log_test_error(const char *file, char result_type, const std::string &error_msg) {
+static void log_test_error(const char *file, char result_type, const std::string &error_msg)
+{
 	std::unique_lock<std::shared_mutex> lock(SharedMutexManager::get_mutex(&error_log_lock));
-    if (error_log_fp) {
-        fprintf(error_log_fp, "\n%c %s\n", result_type, file);
-        if (!error_msg.empty()) {
-            fprintf(error_log_fp, "— %s\n", error_msg.c_str());
-        } else {
-            fprintf(error_log_fp, "— (no ERROR line found in output)\n");
-        }
-        // fprintf(error_log_fp, "\n");\
+	if (error_log_fp)
+	{
+		fprintf(error_log_fp, "\n%c %s\n", result_type, file);
+		if (!error_msg.empty())
+		{
+			fprintf(error_log_fp, "— %s\n", error_msg.c_str());
+		}
+		else
+		{
+			fprintf(error_log_fp, "— (no ERROR line found in output)\n");
+		}
+		// fprintf(error_log_fp, "\n");\
 
-        fflush(error_log_fp);
-    }
+		fflush(error_log_fp);
+	}
 }
 
 static const char *report_ext = nullptr;
@@ -377,39 +399,44 @@ static bool report_open(void)
 		report_fp = fopen(report_file, "w");
 
 		// Create validate_errors.txt in the SAME directory as validate.txt
-        char error_log_file[1024];
-        strcpy(error_log_file, report_file);
+		char error_log_file[1024];
+		strcpy(error_log_file, report_file);
 
 		// In the validation initialization code (where report_fp is opened)
 		// char error_log_file[1024];
 		snprintf(error_log_file, sizeof(error_log_file), "%s/validate_errors.txt", global_workdir);
 		error_log_fp = fopen(error_log_file, "w");
-		if (error_log_fp) {
+		if (error_log_fp)
+		{
 			fprintf(error_log_fp, "Validation Error Details\n");
 			fprintf(error_log_fp, "========================\n\n");
 		}
 
 		// Find the last '/' or '\' to get directory
-        char *last_sep = strrchr(error_log_file, '/');
+		char *last_sep = strrchr(error_log_file, '/');
 #ifdef _WIN32
-        char *last_backslash = strrchr(error_log_file, '\\');
-        if (last_backslash > last_sep) last_sep = last_backslash;
+		char *last_backslash = strrchr(error_log_file, '\\');
+		if (last_backslash > last_sep)
+			last_sep = last_backslash;
 #endif
-        
-        if (last_sep != nullptr) {
-            // Has directory path - replace filename
-            strcpy(last_sep + 1, "validate_errors.txt");
-        } else {
-            // No directory path - just use filename in current directory
-            strcpy(error_log_file, "validate_errors.txt");
-        }
-        
-        error_log_fp = fopen(error_log_file, "w");
-        if (error_log_fp) {
-            fprintf(error_log_fp, "Validation Error Details\n");
-            fprintf(error_log_fp, "========================\n\n");
-        }
 
+		if (last_sep != nullptr)
+		{
+			// Has directory path - replace filename
+			strcpy(last_sep + 1, "validate_errors.txt");
+		}
+		else
+		{
+			// No directory path - just use filename in current directory
+			strcpy(error_log_file, "validate_errors.txt");
+		}
+
+		error_log_fp = fopen(error_log_file, "w");
+		if (error_log_fp)
+		{
+			fprintf(error_log_fp, "Validation Error Details\n");
+			fprintf(error_log_fp, "========================\n\n");
+		}
 	}
 	// wunlock(&report_lock);
 	return report_fp != nullptr;
@@ -490,10 +517,12 @@ static int report_close(void)
 	// wlock(&report_lock);
 	//  replace the above with SharedMutexManager
 	std::unique_lock<std::shared_mutex> lock(SharedMutexManager::get_mutex(&report_lock));
-	if (report_fp){
+	if (report_fp)
+	{
 		fclose(report_fp);
 		// At the end of validation (where report_fp is closed)
-		if (error_log_fp) {
+		if (error_log_fp)
+		{
 			fclose(error_log_fp);
 			error_log_fp = nullptr;
 			output_message("See '%s/validate_errors.txt' for error details", global_workdir);
@@ -639,159 +668,173 @@ static int vsystem(const char *fmt, ...)
 	return rc;
 }
 
-
 // replace vsystem_posix() with an argv-based exec
 #ifndef _WIN32
 #include <sys/wait.h>
-int vsystem_posix_exec_argv(const std::vector<std::string> & argv)
+int vsystem_posix_exec_argv(const std::vector<std::string> &argv)
 {
 	pid_t pid = fork();
-	if (pid == -1) return -1;
+	if (pid == -1)
+		return -1;
 
-	if (pid == 0) {
-		std::vector<char*> cargs;
+	if (pid == 0)
+	{
+		std::vector<char *> cargs;
 		cargs.reserve(argv.size() + 1);
-		for (auto &s : argv) cargs.push_back(const_cast<char*>(s.c_str()));
+		for (auto &s : argv)
+			cargs.push_back(const_cast<char *>(s.c_str()));
 		cargs.push_back(nullptr);
 		execvp(cargs[0], cargs.data()); // exec the test directly
-		_exit(127); // exec failed
-	} else {
+		_exit(127);						// exec failed
+	}
+	else
+	{
 		int status;
-		if (waitpid(pid, &status, 0) == -1) return -1;
+		if (waitpid(pid, &status, 0) == -1)
+			return -1;
 		return status;
 	}
 }
 
-
 // Same forwarder you already have
-static void forward_fd_to_file(int fd, const std::string& path) {
-    FILE* fp = std::fopen(path.c_str(), "w");
-    if (!fp) {
-        // Drain pipe to avoid blocking if file can't be opened
-        char sink[4096];
-        while (read(fd, sink, sizeof(sink)) > 0) {}
-        return;
-    }
-    char buf[4096];
-    ssize_t n;
-    while ((n = read(fd, buf, sizeof(buf))) > 0) {
-        std::fwrite(buf, 1, static_cast<size_t>(n), fp);
-        std::fflush(fp);
-    }
-    std::fclose(fp);
+static void forward_fd_to_file(int fd, const std::string &path)
+{
+	FILE *fp = std::fopen(path.c_str(), "w");
+	if (!fp)
+	{
+		// Drain pipe to avoid blocking if file can't be opened
+		char sink[4096];
+		while (read(fd, sink, sizeof(sink)) > 0)
+		{
+		}
+		return;
+	}
+	char buf[4096];
+	ssize_t n;
+	while ((n = read(fd, buf, sizeof(buf))) > 0)
+	{
+		std::fwrite(buf, 1, static_cast<size_t>(n), fp);
+		std::fflush(fp);
+	}
+	std::fclose(fp);
 }
 
-int vsystem_posix_exec_argv_capture(const std::vector<std::string>& argv,
-                                    const std::string& out_path,
-                                    const std::string& err_path)
+int vsystem_posix_exec_argv_capture(const std::vector<std::string> &argv,
+									const std::string &out_path,
+									const std::string &err_path)
 {
-    int out_pipe[2], err_pipe[2];
-    if (pipe(out_pipe) == -1 || pipe(err_pipe) == -1) {
-        return -1;
-    }
+	int out_pipe[2], err_pipe[2];
+	if (pipe(out_pipe) == -1 || pipe(err_pipe) == -1)
+	{
+		return -1;
+	}
 
-    pid_t pid = fork();
-    if (pid == -1) {
-        close(out_pipe[0]); close(out_pipe[1]);
-        close(err_pipe[0]); close(err_pipe[1]);
-        return -1;
-    }
+	pid_t pid = fork();
+	if (pid == -1)
+	{
+		close(out_pipe[0]);
+		close(out_pipe[1]);
+		close(err_pipe[0]);
+		close(err_pipe[1]);
+		return -1;
+	}
 
-    if (pid == 0) {
-        // Child
-        (void)dup2(out_pipe[1], STDOUT_FILENO);
-        (void)dup2(err_pipe[1], STDERR_FILENO);
-        close(out_pipe[0]); close(out_pipe[1]);
-        close(err_pipe[0]); close(err_pipe[1]);
+	if (pid == 0)
+	{
+		// Child
+		(void)dup2(out_pipe[1], STDOUT_FILENO);
+		(void)dup2(err_pipe[1], STDERR_FILENO);
+		close(out_pipe[0]);
+		close(out_pipe[1]);
+		close(err_pipe[0]);
+		close(err_pipe[1]);
 
-        std::vector<char*> cargs;
-        cargs.reserve(argv.size() + 1);
-        for (auto &s : argv) cargs.push_back(const_cast<char*>(s.c_str()));
-        cargs.push_back(nullptr);
-        execvp(cargs[0], cargs.data());
-        _exit(127); // exec failed
-    }
+		std::vector<char *> cargs;
+		cargs.reserve(argv.size() + 1);
+		for (auto &s : argv)
+			cargs.push_back(const_cast<char *>(s.c_str()));
+		cargs.push_back(nullptr);
+		execvp(cargs[0], cargs.data());
+		_exit(127); // exec failed
+	}
 
-    // Parent
-    close(out_pipe[1]);
-    close(err_pipe[1]);
+	// Parent
+	close(out_pipe[1]);
+	close(err_pipe[1]);
 
-    std::thread t_out(forward_fd_to_file, out_pipe[0], out_path);
-    std::thread t_err(forward_fd_to_file, err_pipe[0], err_path);
+	std::thread t_out(forward_fd_to_file, out_pipe[0], out_path);
+	std::thread t_err(forward_fd_to_file, err_pipe[0], err_path);
 
-    int status = 0;
-    if (waitpid(pid, &status, 0) == -1) {
-        status = -1;
-    }
+	int status = 0;
+	if (waitpid(pid, &status, 0) == -1)
+	{
+		status = -1;
+	}
 
-    t_out.join();
-    t_err.join();
+	t_out.join();
+	t_err.join();
 
 	struct stat st_out{}, st_err{};
 	stat(out_path.c_str(), &st_out);
 	stat(err_path.c_str(), &st_err);
-	
-	std::cerr << "captured sizes: out=" << static_cast<long long>(st_out.st_size)
-			<< ", err=" << static_cast<long long>(st_err.st_size) << std::endl;
 
+	// std::cerr << "captured sizes: out=" << static_cast<long long>(st_out.st_size)
+	// 		<< ", err=" << static_cast<long long>(st_err.st_size) << std::endl;
 
-    // Optional: decode and log (for debugging)
-    // if (status != -1) {
-    //     if (WIFEXITED(status)) output_debug("child exit code=%d", WEXITSTATUS(status));
-    //     else if (WIFSIGNALED(status)) output_debug("child term sig=%d", WTERMSIG(status));
-    // }
+	// Optional: decode and log (for debugging)
+	// if (status != -1) {
+	//     if (WIFEXITED(status)) output_debug("child exit code=%d", WEXITSTATUS(status));
+	//     else if (WIFSIGNALED(status)) output_debug("child term sig=%d", WTERMSIG(status));
+	// }
 
-    return status; // RAW status; caller must use WIFEXITED/WEXITSTATUS/WIFSIGNALED/WTERMSIG
+	return status; // RAW status; caller must use WIFEXITED/WEXITSTATUS/WIFSIGNALED/WTERMSIG
 }
 
 #endif
-
 
 // A simple signal handler for SIGCHLD.
 // Its only purpose is to catch the signal so we can control its behavior.
 void sigchld_handler(int sig)
 {
-    // The OS will still reap the terminated child process.
-    // By catching the signal, we prevent it from interrupting blocking calls
-    // when SA_RESTART is used.
+	// The OS will still reap the terminated child process.
+	// By catching the signal, we prevent it from interrupting blocking calls
+	// when SA_RESTART is used.
 }
-
 
 #ifndef _WIN32
 #include <sys/wait.h> // Required for waitpid
-
 
 // A robust vsystem implementation for POSIX systems (macOS, Linux)
 // that correctly returns the child process's wait status.
 int vsystem_posix(const char *command)
 {
-    pid_t pid = fork();
+	pid_t pid = fork();
 
-    if (pid == -1)
-    {
-        // Fork failed
-        return -1;
-    }
-    else if (pid == 0)
-    {
-        // This is the child process.
-        // Execute the command using the shell.
-        execl("/bin/sh", "sh", "-c", command, (char *) nullptr);
+	if (pid == -1)
+	{
+		// Fork failed
+		return -1;
+	}
+	else if (pid == 0)
+	{
+		// This is the child process.
+		// Execute the command using the shell.
+		execl("/bin/sh", "sh", "-c", command, (char *)nullptr);
 
-        // If execl returns, it means an error occurred.
-        _exit(127); // Standard exit code for exec failure
-    }
-    else
-    {
-        // This is the parent process.
-        int status;
-        // Wait for the child process to terminate and get its status.
-        if (waitpid(pid, &status, 0) == -1)
-        {
-            return -1; // waitpid failed
-        }
-        return status; // Return the raw wait status
-    }
+		// If execl returns, it means an error occurred.
+		_exit(127); // Standard exit code for exec failure
+	}
+	else
+	{
+		// This is the parent process.
+		int status;
+		// Wait for the child process to terminate and get its status.
+		if (waitpid(pid, &status, 0) == -1)
+		{
+			return -1; // waitpid failed
+		}
+		return status; // Return the raw wait status
+	}
 }
 #endif
 
@@ -857,8 +900,6 @@ static bool copyfile(char *from, char *to)
 	return true;
 }
 
-
-
 /** routine to run a validation test */
 static counters run_test(char *file, double *elapsed_time = nullptr)
 {
@@ -887,7 +928,6 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 	char *name = strrchr(dir, '/') + 1;
 	char *char_result;
 
-	
 	if (ext == nullptr || strcmp(ext, ".glm") != 0)
 	{
 		output_error("run_test(char *file='%s'): file is not a GLM", file);
@@ -937,7 +977,6 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 		return result;
 	}
 
-	
 	sprintf(out, "%s/%s.glm", dir, name);
 
 	sprintf(output_capture_file, "%s/gridlabd.err", dir);
@@ -992,10 +1031,7 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 	// 	validate_child_cmdargs,
 	// 	name);
 
-
-
-
-	std::string command_line = std::format("{}.glm",name);
+	std::string command_line = std::format("{}.glm", name);
 
 	// 4. Execute the command using your custom vsystem wrapper.
 	// Assuming vsystem expects a C-style string (const char*).
@@ -1012,48 +1048,49 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 		// code = vsystem(command_line.c_str());
 
 #ifdef _WIN32
-    // Windows uses the existing vsystem which wraps std::system
-    code = vsystem(command_line.c_str());
+		// Windows uses the existing vsystem which wraps std::system
+		code = vsystem(command_line.c_str());
 #else
 
-	// For macOS/Linux: Build a proper argument vector, PREPENDING stdbuf
-	std::vector<std::string> test_args;
+		// For macOS/Linux: Build a proper argument vector, PREPENDING stdbuf
+		std::vector<std::string> test_args;
 
-	// Use stdbuf to force the child process to be unbuffered.
-	// This ensures all output is written to the file immediately, even on a crash.
-	// on macos, needs brew install coreutils
-	// test_args.push_back("gstdbuf");
-	// test_args.push_back("-o0"); 
-	// test_args.push_back("-e0"); // stderr unbuffered
+		// Use stdbuf to force the child process to be unbuffered.
+		// This ensures all output is written to the file immediately, even on a crash.
+		// on macos, needs brew install coreutils
+		// test_args.push_back("gstdbuf");
+		// test_args.push_back("-o0");
+		// test_args.push_back("-e0"); // stderr unbuffered
 
-	// Now add the original command and its arguments
-	test_args.push_back(executable_to_run_path.string());
-	test_args.push_back("-W");
-	test_args.push_back(dir);
+		// Now add the original command and its arguments
+		test_args.push_back(executable_to_run_path.string());
+		test_args.push_back("-W");
+		test_args.push_back(dir);
 
-	// Tokenize the child command arguments string and add each part
-	std::string args_str = validate_child_cmdargs;
-	std::stringstream ss(args_str);
-	std::string token;
-	while (ss >> token)
-	{
-		test_args.push_back(token);
-	}
-	
-	// Finally, add the model file itself
-	test_args.push_back(std::format("{}.glm", name));
+		// Tokenize the child command arguments string and add each part
+		std::string args_str = validate_child_cmdargs;
+		std::stringstream ss(args_str);
+		std::string token;
+		while (ss >> token)
+		{
+			test_args.push_back(token);
+		}
 
-	std::string full_cmd_for_debug;
-	for(const auto& arg : test_args) { full_cmd_for_debug += arg + " "; }
-	output_debug("Thread %zu launching subprocess: %s", std::hash<std::thread::id>{}(std::this_thread::get_id()), full_cmd_for_debug.c_str());
+		// Finally, add the model file itself
+		test_args.push_back(std::format("{}.glm", name));
 
-	// code = vsystem_posix_exec_argv_capture(test_args);		
+		std::string full_cmd_for_debug;
+		for (const auto &arg : test_args)
+		{
+			full_cmd_for_debug += arg + " ";
+		}
+		output_debug("Thread %zu launching subprocess: %s", std::hash<std::thread::id>{}(std::this_thread::get_id()), full_cmd_for_debug.c_str());
 
+		// code = vsystem_posix_exec_argv_capture(test_args);
 
-	std::string out_path = std::string(dir) + "/gridlabd.out.pipe";
-	std::string err_path = std::string(dir) + "/gridlabd.err.pipe";
-	code = vsystem_posix_exec_argv_capture(test_args, out_path, err_path);
-
+		std::string out_path = std::string(dir) + "/gridlabd.out.pipe";
+		std::string err_path = std::string(dir) + "/gridlabd.err.pipe";
+		code = vsystem_posix_exec_argv_capture(test_args, out_path, err_path);
 
 #endif
 	}
@@ -1085,24 +1122,21 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 	bool exited = WIFEXITED(code);
 	bool signaled = WIFSIGNALED(code);
 	// int exit_code = WEXITSTATUS(code);
-	int  exit_code = exited   ? WEXITSTATUS(code) : -1;
+	int exit_code = exited ? WEXITSTATUS(code) : -1;
 	bool problem = false;
-	int  term_sig  = signaled ? WTERMSIG(code)    : 0;
-
-
+	int term_sig = signaled ? WTERMSIG(code) : 0;
 
 	// Short-circuit for _err tests: any non-success exit OR any signal is "expected fail"
-	if (is_err && ((exited && exit_code != XC_SUCCESS) || signaled)) {
+	if (is_err && ((exited && exit_code != XC_SUCCESS) || signaled))
+	{
 
-
-		std::string errs = get_all_error_lines(dir);
-		log_test_error(file, 'E', errs); // use a different flag e.g., 'e' for expected error if you prefer
+		// std::string errs = get_all_error_lines(dir);
+		// log_test_error(file, 'E', errs); // use a different flag e.g., 'e' for expected error if you prefer
 		output_verbose("%s error was expected (exit=%d, sig=%d) in %.1f seconds",
-					name, exit_code, term_sig, t);
+					   name, exit_code, term_sig, t);
 
 		return result;
 	}
-
 
 	if (exited)
 	{
@@ -1131,14 +1165,13 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 		else if (code == XC_SUCCESS && !(is_exc || is_err)) // expected success and got it
 		{
 			output_verbose("%s success was expected, code %d in %.1f seconds", name, code, t);
-			
 		}
 		else if (code == XC_EXCEPTION) // unexpected exception
 		{
 			result.inc_exceptions(file, code, t);
 			problem = true;
 			// std::string last_error = get_all_error_lines(dir) + '\n';
-    		// log_test_error(file, 'X', last_error);
+			// log_test_error(file, 'X', last_error);
 		}
 		else if (code == XC_SUCCESS && is_err) // unexpected success
 		{
@@ -1147,7 +1180,7 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 			result.inc_success(file, code, t);
 			problem = true;
 			// std::string last_error = get_all_error_lines(dir) + '\n';
-    		// log_test_error(file, 'S', last_error);
+			// log_test_error(file, 'S', last_error);
 		}
 		else if (code != XC_SUCCESS && !is_err) // unexpected error
 		{
@@ -1155,10 +1188,11 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 			result.inc_failed(file, code, t);
 			problem = true;
 			// std::string last_error = get_all_error_lines(dir) + '\n';
-    		// log_test_error(file, 'E', last_error);
+			// log_test_error(file, 'E', last_error);
 		}
 	}
-	else if (signaled && is_err) {
+	else if (signaled && is_err)
+	{
 		// For MacOS: If process terminated by signal but was expected to fail
 		int sig = WTERMSIG(code);
 		output_verbose("%s terminated by signal %d, this was an expected error test", name, sig);
@@ -1173,22 +1207,22 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 		else if (is_exc) // expected exception
 			output_warning("%s exception expected, code %d in %.1f seconds", name, code, t);
 		else if (is_err) // expected error - add this condition for macOS
-        	output_verbose("%s error was expected (terminated by signal %d) in %.1f seconds", name, code, t);
+			output_verbose("%s error was expected (terminated by signal %d) in %.1f seconds", name, code, t);
 		else
 		{
 			result.inc_exceptions(file, code, t);
 			problem = true;
 			// std::string last_error = get_all_error_lines(dir);
-        	// log_test_error(file, 'X', last_error);
+			// log_test_error(file, 'X', last_error);
 		}
 	}
 
-	if(problem){
+	if (problem)
+	{
 		std::string last_error = get_all_error_lines(dir);
-        log_test_error(file, 'Z', last_error);
+		log_test_error(file, 'Z', last_error);
 	}
 
-	
 	output_debug("run_test(char *file='%s') done", file);
 	if (!problem && clean && !destroy_dir(dir))
 	{
@@ -1383,7 +1417,8 @@ char *encode_result(std::atomic<char> *data, size_t sz)
 {
 	size_t len = (sz + 1) / 2 + 1;
 	char *code = (char *)malloc(len);
-	if (code == NULL) return NULL; 
+	if (code == NULL)
+		return NULL;
 	memset(code, 0, len);
 	size_t i;
 	for (i = 0; i < sz; i++)
@@ -1401,24 +1436,23 @@ char *encode_result(std::atomic<char> *data, size_t sz)
 	// code[len] = '\0';
 	// return code;
 
-	char *result = (char*)malloc(sz + 1);
-    if (result == NULL)
-    {
-        free(code);
-        return NULL;
-    }
-    for (i = 0; i < sz; i++)
-    {
-        static const char hex[] = "0123456789ABCDEF";
-        unsigned char val = (unsigned char)data[i].load(); // Use .load() for atomics
-        result[i*2] = hex[val >> 4];
-        result[i*2+1] = hex[val & 0x0F];
-    }
-    result[sz*2] = '\0';
-    
-    free(code); // Free the intermediate buffer
-    return result; // Return the final hex string
+	char *result = (char *)malloc(sz + 1);
+	if (result == NULL)
+	{
+		free(code);
+		return NULL;
+	}
+	for (i = 0; i < sz; i++)
+	{
+		static const char hex[] = "0123456789ABCDEF";
+		unsigned char val = (unsigned char)data[i].load(); // Use .load() for atomics
+		result[i * 2] = hex[val >> 4];
+		result[i * 2 + 1] = hex[val & 0x0F];
+	}
+	result[sz * 2] = '\0';
 
+	free(code);	   // Free the intermediate buffer
+	return result; // Return the final hex string
 }
 
 /** main validation routine */
@@ -1426,14 +1460,15 @@ int validate(int argc, char *argv[])
 {
 
 	struct sigaction sa;
-    sa.sa_handler = &sigchld_handler; // Set the handler
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = SA_RESTART | SA_NOCLDSTOP; // Key flags: restart interrupted calls
-    if (sigaction(SIGCHLD, &sa, 0) == -1) {
-        perror("sigaction"); // Or use output_error
-        return FAILED;
-    }
-	
+	sa.sa_handler = &sigchld_handler; // Set the handler
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_RESTART | SA_NOCLDSTOP; // Key flags: restart interrupted calls
+	if (sigaction(SIGCHLD, &sa, 0) == -1)
+	{
+		perror("sigaction"); // Or use output_error
+		return FAILED;
+	}
+
 	size_t i;
 	int redirect_found = 0;
 	strcpy(validate_cmdargs, "");
@@ -1469,7 +1504,7 @@ int validate(int argc, char *argv[])
 	}
 	if (!redirect_found)
 	{
-		//strcat(validate_child_cmdargs, " --redirect all");
+		// strcat(validate_child_cmdargs, " --redirect all");
 	}
 	strcat(validate_child_cmdargs, " --threadcount 1"); // Force single internal thread for each test run
 
@@ -1629,14 +1664,14 @@ int validate(int argc, char *argv[])
 	if (report_fp)
 	{
 		// Recompute the same values printed by final.print()
-		const unsigned int n_files      = final.get_nfiles();
-		const unsigned int n_success    = final.get_nsuccess();
-		const unsigned int n_failed     = final.get_nfailed();
+		const unsigned int n_files = final.get_nfiles();
+		const unsigned int n_success = final.get_nsuccess();
+		const unsigned int n_failed = final.get_nfailed();
 		const unsigned int n_exceptions = final.get_nexceptions();
-		const unsigned int n_access     = final.get_naccess();
-		const unsigned int n_ok         = (n_files >= (n_success + n_failed + n_exceptions))
-											? (n_files - n_success - n_failed - n_exceptions)
-											: 0;
+		const unsigned int n_access = final.get_naccess();
+		const unsigned int n_ok = (n_files >= (n_success + n_failed + n_exceptions))
+									  ? (n_files - n_success - n_failed - n_exceptions)
+									  : 0;
 		const double rate = (n_files != 0) ? (100.0 * n_ok / n_files) : 0.0;
 
 		// Mirror the terminal summary into validate.txt
@@ -1760,7 +1795,8 @@ int validate(int argc, char *argv[])
 	fclose(report_fp);
 
 	// At the end of validation (where report_fp is closed)
-	if (error_log_fp) {
+	if (error_log_fp)
+	{
 		fclose(error_log_fp);
 		error_log_fp = nullptr;
 		output_message("See '%s/validate_errors.txt' for error details", global_workdir);

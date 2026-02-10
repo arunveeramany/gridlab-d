@@ -115,34 +115,43 @@ object overhead_line {
 		// interval 1;
 		// file LineFlowCurrentOut.csv;
 	// };
-	object complex_assert {
+object complex_assert {
+		name auto_complex_assert_118;
+		parent node1_to_node2;
 		flags DELTAMODE;
 		target current_out_A;
 		within 0.05;
 		operation FULL;
-		object player {
+object player {
+			parent auto_complex_assert_118;
 			flags DELTAMODE;
 			property value;
 			file ../data_inrush_LineFlowCurrentOut_A.csv;
 		};
     };
-	object complex_assert {
+object complex_assert {
+		name auto_complex_assert_129;
+		parent node1_to_node2;
 		flags DELTAMODE;
 		target current_out_B;
 		within 0.05;
 		operation FULL;
-		object player {
+object player {
+			parent auto_complex_assert_129;
 			flags DELTAMODE;
 			property value;
 			file ../data_inrush_LineFlowCurrentOut_B.csv;
 		};
     };
-	object complex_assert {
+object complex_assert {
+		name auto_complex_assert_140;
+		parent node1_to_node2;
 		flags DELTAMODE;
 		target current_out_C;
 		within 0.05;
 		operation FULL;
-		object player {
+object player {
+			parent auto_complex_assert_140;
 			flags DELTAMODE;
 			property value;
 			file ../data_inrush_LineFlowCurrentOut_C.csv;
@@ -190,34 +199,43 @@ object load {
 		// flags DELTAMODE;
 		// file Voltage_node2.csv;
 	// };
-	object complex_assert {
+object complex_assert {
+		name auto_complex_assert_193;
+		parent node2;
 		flags DELTAMODE;
 		target voltage_A;
 		within 0.05;
 		operation FULL;
-		object player {
+object player {
+			parent auto_complex_assert_193;
 			flags DELTAMODE;
 			property value;
 			file ../data_inrush_Voltage_node2_A.csv;
 		};
     };
-	object complex_assert {
+object complex_assert {
+		name auto_complex_assert_204;
+		parent node2;
 		flags DELTAMODE;
 		target voltage_B;
 		within 0.05;
 		operation FULL;
-		object player {
+object player {
+			parent auto_complex_assert_204;
 			flags DELTAMODE;
 			property value;
 			file ../data_inrush_Voltage_node2_B.csv;
 		};
     };
-	object complex_assert {
+object complex_assert {
+		name auto_complex_assert_215;
+		parent node2;
 		flags DELTAMODE;
 		target voltage_C;
 		within 0.05;
 		operation FULL;
-		object player {
+object player {
+			parent auto_complex_assert_215;
 			flags DELTAMODE;
 			property value;
 			file ../data_inrush_Voltage_node2_C.csv;

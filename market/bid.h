@@ -9,30 +9,34 @@
 #ifndef _market_bid_h_
 #define _market_bid_h_
 
-typedef struct s_bid {
-//struct s_bid {
-	char *from;		/**< object from which bid was received */
+typedef struct s_bid
+{
+	// struct s_bid {
+	char from[64]; /**< object from which bid was received */
 	KEY bid_id;
-	double quantity; 	/**< bid quantity (negative is sell, positive is buy */
-	double price; 		/**< bid price */
-	BIDDERSTATE state;	/**< state of bidder (unknown=0, off=1, on=2) */
+	double quantity;   /**< bid quantity (negative is sell, positive is buy */
+	double price;	   /**< bid price */
+	BIDDERSTATE state; /**< state of bidder (unknown=0, off=1, on=2) */
 } BID;
 //};
 
-typedef enum e_bid_type {
+typedef enum e_bid_type
+{
 	BID_BUY,
 	BID_SELL,
 	BID_UNKNOWN
 } BIDTYPE;
 
-typedef struct s_bid_def {
+typedef struct s_bid_def
+{
 	int64 raw;
 	int64 market;
 	int16 bid;
 	BIDTYPE bid_type;
 } BIDDEF;
 
-typedef struct s_bid_info {
+typedef struct s_bid_info
+{
 
 	double quantity;
 	double price;
@@ -41,7 +45,7 @@ typedef struct s_bid_info {
 	BIDDERSTATE state;
 	KEY bid_id;
 	bool bid_accepted;
-}BIDINFO;
+} BIDINFO;
 typedef struct s_bid BID;
 
 /** Bid structure for markets */

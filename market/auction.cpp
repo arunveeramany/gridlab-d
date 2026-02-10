@@ -910,7 +910,7 @@ TIMESTAMP auction::presync(TIMESTAMP t0, TIMESTAMP t1)
 		if (t1 > t0 && ((t1 / TS_SECOND) % period) == 0)
 		{
 			/* save the last clearing and reset the next clearing */
-			next.from = nullptr; /* in the context of a clearing, from is the marginal resource */
+			next.from[0] = '\0'; /* in the context of a clearing, from is the marginal resource */
 			next.quantity = next.price = 0;
 		}
 	}
@@ -950,6 +950,20 @@ TIMESTAMP auction::postsync(TIMESTAMP t0, TIMESTAMP t1)
 	return -clearat; /* soft return t2>t1 on success, t2=t1 for retry, t2<t1 on failure */
 }
 
+static const char *printable_or(const char *s, const char *fallback = "unknown_source")
+{
+	if (!s)
+		return fallback;
+	// basic control char guard (0x00–0x1F except tab)
+	for (const char *p = s; *p; ++p)
+	{
+		unsigned char c = static_cast<unsigned char>(*p);
+		if (c < 0x20 && c != '\t')
+			return fallback;
+	}
+	return s;
+}
+
 void auction::record_curve(double bu, double su)
 {
 	char name[64];
@@ -964,14 +978,20 @@ void auction::record_curve(double bu, double su)
 		fprintf(curve_file, "# supply curve at %s: %f total and %f unresponsive\n", timestr, cleared_frame.seller_total_quantity, su);
 	for (i = 0; i < offers.getcount(); i++)
 	{
-		fprintf(curve_file, "%d,%s,%4d,%s,%.3f,%.6f\n", (int32)market_id, timestr, i, offers.getbid(i)->from, offers.getbid(i)->quantity, offers.getbid(i)->price);
+		fprintf(curve_file, "%d,%s,%4d,%s,%.3f,%.6f\n",
+				(int32)market_id, timestr, i,
+				printable_or(offers.getbid(i)->from), offers.getbid(i)->quantity,
+				offers.getbid(i)->price);
 	}
 
 	if (CO_EXTRA == curve_log_info)
 		fprintf(curve_file, "# demand curve at %s: %f total and %f unresponsive\n", timestr, cleared_frame.buyer_total_quantity, bu);
 	for (i = 0; i < asks.getcount(); i++)
 	{
-		fprintf(curve_file, "%d,%s,%4d,%s,%.3f,%.6f\n", (int32)market_id, timestr, i, asks.getbid(i)->from, -asks.getbid(i)->quantity, asks.getbid(i)->price);
+		fprintf(curve_file, "%d,%s,%4d,%s,%.3f,%.6f\n",
+				(int32)market_id, timestr, i,
+				printable_or(asks.getbid(i)->from),
+				-asks.getbid(i)->quantity, asks.getbid(i)->price);
 	}
 
 	if (CO_EXTRA == curve_log_info)
@@ -1073,8 +1093,22 @@ void auction::clear_market(void)
 			gl_warning("total_unknown is %.0f -> some controllers are not providing their states with their bids", total_unknown);
 		}
 		// unresponsive.from = linkref;
-		char capname[1024];
-		unresponsive.from = (char *)gl_name(capacity_reference_object, capname, sizeof(capname));
+		//  char capname[1024];
+		//  unresponsive.from = (char *)gl_name(capacity_reference_object, capname, sizeof(capname));
+
+		// Use the object's stable name pointer; do not assign a pointer to a local stack buffer
+		// unresponsive.from = capacity_reference_object ? capacity_reference_object->name : (char *)"capacity_ref";
+
+		if (capacity_reference_object && capacity_reference_object->name)
+		{
+			strncpy(unresponsive.from, capacity_reference_object->name, sizeof(unresponsive.from) - 1);
+			unresponsive.from[sizeof(unresponsive.from) - 1] = '\0';
+		}
+		else
+		{
+			strncpy(unresponsive.from, "capacity_ref", sizeof(unresponsive.from) - 1);
+			unresponsive.from[sizeof(unresponsive.from) - 1] = '\0';
+		}
 		unresponsive.price = pricecap;
 		unresponsive.state = BS_UNKNOWN;
 		if (fixed_uncontrollable_load > 0)
@@ -1220,12 +1254,19 @@ void auction::clear_market(void)
 			single_price = fixed_price;
 			for (unsigned int i = 0; i < offers.getcount(); ++i)
 			{
+				gl_output("   ... DEBUG: bid[%d] price=%.2f, quantity=%.3f, from=%s",
+						  i, asks.getbid(i)->price, asks.getbid(i)->quantity,
+						  asks.getbid(i)->from ? asks.getbid(i)->from : "NULL");
+
 				if (offers.getbid(i)->price <= fixed_price)
 				{
 					single_quantity += offers.getbid(i)->quantity;
+					gl_output("   ... DEBUG: accumulated single_quantity = %.3f", single_quantity);
 				}
 				else
 				{
+					gl_output("   ... DEBUG: breaking loop - bid price %.2f < fixed_price %.2f",
+							  asks.getbid(i)->price, fixed_price);
 					break;
 				}
 			}
@@ -1243,6 +1284,14 @@ void auction::clear_market(void)
 		break;
 	case MD_BUYERS:
 		asks.sort(true);
+
+		gl_output("   ... DEBUG: asks.getcount() = %d before clearing", asks.getcount());
+		gl_output("   ... DEBUG: fixed_price = %.2f, fixed_quantity = %.2f", fixed_price, fixed_quantity);
+		if (asks.getcount() > 0)
+		{
+			gl_warning("Buyer-only auction was given offering bids");
+		}
+
 		if (verbose)
 		{
 			gl_output("   ...  demand curve");
@@ -1320,6 +1369,10 @@ void auction::clear_market(void)
 			single_price = fixed_price;
 			for (unsigned int i = 0; i < asks.getcount(); ++i)
 			{
+				gl_output("   ... DEBUG: bid[%d] price=%.2f, quantity=%.3f, from=%s",
+						  i, asks.getbid(i)->price, asks.getbid(i)->quantity,
+						  asks.getbid(i)->from ? asks.getbid(i)->from : "NULL");
+
 				if (asks.getbid(i)->price >= fixed_price)
 				{
 					single_quantity += asks.getbid(i)->quantity;
@@ -1426,7 +1479,7 @@ void auction::clear_market(void)
 		/* clear market */
 		unsigned int i = 0, j = 0;
 		BID *buy = asks.getbid(i), *sell = offers.getbid(j);
-		BID clear = {nullptr, 0, 0};
+		BID clear = {'\0', 0, 0};
 		double demand_quantity = 0, supply_quantity = 0;
 		double a = this->pricecap, b = -pricecap;
 		bool check = false;
@@ -2113,7 +2166,23 @@ int auction::submit_nolock(char *from, double quantity, double real_price, KEY k
 			//	gl_name(object_header(this),myname,sizeof(myname)), quantity<0?"ask":"offer", from,
 			//	fabs(quantity), unit, price, unit, gl_strtime(&dt,buffer,sizeof(buffer))?buffer:"unknown time");
 		}
-		BID bid = {from, b_id, fabs(quantity), price, state};
+		// BID bid = {from, b_id, fabs(quantity), price, state};
+
+		BID bid;
+		if (from)
+		{
+			strncpy(bid.from, from, sizeof(bid.from) - 1);
+			bid.from[sizeof(bid.from) - 1] = '\0';
+		}
+		else
+		{
+			strcpy(bid.from, "unknown_source");
+		}
+		bid.bid_id = b_id;
+		bid.quantity = fabs(quantity);
+		bid.price = price;
+		bid.state = state;
+
 		if (quantity < 0)
 		{
 			result = offers.remove_bid(bid.bid_id);
@@ -2182,7 +2251,23 @@ int auction::submit_nolock(char *from, double quantity, double real_price, KEY k
 			// gl_name(object_header(this),myname,sizeof(myname)), quantity<0?"ask":"offer", from,
 			// fabs(quantity), unit, price, unit, gl_strtime(&dt,buffer,sizeof(buffer))?buffer:"unknown time");
 		}
-		BID bid = {from, b_id, fabs(quantity), price, state};
+		// BID bid = {from, b_id, fabs(quantity), price, state};
+
+		BID bid;
+		if (from)
+		{
+			strncpy(bid.from, from, sizeof(bid.from) - 1);
+			bid.from[sizeof(bid.from) - 1] = '\0';
+		}
+		else
+		{
+			strcpy(bid.from, "unknown_source");
+		}
+		bid.bid_id = b_id;
+		bid.quantity = fabs(quantity);
+		bid.price = price;
+		bid.state = state;
+
 		if (quantity < 0)
 		{
 			out = asks.submit(&bid);
@@ -2269,7 +2354,8 @@ EXPORT int isa_auction(OBJECT *obj, char *classname)
 }
 
 // EXPORT TIMESTAMP sync_auction(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
-// {
+//{
+
 extern "C" TIMESTAMP sync_auction(void *object, ...)
 {
 	va_list args;
@@ -2278,25 +2364,7 @@ extern "C" TIMESTAMP sync_auction(void *object, ...)
 	PASSCONFIG pass = va_arg(args, PASSCONFIG);
 	va_end(args);
 
-	OBJECT *obj = (OBJECT *)object;
-
-	if (!callback)
-	{
-		gl_error("callback is null in sync_auction");
-		return 0; // Fail module load
-	}
-
-	// Add structure validation
-	// std::cerr << "Callback structure size check:" << std::endl;
-	// std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
-	// std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
-	// std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
-
-	if (!callback->time.local_datetime)
-	{
-		gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
-		return FAILED;
-	}
+	OBJECT *obj = (OBJECT *)object; // ← Move this outside try block
 
 	TIMESTAMP t2 = TS_NEVER;
 	auction *my = /*OBJECTDATA(obj, auction)*/ object_data<auction>(obj);

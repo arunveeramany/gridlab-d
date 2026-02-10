@@ -149,7 +149,8 @@ object capacitor {
 	lockout_time 3.0;
 	cap_nominal_voltage 14000;
 	nominal_voltage 14377;
-	object enum_assert {
+object enum_assert {
+		parent CAP1;
 		in '2000-01-01 00:00:02';
 		target "switchA";
 		value 1;
@@ -181,7 +182,8 @@ object capacitor {
 	lockout_time 3.0;
 	cap_nominal_voltage 14000;
 	nominal_voltage 14377;
-	object enum_assert {
+object enum_assert {
+		parent CAP;
 		in '2000-01-01 00:00:02';
 		target "switchA";
 		value 1;

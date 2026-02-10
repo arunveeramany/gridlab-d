@@ -6,9 +6,7 @@
 
 #include <stdarg.h>
 #include <mutex>
-#include <shared_mutex>
 #include <cstddef>
-
 
 #include "gridlabd.h"
 #include "object.h"
@@ -18,11 +16,18 @@ using gld::complex;
 #define _isnan isnan
 #endif
 
-enum class EvalOutcome { PASS, FAIL_IMMEDIATE, FAIL_DEFERRED };
-
+enum class EvalOutcome
+{
+    PASS,
+    FAIL_IMMEDIATE,
+    FAIL_DEFERRED
+};
 
 class complex_assert : public gld_object
 {
+private:
+    std::mutex m_part_mtx;
+
 public:
     enum
     {
@@ -75,7 +80,7 @@ public:
 
     // static inline complex_assert *get_defaults()
     // {
-        
+
     //     return defaults;
     // }
 
@@ -87,10 +92,11 @@ protected:
     complex value;         // Member variable of type `complex`.
     complex once_value;    // Member variable of type `complex`.
     char1024 target;       // Protected member variable
+    char32 part;
 
     PROPERTY *pTarget = nullptr;
     gld::complex *pComplex = nullptr;
- 
+
     int resolve_target_property();
 
     bool seen_finite = false;
@@ -99,8 +105,6 @@ protected:
 private:
     TIMESTAMP ts_in = 0;
     TIMESTAMP ts_out = 0;
-
-
 
 public:
     // Static inline method to get the byte offset of the member `status`.
@@ -114,40 +118,40 @@ public:
     // Inline function to get the value of `status`.
     inline enumeration get_status(void)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         return status;
     }
 
     // Inline method to return a gld_property object for `status`.
     inline gld_property get_status_property(void)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         return gld_property(my(), std::string("status").c_str());
     }
 
     // Inline method to set the value of `status`.
     inline void set_status(enumeration p)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         status = p;
     }
 
     // Inline method to get the string representation of the `status` property.
     inline gld_string get_status_string(void)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         return get_status_property().get_string();
     }
 
     // Inline method to set the `status` property from a provided string.
     inline void set_status(char *str)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         get_status_property().from_string(str);
     }
 
@@ -156,47 +160,47 @@ public:
     static inline size_t get_operation_offset(void)
     {
         return offsetof(complex_assert, operation);
-        //complex_assert *current_defaults = get_defaults();
-        //return reinterpret_cast<const char *>(&(current_defaults->operation)) - reinterpret_cast<const char *>(current_defaults);
+        // complex_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->operation)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Inline function to get the value of `operation`.
     inline enumeration get_operation(void)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         return operation;
     }
 
     // Inline method to return a gld_property object for `operation`.
     inline gld_property get_operation_property(void)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         return gld_property(my(), std::string("operation").c_str());
     }
 
     // Inline method to set the value of `operation`.
     inline void set_operation(enumeration p)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         operation = p;
     }
 
     // Inline method to get the string representation of the `operation` property.
     inline gld_string get_operation_string(void)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         return get_operation_property().get_string();
     }
 
     // Inline method to set the `operation` property from a provided string.
     inline void set_operation(char *str)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         get_operation_property().from_string(str);
     }
 
@@ -212,40 +216,40 @@ public:
     // Inline function to get the value of `once`.
     inline enumeration get_once(void)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         return once;
     }
 
     // Inline method to return a gld_property object for `once`.
     inline gld_property get_once_property(void)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         return gld_property(my(), std::string("once").c_str());
     }
 
     // Inline method to set the value of `once`.
     inline void set_once(enumeration p)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         once = p;
     }
 
     // Inline method to get the string representation of the `once` property.
     inline gld_string get_once_string(void)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         return get_once_property().get_string();
     }
 
     // Inline method to set the `once` property from a provided string.
     inline void set_once(char *str)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         get_once_property().from_string(str);
     }
 
@@ -261,40 +265,40 @@ public:
     // Inline function to get the value of `within`.
     inline double get_within(void)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         return within;
     }
 
     // Inline method to return a gld_property object for `within`.
     inline gld_property get_within_property(void)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         return gld_property(my(), std::string("within").c_str());
     }
 
     // Inline method to set the value of `within`.
     inline void set_within(double p)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         within = p;
     }
 
     // Inline method to get the string representation of the `within` property.
     inline gld_string get_within_string(void)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         return get_within_property().get_string();
     }
 
     // Inline method to set the `within` property from a provided string.
     inline void set_within(char *str)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         get_within_property().from_string(str);
     }
 
@@ -310,40 +314,40 @@ public:
     // Inline function to get the value of `value`.
     inline complex get_value(void)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         return value;
     }
 
     // Inline method to return a gld_property object for `value`.
     inline gld_property get_value_property(void)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         return gld_property(my(), std::string("value").c_str());
     }
 
     // Inline method to set the value of `value`.
     inline void set_value(complex p)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         value = p;
     }
 
     // Inline method to get the string representation of the `value` property.
     inline gld_string get_value_string(void)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         return get_value_property().get_string();
     }
 
     // Inline method to set the `value` property from a provided string.
     inline void set_value(char *str)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         get_value_property().from_string(str);
     }
 
@@ -359,69 +363,64 @@ public:
     // Inline function to get the value of `once_value`.
     inline complex get_once_value(void)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::shared_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::shared_lock<std::shared_mutex> lock(mtx);
         return once_value;
     }
 
     // Inline method to return a gld_property object for `once_value`.
     inline gld_property get_once_value_property(void)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         return gld_property(my(), std::string("once_value").c_str());
     }
 
     // Inline method to get the string representation of the `once_value` property.
     inline gld_string get_once_value_string(void)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         return get_once_value_property().get_string();
     }
 
     // Inline method to set the `once_value` property from a provided string.
     inline void set_once_value(char *str)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         get_once_value_property().from_string(str);
     }
 
     inline void set_once_value(const std::string &str)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         get_once_value_property().from_string(const_cast<char *>(str.c_str()));
     }
 
     inline void set_once_value(complex p)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
         once_value = p;
     }
 
 private:
-
 private:
     bool init_guard_done = false;
-    bool prestart_deferral_done = false;  // only allow one pre-start deferral
-    inline TIMESTAMP resched_safe(const char* reason);
-    TIMESTAMP last_to  = 0 ;
+    bool prestart_deferral_done = false; // only allow one pre-start deferral
+    inline TIMESTAMP resched_safe(const char *reason);
+    TIMESTAMP last_to = 0;
     bool done = false;
 
-
-    static inline bool is_within(double err, double tol) {return std::fabs(err) <= tol;}
+    static inline bool is_within(double err, double tol) { return std::fabs(err) <= tol; }
 
     EvalOutcome evaluate_assert(const complex x, bool switched_now);
 
-
 public:
-
-    inline TIMESTAMP next_check(TIMESTAMP now){ return now + 1; } // 1 second later
+    inline TIMESTAMP next_check(TIMESTAMP now) { return now + 1; } // 1 second later
     // inline TIMESTAMP resched(TIMESTAMP t2, const char* reason, TIMESTAMP now, TIMESTAMP ts_in, TIMESTAMP ts_out, bool switched_now);
-
 
     // Static inline method to get the byte offset of the member `status`.
     static inline size_t get_ts_in_offset(void)
@@ -446,39 +445,38 @@ public:
         return offsetof(complex_assert, target);
         // complex_assert *current_defaults = get_defaults();
         // return reinterpret_cast<const char *>(&(current_defaults->target)) - reinterpret_cast<const char *>(current_defaults);
-    
-
     }
 
     // Getter method to safely retrieve the string value of `target` as std::string
     inline std::string get_target(void)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::shared_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::shared_lock<std::shared_mutex> lock(mtx);
         return std::string(target);
     }
 
     inline void set_target(const char *str)
     {
         printf("DEBUG: Setting target to: '%s'\n", str ? str : "NULL");
-        if (!str) {
+        if (!str)
+        {
             gl_error("Attempt to set target to null string");
             return;
         }
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
 
         size_t len = strlen(str);
-        if (len >= sizeof(target)) {
+        if (len >= sizeof(target))
+        {
             gl_error("Target string too long: %zu >= %zu", len, sizeof(target));
             return;
         }
-        
+
         strncpy(target, str, sizeof(target) - 1);
         target[sizeof(target) - 1] = '\0'; // Ensure null-termination
 
         printf("DEBUG: Target set successfully to: '%s'\n", target);
-
     }
 
     // Getter method to retrieve gld_property for `target`
@@ -497,13 +495,60 @@ public:
     int create(void);
     int init(OBJECT *parent);
     TIMESTAMP commit(TIMESTAMP t1, TIMESTAMP t2);
-    //int postnotify(PROPERTY *prop, char *value);
-    //inline int prenotify(PROPERTY *, char *) { return 1; };
+    // int postnotify(PROPERTY *prop, char *value);
+    // inline int prenotify(PROPERTY *, char *) { return 1; };
 
 public:
     static CLASS *oclass;
     // static std::shared_ptr<complex_assert> defaults;
     // static complex_assert *defaults;
+
+public:
+    // Static inline method to get the byte offset of the member `part`
+    static inline size_t get_part_offset(void)
+    {
+        return offsetof(complex_assert, part);
+        // g_assert *current_defaults = get_defaults();
+        // return reinterpret_cast<const char *>(&(current_defaults->part)) - reinterpret_cast<const char *>(current_defaults);
+    }
+
+    // Getter method to safely retrieve the string value of `part` as std::string
+    // inline std::string get_part(void)
+    // {
+    //     auto &mtx = SharedMutexManager::get_mutex(my());
+    //     std::shared_lock<std::shared_mutex> lock(mtx);
+    //     return std::string(part);
+    // }
+
+    // inline void set_part(const char *str)
+    // {
+    //     auto &mtx = SharedMutexManager::get_mutex(my());
+    //     std::unique_lock<std::shared_mutex> lock(mtx);
+    //     strncpy(part, str, sizeof(part) - 1);
+    //     part[sizeof(part) - 1] = '\0'; // Ensure null-termination
+    // }
+
+    inline std::string get_part()
+    {
+        // std::lock_guard<std::mutex> g(m_part_mtx);
+        return std::string(part);
+    }
+    inline void set_part(const char *str)
+    {
+        // std::lock_guard<std::mutex> g(m_part_mtx);
+        std::strncpy(part, (str ? str : ""), sizeof(part) - 1);
+        part[sizeof(part) - 1] = '\0';
+    }
+
+    // Getter method to retrieve gld_property for `part`
+    inline gld_property get_part_property(void)
+    {
+        if (!my())
+        { // Check if `my()` returns a valid object
+            throw std::runtime_error("Invalid object context for retrieving gld_property.");
+        }
+        return gld_property(my(), "part");
+    }
 };
 
 #endif

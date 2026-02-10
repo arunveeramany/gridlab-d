@@ -6,7 +6,7 @@ CXX_DEFINES = -DHAVE_CONFIG_H -Dgenerators_EXPORTS
 
 CXX_INCLUDES = -I/opt/homebrew/include/eigen3 -I/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/headers -I/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/SRC -I/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore -I/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/generators/headers -I/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore/headers -I/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/_deps/json-src/include
 
-CXX_FLAGSarm64 = -g -std=gnu++2b -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fPIC -ffp-contract=off -fno-fast-math -Werror=return-type -Werror=write-strings
+CXX_FLAGSarm64 = -g -std=gnu++2b -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fPIC -Werror=return-type -Werror=write-strings
 
-CXX_FLAGS = -g -std=gnu++2b -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fPIC -ffp-contract=off -fno-fast-math -Werror=return-type -Werror=write-strings
+CXX_FLAGS = -g -std=gnu++2b -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fPIC -Werror=return-type -Werror=write-strings
 

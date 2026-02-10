@@ -90,6 +90,7 @@ object transformer {
 object node {
     	name Node3;
 	phases "ABCN";
+	nominal_voltage 2400; 
 }
 
 object switch {
@@ -105,7 +106,7 @@ object switch {
 object node {
 	name DummyNode4;
 	phases ABCN;
-	nominal_voltage 4160.777;	
+	nominal_voltage 2400; //4160.777;	
 }
 
 object overhead_line {

@@ -26,6 +26,12 @@ class double_assert;
 CALLBACKS *callback = nullptr;
 
 
+extern "C" {
+    // Match your installed core (check with `gridlabd --version`)
+    EXPORT int gld_major = 5;
+    EXPORT int gld_minor = 3;
+}
+
 //std::vector<std::pair<std::unique_ptr<gld_object>, std::string>> allocated_objects;
 
 //template <typename T>

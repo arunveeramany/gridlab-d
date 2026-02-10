@@ -136,6 +136,7 @@ object load_tracker
 	object double_assert
 	{
 		target "setpoint";
+		parent RECLOSER_1_LOAD_TRACKER;
 		value  RECLOSER_1_LOAD_TRACKER.feedback;
 		within 2191; // 1%+ of full scale
 	};

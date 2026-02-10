@@ -3,16 +3,16 @@ cmake_minimum_required(VERSION 3.13)
 project(GridLAB-D LANGUAGES C CXX)
 
 
-#Apply conservative FP flags only on Apple Silicon + AppleClang
-if(APPLE AND CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64")
-  if(CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
-    add_compile_options(-ffp-contract=off -fno-fast-math)
-  endif()
-  if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-    add_compile_options(-ffp-contract=off -fno-fast-math)
-  endif()
+# #Apply conservative FP flags only on Apple Silicon + AppleClang
+# if(APPLE AND CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64")
+#   if(CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
+#     add_compile_options(-ffp-contract=off -fno-fast-math)
+#   endif()
+#   if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+#     add_compile_options(-ffp-contract=off -fno-fast-math)
+#   endif()
 
-endif()
+# endif()
 
 
 message(STATUS "Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_SYSTEM_PROCESSOR}")
@@ -187,6 +187,33 @@ configure_file(gldcore/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/headers/version.
 add_definitions(-DHAVE_CONFIG_H)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/headers)
 #include(cmake/ExternalLibraries.cmake)
+
+# --- Generate external ABI header (platform.h includes this) ---
+configure_file(${CMAKE_SOURCE_DIR}/gldcore/config_external.h.in
+               ${CMAKE_CURRENT_BINARY_DIR}/headers/config_external.h
+               @ONLY)
+
+# Install core generated headers under include/gldcore
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/headers/config_external.h
+    ${CMAKE_CURRENT_BINARY_DIR}/headers/config.h
+    ${CMAKE_CURRENT_BINARY_DIR}/headers/version.h
+    DESTINATION include/gldcore
+    COMPONENT Runtime
+)
+
+# Install ALL public gldcore headers (not just a short list)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/gldcore/
+        DESTINATION include/gldcore
+        FILES_MATCHING
+        PATTERN "*.h"
+        PATTERN "rt/*" EXCLUDE     # don't install runtime HTML/assets
+        PATTERN "*.in" EXCLUDE)    # don't install templates
+
+# Install the powerflow module headers used by external plugins
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/powerflow/
+        DESTINATION include/powerflow
+        FILES_MATCHING PATTERN "*.h")
 
 # use, i.e. don't skip the full RPATH for the build tree
 set(CMAKE_SKIP_BUILD_RPATH FALSE)

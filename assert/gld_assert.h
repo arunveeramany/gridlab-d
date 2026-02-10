@@ -8,6 +8,7 @@
 #define _GLD_ASSERT_H
 
 #include <stddef.h>
+#include <mutex>
 
 #include "gridlabd.h"
 
@@ -15,6 +16,9 @@
 
 class g_assert : public gld_object
 {
+private:
+    std::mutex m_part_mtx;
+
 public:
     typedef enum
     {
@@ -30,7 +34,6 @@ public:
     GL_ATOMIC(enumeration, relation);
     GL_STRING(char1024,value);
     GL_STRING(char1024,value2);*/
-
 
     // static inline g_assert *get_defaults()
     // {
@@ -185,19 +188,31 @@ public:
     }
 
     // Getter method to safely retrieve the string value of `part` as std::string
-    inline std::string get_part(void)
+    // inline std::string get_part(void)
+    // {
+    //     auto &mtx = SharedMutexManager::get_mutex(my());
+    //     std::shared_lock<std::shared_mutex> lock(mtx);
+    //     return std::string(part);
+    // }
+
+    // inline void set_part(const char *str)
+    // {
+    //     auto &mtx = SharedMutexManager::get_mutex(my());
+    //     std::unique_lock<std::shared_mutex> lock(mtx);
+    //     strncpy(part, str, sizeof(part) - 1);
+    //     part[sizeof(part) - 1] = '\0'; // Ensure null-termination
+    // }
+
+    inline std::string get_part()
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::shared_lock<std::shared_mutex> lock(mtx);
+        std::lock_guard<std::mutex> g(m_part_mtx);
         return std::string(part);
     }
-
     inline void set_part(const char *str)
     {
-        auto &mtx = SharedMutexManager::get_mutex(my());
-        std::unique_lock<std::shared_mutex> lock(mtx);
-        strncpy(part, str, sizeof(part) - 1);
-        part[sizeof(part) - 1] = '\0'; // Ensure null-termination
+        std::lock_guard<std::mutex> g(m_part_mtx);
+        std::strncpy(part, (str ? str : ""), sizeof(part) - 1);
+        part[sizeof(part) - 1] = '\0';
     }
 
     // Getter method to retrieve gld_property for `part`
@@ -207,7 +222,7 @@ public:
         { // Check if `my()` returns a valid object
             throw std::runtime_error("Invalid object context for retrieving gld_property.");
         }
-        return gld_property(my(), "part"); // Duplicate string literal `part`
+        return gld_property(my(), "part");
     }
 
 public:

@@ -31,7 +31,8 @@ object stubauction {
      unit price;
      period 3600;
      // This player sends a signal to the HOURLY meters in $/kW-hr
-     object player {
+object player {
+          parent STUB2;
           file ../stub_bill_price.player;
           loop 100;
           property next.P;
@@ -146,16 +147,20 @@ object triplex_meter {
 	 power_1 3;
 	 power_2 3;
 	 power_12 4;
-	 object recorder {
+object recorder {
+		parent tpm_rtp_A1;
 		limit 1000000;
 		interval 1800;
 		file stub_bills.csv; 
 		property monthly_bill;
 	};
-	object double_assert{
+object double_assert{
+		name auto_double_assert_155;
+		parent tpm_rtp_A1;
 		target monthly_bill; 
 		within .1; 
-		object player {
+object player {
+          parent auto_double_assert_155;
           file ../stub_nofee_bill_value.player;
           loop 1;
           property value;

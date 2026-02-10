@@ -3480,7 +3480,6 @@ assert/CMakeFiles/assert.dir/enum_assert.cpp.o: /Users/arun.veeramany/Arun/conda
   /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/assert/enum_assert.h \
   headers/config.h \
   headers/gld_complex.h \
-  headers/object.h \
   headers/version.h \
   /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/aggregate.h \
   /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/class.h \

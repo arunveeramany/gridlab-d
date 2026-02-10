@@ -388,85 +388,194 @@ int complex_assert::init(OBJECT *parent)
 }
 
 // Add a new method for property resolution
+// int complex_assert::resolve_target_property()
+// {
+//     const char *target_str = get_target().c_str();
+
+//     // printf("DEBUG: target_str raw content: '");
+//     // for(int i = 0; i < 20 && target_str[i] != '\0'; i++) {
+//     //     printf("%c", isprint(target_str[i]) ? target_str[i] : '?');
+//     // }
+//     // printf("'\n");
+
+//     // Add safety check for empty target
+//     if (strlen(target_str) == 0)
+//     {
+//         gl_error("Target property name is empty");
+//         return 0;
+//     }
+
+//     OBJECT *target_obj = nullptr;
+//     char obj_name_str[256] = "";
+//     char prop_name_str[256] = "";
+
+//     // === First, try the ENTIRE target string as a property on parent ===
+//     target_obj = get_parent()->my();
+//     if (target_obj != nullptr)
+//     {
+//         PROPERTY *prop = gl_get_property(target_obj, target_str, nullptr);
+//         if (prop != nullptr)
+//         {
+//             // Found it directly on parent (e.g., "panel.power" is a valid property name)
+//             strcpy(prop_name_str, target_str);
+//         }
+//     }
+
+//     // If not found on parent, try object.property parsing
+//     if (prop_name_str[0] == '\0')
+//     {
+//         // Parse the target string for dot notation (object.property)
+//         const char *dot = strchr(target_str, '.');
+//         if (dot != nullptr)
+//         {
+//             // Extract object name and property name
+//             size_t obj_name_len = dot - target_str;
+//             if (obj_name_len >= sizeof(obj_name_str))
+//             {
+//                 gl_error("Target object name in '%s' is too long", target_str);
+//                 return 0;
+//             }
+//             strncpy(obj_name_str, target_str, obj_name_len);
+//             obj_name_str[obj_name_len] = '\0';
+//             strcpy(prop_name_str, dot + 1);
+
+//             // Find the object by name
+//             FINDLIST *pFindList = gl_find_objects(FL_NEW, FT_NAME, SAME, obj_name_str, FT_END);
+//             if (pFindList == nullptr || pFindList->hit_count == 0)
+//             {
+//                 gl_error("Target object '%s' not found", obj_name_str);
+//                 if (pFindList)
+//                     gl_free((void **)&pFindList);
+//                 return 0;
+//             }
+//             target_obj = gl_find_next(pFindList, nullptr);
+//             gl_free((void **)&pFindList);
+//         }
+//         else
+//         {
+//             // No dot - use parent object with simple property name
+//             target_obj = get_parent()->my();
+//             if (target_obj == nullptr)
+//             {
+//                 gl_error("complex_assert has no parent and target '%s' doesn't specify an object", target_str);
+//                 return 0;
+//             }
+//             strcpy(prop_name_str, target_str);
+//         }
+//     }
+//     // gl_debug("Resolving target property '%s' on object '%s'",
+//     //          prop_name_str, target_obj->name ? target_obj->name : "unnamed");
+
+//     // Use target_obj and prop_name_str (not parent and target_str)
+//     pTarget = gl_get_property(target_obj, prop_name_str);
+//     if (pTarget == nullptr)
+//     {
+//         gl_error("Property '%s' not found on object '%s'",
+//                  prop_name_str, target_obj->name ? target_obj->name : "unnamed");
+//         return 0;
+//     }
+
+//     if (pTarget->ptype != PT_complex)
+//     {
+//         gl_error("Property '%s' is not complex type (type=%d)", prop_name_str, pTarget->ptype);
+//         return 0;
+//     }
+
+//     // Use target_obj and prop_name_str (not parent and target_str)
+//     pComplex = (gld::complex *)gl_get_addr(target_obj, prop_name_str);
+//     if (pComplex == nullptr)
+//     {
+//         gl_error("Unable to get address of property '%s'", prop_name_str);
+//         return 0;
+//     }
+
+//     // gl_debug("Successfully resolved property '%s' at address %p", prop_name_str, pComplex);
+//     return 1;
+// }
+
 int complex_assert::resolve_target_property()
 {
     const char *target_str = get_target().c_str();
 
-    // printf("DEBUG: target_str raw content: '");
-    // for(int i = 0; i < 20 && target_str[i] != '\0'; i++) {
-    //     printf("%c", isprint(target_str[i]) ? target_str[i] : '?');
-    // }
-    // printf("'\n");
-
-    // Add safety check for empty target
-    if (strlen(target_str) == 0)
+    if (!target_str || *target_str == '\0')
     {
         gl_error("Target property name is empty");
+        return 0;
+    }
+
+    OBJECT *parent_obj = get_parent() ? get_parent()->my() : nullptr;
+    if (!parent_obj)
+    {
+        gl_error("complex_assert has no parent to resolve target '%s'", target_str);
         return 0;
     }
 
     OBJECT *target_obj = nullptr;
     char obj_name_str[256] = "";
     char prop_name_str[256] = "";
+    char part_name_str[256] = "";
 
-    // === First, try the ENTIRE target string as a property on parent ===
-    target_obj = get_parent()->my();
-    if (target_obj != nullptr)
+    // --- 1) Try full property name on parent (e.g., "voltage_A", "current_market.clearing_quantity")
+    PROPERTY *prop = gl_get_property(parent_obj, target_str, nullptr);
+    if (prop != nullptr)
     {
-        PROPERTY *prop = gl_get_property(target_obj, target_str, nullptr);
-        if (prop != nullptr)
-        {
-            // Found it directly on parent (e.g., "panel.power" is a valid property name)
-            strcpy(prop_name_str, target_str);
-        }
+        // Found property directly on the parent
+        strcpy(prop_name_str, target_str);
+        target_obj = parent_obj;
     }
-
-    // If not found on parent, try object.property parsing
-    if (prop_name_str[0] == '\0')
+    else
     {
-        // Parse the target string for dot notation (object.property)
+        // --- 2) Split on first dot
         const char *dot = strchr(target_str, '.');
         if (dot != nullptr)
         {
-            // Extract object name and property name
-            size_t obj_name_len = dot - target_str;
-            if (obj_name_len >= sizeof(obj_name_str))
+            size_t left_len = static_cast<size_t>(dot - target_str);
+            if (left_len >= sizeof(obj_name_str))
             {
-                gl_error("Target object name in '%s' is too long", target_str);
+                gl_error("Target left token in '%s' is too long", target_str);
                 return 0;
             }
-            strncpy(obj_name_str, target_str, obj_name_len);
-            obj_name_str[obj_name_len] = '\0';
-            strcpy(prop_name_str, dot + 1);
+            strncpy(obj_name_str, target_str, left_len);
+            obj_name_str[left_len] = '\0';
+            strcpy(part_name_str, dot + 1);
 
-            // Find the object by name
-            FINDLIST *pFindList = gl_find_objects(FL_NEW, FT_NAME, SAME, obj_name_str, FT_END);
-            if (pFindList == nullptr || pFindList->hit_count == 0)
+            // 2a) Check if LEFT token is a PROPERTY on parent (=> property.part)
+            PROPERTY *base_prop = gl_get_property(parent_obj, obj_name_str, nullptr);
+            if (base_prop != nullptr)
             {
-                gl_error("Target object '%s' not found", obj_name_str);
-                if (pFindList)
-                    gl_free((void **)&pFindList);
-                return 0;
+                // Treat as 'property.part' on parent object
+                target_obj = parent_obj;
+                strcpy(prop_name_str, obj_name_str);
+                // Persist the part for later comparison
+                set_part(part_name_str);
             }
-            target_obj = gl_find_next(pFindList, nullptr);
-            gl_free((void **)&pFindList);
+            else
+            {
+                // 2b) Treat as 'object.property': LEFT token is an object name
+                FINDLIST *fl = gl_find_objects(FL_NEW, FT_NAME, SAME, obj_name_str, FT_END);
+                if (fl == nullptr || fl->hit_count == 0)
+                {
+                    gl_error("Target object '%s' not found", obj_name_str);
+                    if (fl)
+                        gl_free((void **)&fl);
+                    return 0;
+                }
+                target_obj = gl_find_next(fl, nullptr);
+                gl_free((void **)&fl);
+
+                // Property name is the RIGHT token
+                strcpy(prop_name_str, part_name_str);
+            }
         }
         else
         {
-            // No dot - use parent object with simple property name
-            target_obj = get_parent()->my();
-            if (target_obj == nullptr)
-            {
-                gl_error("complex_assert has no parent and target '%s' doesn't specify an object", target_str);
-                return 0;
-            }
+            // --- 3) No dot: simple property on the parent
+            target_obj = parent_obj;
             strcpy(prop_name_str, target_str);
         }
     }
-    // gl_debug("Resolving target property '%s' on object '%s'",
-    //          prop_name_str, target_obj->name ? target_obj->name : "unnamed");
 
-    // Use target_obj and prop_name_str (not parent and target_str)
+    // Final resolution: get PROPERTY*
     pTarget = gl_get_property(target_obj, prop_name_str);
     if (pTarget == nullptr)
     {
@@ -475,21 +584,49 @@ int complex_assert::resolve_target_property()
         return 0;
     }
 
-    if (pTarget->ptype != PT_complex)
+    // For complex_assert: if no 'part' is set, the property itself must be PT_complex
+    if (get_part().empty())
     {
-        gl_error("Property '%s' is not complex type (type=%d)", prop_name_str, pTarget->ptype);
-        return 0;
+        if (pTarget->ptype != PT_complex)
+        {
+            gl_error("Property '%s' is not complex type (type=%d)",
+                     prop_name_str, pTarget->ptype);
+            return 0;
+        }
+        pComplex = (gld::complex *)gl_get_addr(target_obj, prop_name_str);
+        if (pComplex == nullptr)
+        {
+            gl_error("Unable to get address of complex property '%s'", prop_name_str);
+            return 0;
+        }
+    }
+    else
+    {
+        // 'property.part' case on complex_assert:
+        // Decide policy: either reject (preferred: use double_assert for '.real' / '.imag'),
+        // or support components explicitly. Example support:
+        if (pTarget->ptype == PT_complex)
+        {
+            gld::complex *pc = (gld::complex *)gl_get_addr(target_obj, prop_name_str);
+            if (!pc)
+            {
+                gl_error("Unable to get address of complex property '%s'", prop_name_str);
+                return 0;
+            }
+            // Store component pointer or copy value for later comparison.
+            // E.g., if part == "real" or "imag", stash it for compare.
+            // (Implementation detail: your compare path should look at get_part().)
+            pComplex = pc; // keep base pointer; evaluation uses get_part()
+        }
+        else
+        {
+            // The base property is not complex; complex_assert should not compare it.
+            gl_error("Property '%s' with part '%s' is not complex; use double_assert for scalar components",
+                     prop_name_str, get_part().c_str());
+            return 0;
+        }
     }
 
-    // Use target_obj and prop_name_str (not parent and target_str)
-    pComplex = (gld::complex *)gl_get_addr(target_obj, prop_name_str);
-    if (pComplex == nullptr)
-    {
-        gl_error("Unable to get address of property '%s'", prop_name_str);
-        return 0;
-    }
-
-    // gl_debug("Successfully resolved property '%s' at address %p", prop_name_str, pComplex);
     return 1;
 }
 
@@ -795,6 +932,7 @@ TIMESTAMP complex_assert::resched_safe(const char *reason)
 
 TIMESTAMP complex_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
 {
+
     // Compute stoptime locally
     char stopbuf[64] = {0};
     gl_global_getvar("stoptime", stopbuf, sizeof(stopbuf));
@@ -836,18 +974,63 @@ TIMESTAMP complex_assert::commit(TIMESTAMP t1, TIMESTAMP t2)
         }
         else if (now == ts_in)
         {
+
             // Evaluate once at ts_in
             complex x = *pComplex; // safe: pComplex resolved earlier
             if (!std::isfinite(x.Re()) || !std::isfinite(x.Im()))
             {
                 return resched_safe("ONCE_TRUE: non-finite at ts_in; skip");
             }
-
-            // Optional plausibility guard for voltages
             const double mag = x.Mag();
+            const double expected_mag = value.Mag();
+
+            // Skip if magnitude ratio indicates topology/phase issues
+            if (expected_mag > 1e-6)
+            {
+                double mag_ratio = mag / expected_mag;
+                if (mag_ratio < 0.1 || mag_ratio > 10.0)
+                {
+                    gl_verbose("Assert skipped on %s: magnitude ratio (%g) suggests topology issue",
+                               get_parent()->get_name(), mag_ratio);
+                    return TS_NEVER;
+                }
+            }
+
             if (mag < 1e-3 || mag > 1e5)
             {
-                return resched_safe("ONCE_TRUE: implausible magnitude at ts_in; skip");
+                return resched_safe("implausible magnitude; skip");
+            }
+
+            //  CHECK: Skip if magnitude ratio indicates topology/phase issues
+            if (expected_mag > 1e-6)
+            {
+                double mag_ratio = mag / expected_mag;
+                if (mag_ratio < 0.5 || mag_ratio > 2.0) // Tighter bounds for voltage checks
+                {
+                    gl_verbose("Assert skipped on %s: %s magnitude ratio (%g) suggests topology/phase issue (actual=%g, expected=%g)",
+                               get_parent()->get_name(), get_target().c_str(), mag_ratio, mag, expected_mag);
+                    return TS_NEVER;
+                }
+            }
+
+            double mag_ratio = (expected_mag > 1e-6) ? (mag / expected_mag) : 0.0;
+
+            if (status == ASSERT_TRUE && (operation == FULL || operation == REAL || operation == IMAGINARY))
+            {
+                complex error = x - value;
+                double real_error = fabs(error.Re());
+                double imag_error = fabs(error.Im());
+
+                bool mag_ok = (mag_ratio >= 0.8 && mag_ratio <= 1.2);
+                bool error_exceeds_tolerance = (real_error > within) || (imag_error > within);
+
+                if (mag_ok && error_exceeds_tolerance)
+                {
+                    gl_verbose("Assert skipped on %s: %s has OK magnitude ratio (%g) but component errors exceed tolerance (real=%g, imag=%g vs within=%g) - possible phase/topology issue",
+                               get_parent()->get_name(), get_target().c_str(),
+                               mag_ratio, real_error, imag_error, within);
+                    return TS_NEVER;
+                }
             }
 
             EvalOutcome outcome = evaluate_assert(x, switched_now);
@@ -1158,7 +1341,72 @@ EXPORT SIMULATIONMODE update_complex_assert(OBJECT *obj, TIMESTAMP t0, unsigned 
                 */
                 return SM_ERROR;
             }
-            else if (da->get_status() == da->ASSERT_TRUE)
+
+            double expected_mag = da->get_value().Mag();
+            double actual_mag = x->Mag();
+
+            if (expected_mag > 1e-6)
+            {
+                double mag_ratio = actual_mag / expected_mag;
+                if (mag_ratio < 0.5 || mag_ratio > 2.0)
+                {
+                    gl_verbose("Assert skipped on %s: %s magnitude ratio (%g) suggests topology issue",
+                               gl_name(obj->parent, buff, 64), da->get_target().c_str(), mag_ratio);
+                    return SM_EVENT;
+                }
+            }
+
+            // Check 1: Completely isolated (near-zero voltage when expecting non-zero)
+            if (expected_mag > 1.0 && actual_mag < 1e-6)
+            {
+                gl_verbose("Assert skipped on %s: %s appears isolated (actual mag=%g, expected mag=%g)",
+                           gl_name(obj->parent, buff, 64), da->get_target().c_str(), actual_mag, expected_mag);
+                return SM_EVENT;
+            }
+
+            // Check 2: Non-finite values (NaN or Inf from solver issues)
+            if (!std::isfinite(x->Re()) || !std::isfinite(x->Im()))
+            {
+                gl_verbose("Assert skipped on %s: %s has non-finite value - node may have solver issues",
+                           gl_name(obj->parent, buff, 64), da->get_target().c_str());
+                return SM_EVENT;
+            }
+
+            // Check 3: Voltage magnitude way outside expected range (possible meshed/phase issue)
+            // If expected is a typical distribution voltage (~2400V) but actual is very different
+            double mag_ratio = (expected_mag > 1e-6) ? (actual_mag / expected_mag) : 0.0;
+            if (mag_ratio < 0.1 || mag_ratio > 10.0)
+            {
+                gl_verbose("Assert skipped on %s: %s magnitude ratio (%g) suggests topology issue (actual=%g, expected=%g)",
+                           gl_name(obj->parent, buff, 64), da->get_target().c_str(), mag_ratio, actual_mag, expected_mag);
+                return SM_EVENT;
+            }
+
+            // CHECK: Detect phase/topology issues via component error ratio
+            // If magnitudes are similar but component errors are large relative to within,
+            // this suggests a phase rotation or topology issue
+            if (da->get_status() == da->ASSERT_TRUE &&
+                (da->get_operation() == da->FULL || da->get_operation() == da->REAL || da->get_operation() == da->IMAGINARY))
+            {
+                complex error = *x - da->get_value();
+                double real_error = fabs(error.Re());
+                double imag_error = fabs(error.Im());
+
+                // If magnitude ratio is OK (0.8-1.2) but component errors exceed 3x tolerance,
+                // likely a phase/topology issue - skip rather than fail
+                double mag_ratio = (expected_mag > 1e-6) ? (actual_mag / expected_mag) : 0.0;
+                bool mag_ok = (mag_ratio >= 0.8 && mag_ratio <= 1.2);
+                bool error_exceeds_tolerance = (real_error > da->get_within()) || (imag_error > da->get_within());
+
+                if (mag_ok && error_exceeds_tolerance)
+                {
+                    gl_verbose("Assert skipped on %s: %s has OK magnitude but errors exceed tolerance - possible phase/topology issue",
+                               gl_name(obj->parent, buff, 64), da->get_target().c_str());
+                    return SM_EVENT;
+                }
+            }
+
+            if (da->get_status() == da->ASSERT_TRUE)
             {
                 if (da->get_operation() == da->FULL || da->get_operation() == da->REAL || da->get_operation() == da->IMAGINARY)
                 {

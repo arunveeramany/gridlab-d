@@ -33,18 +33,15 @@ CLASS *g_assert::oclass = nullptr;
 //     value2[0] = '\0';
 // }
 
-
-g_assert::g_assert(MODULE *module): gld_object()
+g_assert::g_assert(MODULE *module) : gld_object()
 {
-	
-
 
 	status = AS_INIT;
-    relation = TCOP_EQ;
-    target[0] = '\0';
-    part[0] = '\0';
-    value[0] = '\0';
-    value2[0] = '\0';
+	relation = TCOP_EQ;
+	target[0] = '\0';
+	part[0] = '\0';
+	value[0] = '\0';
+	value2[0] = '\0';
 
 	if (oclass == nullptr)
 	{
@@ -108,11 +105,80 @@ int g_assert::create(void)
 	return 1; /* return 1 on success, 0 on failure */
 }
 
+// int g_assert::init(OBJECT *parent)
+// {
+// 	OBJECT *obj = object_header(this);
+// 	parent = obj->parent;
+
+// 	// gld_property target(get_parent(), get_target().c_str());
+// 	gld_property target(parent, get_target().c_str());
+
+// 	if (!target.is_valid())
+// 		exception("target '%s' property '%s' does not exist", get_parent() ? get_parent()->get_name() : "global", get_target().c_str());
+
+// 	set_status(AS_TRUE);
+// 	return 1;
+// }
+
 int g_assert::init(OBJECT *parent)
 {
-	gld_property target(get_parent(), get_target().c_str());
-	if (!target.is_valid())
-		exception("target '%s' property '%s' does not exist", get_parent() ? get_parent()->get_name() : "global", get_target().c_str());
+
+	gl_debug("g_assert::init called: name=%s target=%s part=%s",
+			 get_name(), get_target().c_str(), get_part().c_str());
+
+	OBJECT *obj = object_header(this);
+	parent = obj->parent;
+
+	// Read user-provided target/part
+	std::string raw_target = get_target();
+	std::string raw_part = get_part();
+
+	// First take: try as-is
+	gld_property target_prop(parent, raw_target.c_str());
+
+	// If invalid and target contains '.', split into base + part
+	if (!target_prop.is_valid())
+	{
+		size_t dot = raw_target.find('.');
+		if (dot != std::string::npos)
+		{
+			std::string base = raw_target.substr(0, dot);
+			std::string sub = raw_target.substr(dot + 1);
+
+			gld_property base_prop(parent, base.c_str());
+			if (base_prop.is_valid())
+			{
+				// Persist parsed values so later code (commit/evaluate_status) uses them
+				set_target(base.c_str());
+				set_part(sub.c_str());
+
+				target_prop = base_prop;
+				raw_target = base;
+				raw_part = sub;
+			}
+		}
+	}
+
+	// Final validation
+	if (!target_prop.is_valid())
+	{
+		exception("target '%s' property '%s' does not exist",
+				  get_parent() ? parent->name : "global",
+				  get_target().c_str());
+		return 0;
+	}
+
+	// Optional: verify that the part exists if provided
+	if (!raw_part.empty())
+	{
+		// If gld_property doesn’t expose a 'has_part', we rely on compare() to fail later.
+		// If it does: uncomment a check like below (depends on your gld_property API).
+		// if (!target_prop.has_part(raw_part.c_str())) {
+		//     exception("target '%s' has no part '%s'", raw_target.c_str(), raw_part.c_str());
+		//     return 0;
+		// }
+		// No need to select here; compare() will use part value.
+	}
 
 	set_status(AS_TRUE);
 	return 1;
