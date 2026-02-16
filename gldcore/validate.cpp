@@ -649,6 +649,7 @@ int closedir(DIR *dirp)
 #define WIFEXITED(X) (X >= 0 && X < 128)
 #define WEXITSTATUS(X) (X & 127)
 #define WTERMSIG(X) (X & 127)
+#define WIFSIGNALED(X) ((X) >= 128)
 #endif
 
 /** command line arguments that are passed to test runs */
