@@ -70,16 +70,27 @@ else()
     set(OS_SPECIFIC_LIBRARIES ${CMAKE_DL_LIBS} m)
 endif()
 
-
-find_path(EIGEN3_INCLUDE_DIR Eigen/Dense
-  PATH_SUFFIXES eigen3
-  PATHS /opt/homebrew/include
-)
-
-if(EIGEN3_INCLUDE_DIR)
-  include_directories(${EIGEN3_INCLUDE_DIR})
+# Find Eigen3 - cross-platform
+find_package(Eigen3 3.3 CONFIG QUIET)
+if(NOT Eigen3_FOUND)
+    # Fallback to manual search
+    find_path(EIGEN3_INCLUDE_DIR Eigen/Dense
+        PATH_SUFFIXES eigen3
+        PATHS
+            /opt/homebrew/include      # macOS (Homebrew ARM)
+            /usr/local/include         # macOS (Homebrew Intel) / Linux local
+            /usr/include               # Linux system
+            /usr/include/eigen3        # Linux (apt install libeigen3-dev)
+    )
+    if(EIGEN3_INCLUDE_DIR)
+        include_directories(${EIGEN3_INCLUDE_DIR})
+        message(STATUS "Found Eigen3 at: ${EIGEN3_INCLUDE_DIR}")
+    else()
+        message(FATAL_ERROR "Could not find Eigen3. Install with: apt install libeigen3-dev (Linux) or brew install eigen (macOS)")
+    endif()
 else()
-  message(FATAL_ERROR "Could not find Eigen3")
+    message(STATUS "Found Eigen3 via CMake config")
+    include_directories(${EIGEN3_INCLUDE_DIR})
 endif()
 
 
