@@ -1,31 +1,4 @@
- M ../assert/CMakeFiles/assert.dir/compiler_depend.make
- M git_out_Debug_build.tmp
  M git_out_Debug_status.tmp
- M ../climate/CMakeFiles/climate.dir/compiler_depend.make
- M ../commercial/CMakeFiles/commercial.dir/compiler_depend.make
- M ../connection/CMakeFiles/connection.dir/compiler_depend.make
- M ../generators/CMakeFiles/generators.dir/compiler_depend.make
- M ../gldcore/CMakeFiles/gldapi.dir/compiler_depend.make
- M ../gldcore/CMakeFiles/gridlabd.dir/compiler_depend.make
- M ../gldcore/link/engine/CMakeFiles/glxengine.dir/compiler_depend.make
- M ../gldcore/solvers/CMakeFiles/glsolvers.dir/compiler_depend.make
- M ../headers/build.h
- M ../headers/config.h
- M ../headers/version.h
- M ../market/CMakeFiles/market.dir/compiler_depend.make
- M ../mysql/CMakeFiles/mysql.dir/compiler_depend.make
- M ../optimize/CMakeFiles/optimize.dir/compiler_depend.make
- M ../powerflow/CMakeFiles/powerflow.dir/compiler_depend.make
- M ../reliability/CMakeFiles/reliability.dir/compiler_depend.make
- M ../residential/CMakeFiles/residential.dir/compiler_depend.make
- M ../tape/CMakeFiles/tape.dir/compiler_depend.make
- M ../tape_file/CMakeFiles/tape_file.dir/compiler_depend.make
- M ../tape_plot/CMakeFiles/tape_plot.dir/compiler_depend.make
- M ../third_party/SuperLU/CBLAS/CMakeFiles/blas.dir/compiler_depend.make
- M ../third_party/SuperLU/SRC/CMakeFiles/superlu.dir/compiler_depend.make
- D ../../powerflow/autotest/test_load_tracker.glm
- M ../../powerflow/autotest/test_load_tracker_damped.glm
- M ../../powerflow/autotest/test_load_tracker_double.glm
 ?? ../../assert/double_assert.cpp.macos
 ?? ../../assert/double_assert.h.macos
 ?? ../../assert/enum_assert.cpp.macos
@@ -36,7 +9,7 @@
 ?? ../.cmake/api/v1/reply/codemodel-v2-03bffdde26e47517a9ab.json
 ?? ../.cmake/api/v1/reply/directory-.-Debug-515a259fcfd760b3e1bb.json
 ?? ../.cmake/api/v1/reply/directory-gldcore-Debug-612e9b9fc9ff9c28add7.json
-?? ../.cmake/api/v1/reply/index-2026-02-12T23-01-20-0174.json
+?? ../.cmake/api/v1/reply/index-2026-02-13T16-58-35-0641.json
 ?? ../.cmake/api/v1/reply/target-assert-Debug-1d2d4887450eddf29568.json
 ?? ../.cmake/api/v1/reply/target-blas-Debug-3f89047730e1209490eb.json
 ?? ../.cmake/api/v1/reply/target-citersol-Debug-c88ca06fe81748d03ac5.json
@@ -125,6 +98,7 @@
 ?? ../../tape/validate_errors.txt
 ?? ../../taxonomy_feeders/fault_check.txt
 ?? ../../taxonomy_feeders/validate_errors.txt
+?? ../../test_gldapi/CMakeLists.txt.macos
 ?? ../../validate_each.sh
 ?? ../../validate_each.txt
 ?? ../../validate_errors.txt

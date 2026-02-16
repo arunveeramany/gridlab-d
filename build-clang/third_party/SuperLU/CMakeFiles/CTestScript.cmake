@@ -2,7 +2,7 @@
 # If you choose not to use CMake, this file may be hand configured, by
 # filling in the required variables.
 
-cmake_minimum_required(VERSION 4.1.2)
+cmake_minimum_required(VERSION 4.2.3)
 
 # CTest Start Step
 set(CTEST_SOURCE_DIRECTORY "/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU")
