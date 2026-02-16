@@ -1,9 +1,31 @@
- M ../bin/test_gldapi
+ M ../assert/CMakeFiles/assert.dir/compiler_depend.make
  M git_out_Debug_build.tmp
  M git_out_Debug_status.tmp
+ M ../climate/CMakeFiles/climate.dir/compiler_depend.make
+ M ../commercial/CMakeFiles/commercial.dir/compiler_depend.make
+ M ../connection/CMakeFiles/connection.dir/compiler_depend.make
+ M ../generators/CMakeFiles/generators.dir/compiler_depend.make
+ M ../gldcore/CMakeFiles/gldapi.dir/compiler_depend.make
+ M ../gldcore/CMakeFiles/gridlabd.dir/compiler_depend.make
+ M ../gldcore/link/engine/CMakeFiles/glxengine.dir/compiler_depend.make
+ M ../gldcore/solvers/CMakeFiles/glsolvers.dir/compiler_depend.make
  M ../headers/build.h
  M ../headers/config.h
  M ../headers/version.h
+ M ../market/CMakeFiles/market.dir/compiler_depend.make
+ M ../mysql/CMakeFiles/mysql.dir/compiler_depend.make
+ M ../optimize/CMakeFiles/optimize.dir/compiler_depend.make
+ M ../powerflow/CMakeFiles/powerflow.dir/compiler_depend.make
+ M ../reliability/CMakeFiles/reliability.dir/compiler_depend.make
+ M ../residential/CMakeFiles/residential.dir/compiler_depend.make
+ M ../tape/CMakeFiles/tape.dir/compiler_depend.make
+ M ../tape_file/CMakeFiles/tape_file.dir/compiler_depend.make
+ M ../tape_plot/CMakeFiles/tape_plot.dir/compiler_depend.make
+ M ../third_party/SuperLU/CBLAS/CMakeFiles/blas.dir/compiler_depend.make
+ M ../third_party/SuperLU/SRC/CMakeFiles/superlu.dir/compiler_depend.make
+ D ../../powerflow/autotest/test_load_tracker.glm
+ M ../../powerflow/autotest/test_load_tracker_damped.glm
+ M ../../powerflow/autotest/test_load_tracker_double.glm
 ?? ../../assert/double_assert.cpp.macos
 ?? ../../assert/double_assert.h.macos
 ?? ../../assert/enum_assert.cpp.macos
@@ -14,7 +36,7 @@
 ?? ../.cmake/api/v1/reply/codemodel-v2-03bffdde26e47517a9ab.json
 ?? ../.cmake/api/v1/reply/directory-.-Debug-515a259fcfd760b3e1bb.json
 ?? ../.cmake/api/v1/reply/directory-gldcore-Debug-612e9b9fc9ff9c28add7.json
-?? ../.cmake/api/v1/reply/index-2026-02-10T01-28-34-0064.json
+?? ../.cmake/api/v1/reply/index-2026-02-12T23-01-20-0174.json
 ?? ../.cmake/api/v1/reply/target-assert-Debug-1d2d4887450eddf29568.json
 ?? ../.cmake/api/v1/reply/target-blas-Debug-3f89047730e1209490eb.json
 ?? ../.cmake/api/v1/reply/target-citersol-Debug-c88ca06fe81748d03ac5.json
@@ -70,26 +92,6 @@
 ?? ../.cmake/api/v1/reply/target-zlinsolx2-Debug-6ac253e465802737db05.json
 ?? ../.cmake/api/v1/reply/target-zlinsolx3-Debug-153e5443cdb253de7d8c.json
 ?? ../.cmake/api/v1/reply/toolchains-v1-0f3a65bbc7b07038af55.json
-?? ../assert/CMakeFiles/assert.dir/compiler_depend.internal
-?? ../climate/CMakeFiles/climate.dir/compiler_depend.internal
-?? ../commercial/CMakeFiles/commercial.dir/compiler_depend.internal
-?? ../connection/CMakeFiles/connection.dir/compiler_depend.internal
-?? ../generators/CMakeFiles/generators.dir/compiler_depend.internal
-?? ../gldcore/CMakeFiles/gldapi.dir/compiler_depend.internal
-?? ../gldcore/CMakeFiles/gridlabd.dir/compiler_depend.internal
-?? ../gldcore/link/engine/CMakeFiles/glxengine.dir/compiler_depend.internal
-?? ../gldcore/solvers/CMakeFiles/glsolvers.dir/compiler_depend.internal
-?? ../market/CMakeFiles/market.dir/compiler_depend.internal
-?? ../mysql/CMakeFiles/mysql.dir/compiler_depend.internal
-?? ../optimize/CMakeFiles/optimize.dir/compiler_depend.internal
-?? ../powerflow/CMakeFiles/powerflow.dir/compiler_depend.internal
-?? ../reliability/CMakeFiles/reliability.dir/compiler_depend.internal
-?? ../residential/CMakeFiles/residential.dir/compiler_depend.internal
-?? ../tape/CMakeFiles/tape.dir/compiler_depend.internal
-?? ../tape_file/CMakeFiles/tape_file.dir/compiler_depend.internal
-?? ../tape_plot/CMakeFiles/tape_plot.dir/compiler_depend.internal
-?? ../third_party/SuperLU/CBLAS/CMakeFiles/blas.dir/compiler_depend.internal
-?? ../third_party/SuperLU/SRC/CMakeFiles/superlu.dir/compiler_depend.internal
 ?? ../../climate/validate_errors.txt
 ?? ../../commercial/validate_errors.txt
 ?? ../../connection/validate_errors.txt
@@ -111,6 +113,8 @@
 ?? ../../parent_inserter_safe_v2.py
 ?? ../../parent_inserter_safe_v3.py
 ?? ../../plc/validate_errors.txt
+?? ../../powerflow/autotest/test_load_tracker_double_fix.glm
+?? ../../powerflow/autotest/test_opt_load_tracker.glm
 ?? ../../powerflow/fault_check.cpp.macos
 ?? ../../powerflow/solver_nr.cpp.macos
 ?? ../../powerflow/validate_errors.txt

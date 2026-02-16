@@ -10,11 +10,6 @@ module powerflow
 	nominal_frequency 50;
 };
 
-//object fault_check {
-//    name "fault_checker";
-//    check_mode ALL;
-//    grid_association TRUE;
-//};
 
 module tape;
 module assert;
