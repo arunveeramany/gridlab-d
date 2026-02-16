@@ -1,90 +1,64 @@
 cmake_minimum_required(VERSION 3.13)
 
+# Set policy to silence CMP0126 warning
+if(POLICY CMP0126)
+    cmake_policy(SET CMP0126 NEW)
+endif()
+
 project(GridLAB-D LANGUAGES C CXX)
 
-
-# #Apply conservative FP flags only on Apple Silicon + AppleClang
-# if(APPLE AND CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64")
-#   if(CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
-#     add_compile_options(-ffp-contract=off -fno-fast-math)
-#   endif()
-#   if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-#     add_compile_options(-ffp-contract=off -fno-fast-math)
-#   endif()
-
-# endif()
 
 
 message(STATUS "Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_SYSTEM_PROCESSOR}")
 
 
-#if(APPLE AND CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64")
-#  if(CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
-#	# Recommended common flags
-#	add_compile_options(-O2)                    # Avoid -O3 for numerical tests
-#	add_compile_options(-fno-vectorize)         # Disable loop vectorization (Clang)
-#	add_compile_options(-fno-slp-vectorize)     # Disable SLP vectorization (Clang)
-# 	If you use LTO anywhere, turn it off for these targets:
-#	set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
-#  endif()
-#endif()
-
-
-
-
 
 set(CMAKE_BUILD_TYPE Debug)
 
-if(APPLE)
-    # Force non-PIE executable on macOS
-    set(CMAKE_OSX_ARCHITECTURES "arm64")
-    set(CMAKE_OSX_SYSROOT "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk")
-    set(CMAKE_EXE_LINKER_FLAGS "-Wl,-no_pie")
-endif ()
-
-
-if(WIN32)
-    add_compile_options(
-        $<$<CONFIG:Debug>:/MDd>
-        $<$<CONFIG:Release>:/MD>
-    )
-endif()
 
 
 
 set(CMAKE_CXX_STANDARD 23) # Or 14, 11 if 17 is not supported
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# if(MSVC)
-#     # MSVC compiler (cl.exe)
-#     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /fsanitize=address /Zi /Od")
-#     set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} /INCREMENTAL:NO /fsanitize=address")
-# elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-#     # Clang on Windows or Linux
 
-#     set(CMAKE_CXX_FLAGS_DEBUG
-#         "-g -O0 -fsanitize=address,undefined -fno-omit-frame-pointer"
-#     )
-#     set(CMAKE_EXE_LINKER_FLAGS_DEBUG
-#         "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -fsanitize=address,undefined"
-#     )
-#     set(CMAKE_SHARED_LINKER_FLAGS_DEBUG
-#         "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} -fsanitize=address,undefined"
-#     )
-
-#     elseif(UNIX)
-#     # GCC or Clang on Linux
-#     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fsanitize=address -fno-omit-frame-pointer")
-#     set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -fsanitize=address")
-#     set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} -fsanitize=address")
-# endif()
-
-
-# Find Eigen
-# find_package(Eigen3 3.3 REQUIRED NO_MODULE)
-
-# Include Eigen 
-#include_directories(${EIGEN3_INCLUDE_DIR})
+## Set up platform specific library linking and platform identification
+if (WIN32 OR MSYS OR MINGW OR CYGWIN)
+    if (MSVC)
+        # MSVC-specific settings
+        set(OS_SPECIFIC_LIBRARIES ws2_32 wsock32)
+        add_compile_options(
+            $<$<CONFIG:Debug>:/MDd>
+            $<$<CONFIG:Release>:/MD>
+        )
+    else()
+        # MinGW/MSYS/Cygwin (GCC-based)
+        FetchContent_Declare(
+            dlfcn-win32
+            GIT_REPOSITORY https://github.com/dlfcn-win32/dlfcn-win32.git
+            GIT_TAG v1.4.2
+        )
+        FetchContent_MakeAvailable(dlfcn-win32)
+        include_directories(${dlfcn-win32_SOURCE_DIR}/src)
+        set(DL_NAME dl)
+        set(DL_LIB dl)
+        set(OS_SPECIFIC_LIBRARIES ws2_32 wsock32 ${DL_NAME} m)
+        add_compile_options(-static-libgcc -static-libstdc++ -static)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++ -static")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++ -static")
+    endif()
+    set(FOUND_WINDOWS yes CACHE INTERNAL "Tell script generator we're Windows")
+elseif (APPLE)
+    set(OS_SPECIFIC_LIBRARIES ${CMAKE_DL_LIBS})
+    set(FOUND_MACOS yes CACHE INTERNAL "Tell script generator we're MacOS")
+    # macOS-specific settings - ONLY apply here
+    set(CMAKE_OSX_ARCHITECTURES "arm64")
+    set(CMAKE_OSX_SYSROOT "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk")
+    set(CMAKE_EXE_LINKER_FLAGS "-Wl,-no_pie")
+else()
+    # Linux
+    set(OS_SPECIFIC_LIBRARIES ${CMAKE_DL_LIBS} m)
+endif()
 
 
 find_path(EIGEN3_INCLUDE_DIR Eigen/Dense
@@ -106,7 +80,7 @@ if (GLD_EXTRA_WARNINGS)
     set(GLD_COMPILE_OPTIONS ${WARNING_FLAGS} CACHE INTERNAL "GLD_COMPILE_OPTIONS")
 else ()
     if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        # TODO: resolve these warnings and un-supress them
+        # TODO: resolve these warnings and un-suppress them
         SET(GLD_COMPILE_OPTIONS
                 "-Wno-format-overflow"
                 "-Wno-format-truncation"
@@ -114,11 +88,24 @@ else ()
                 CACHE INTERNAL
                 "GLD_COMPILE_OPTIONS"
         )
+    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        # MSVC-specific warning suppressions if needed
+        SET(GLD_COMPILE_OPTIONS
+                "/W3"
+                CACHE INTERNAL
+                "GLD_COMPILE_OPTIONS"
+        )
+    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+        # Clang/AppleClang equivalent suppressions
+        SET(GLD_COMPILE_OPTIONS
+                "-Wno-format-overflow"
+                "-Wno-format-truncation"
+                CACHE INTERNAL
+                "GLD_COMPILE_OPTIONS"
+        )
     endif ()
 endif ()
 
-set(CMAKE_CXX_STANDARD 23) 
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(GLD_PACKAGE gridlabd)
 set(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION OFF) # This shouldn't be needed, but seems to fix issues
@@ -186,21 +173,8 @@ configure_file(gldcore/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/headers/config.h 
 configure_file(gldcore/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/headers/version.h @ONLY)
 add_definitions(-DHAVE_CONFIG_H)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/headers)
-#include(cmake/ExternalLibraries.cmake)
 
-# --- Generate external ABI header (platform.h includes this) ---
-#configure_file(${CMAKE_SOURCE_DIR}/gldcore/config_external.h.in
-#               ${CMAKE_CURRENT_BINARY_DIR}/headers/config_external.h
-#               @ONLY)
 
-# Install core generated headers under include/gldcore
-#install(FILES
-#    ${CMAKE_CURRENT_BINARY_DIR}/headers/config_external.h
-#    ${CMAKE_CURRENT_BINARY_DIR}/headers/config.h
-#    ${CMAKE_CURRENT_BINARY_DIR}/headers/version.h
-#    DESTINATION include/gldcore
-#    COMPONENT Runtime
-#)
 
 # Install ALL public gldcore headers (not just a short list)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/gldcore/
@@ -241,37 +215,6 @@ endif ()
 # Compiler/Linker flags for all build types
 add_compile_options(${FORCE_ERROR} ${DISABLED_OPTIMIZATIONS})
 
-## Set up platform specific library linking and platform identification
-if (WIN32 OR MSYS OR MINGW OR CYGWIN)
-    FetchContent_Declare(
-             dlfcn-win32
-             GIT_REPOSITORY https://github.com/dlfcn-win32/dlfcn-win32.git
-             GIT_TAG v1.4.2
-     )
-     FetchContent_MakeAvailable(dlfcn-win32)
-     include_directories(${dlfcn-win32_SOURCE_DIR}/src)
-     set(DL_NAME dl)
-     set(DL_LIB dl)
-
-     set(OS_SPECIFIC_LIBRARIES ws2_32 wsock32 ${DL_NAME} m)
-
-
-    if(WIN32)
-        set(OS_SPECIFIC_LIBRARIES ws2_32 wsock32 ${DL_NAME})
-    else()
-        set(OS_SPECIFIC_LIBRARIES ws2_32 wsock32 ${DL_NAME} m)
-    endif()
-
-    set(FOUND_WINDOWS yes CACHE INTERNAL "Tell script generator we're Windows")
-    add_compile_options(-static-libgcc -static-libstdc++ -static)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++ -static")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++ -static")
-elseif (APPLE)
-    set(OS_SPECIFIC_LIBRARIES ${CMAKE_DL_LIBS})
-    set(FOUND_MACOS yes CACHE INTERNAL "Tell script generator we're MacOS")
-else ()
-    set(OS_SPECIFIC_LIBRARIES ${CMAKE_DL_LIBS})
-endif ()
 LIST(APPEND CMAKE_REQUIRED_LIBRARIES ${OS_SPECIFIC_LIBRARIES})
 if (CMAKE_REQUIRED_LIBRARIES)
     LIST(REMOVE_DUPLICATES CMAKE_REQUIRED_LIBRARIES)

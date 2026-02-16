@@ -2,8 +2,8 @@
 
 # WARNING: This is a CMake generated file, modifications to this file will be overwritten.
 
-export CC="/usr/bin/clang"
-export CXX="/usr/bin/clang++"
+export CC="/usr/bin/cc"
+export CXX="/usr/bin/c++"
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
@@ -33,7 +33,7 @@ fi
 #  export CXXFLAGS="$CXXFLAGS -fPIC"
 #fi
 
-export CXXFLAGS="-Werror=return-type -Werror=write-strings $<$<CONFIG:Debug>:-g -O0>"
+export CXXFLAGS="-Werror=return-type -Werror=write-strings $<$<CONFIG:Debug>:-g -O0> -Wno-format-overflow -Wno-format-truncation"
 
 if test "x$GRIDLABD_DEBUG" = "x"; then
   if test "x$HAS_MINGW" = "xyes"; then
