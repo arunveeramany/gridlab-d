@@ -11,7 +11,7 @@
 #define PACKAGE "GridLAB-D"
 #define PACKAGE_NAME "GridLAB-D"
 #define PACKAGE_VERSION "5.3.0"
-#define PACKAGE_STRING "GridLAB-D 5.3.0 Redhawk (Branch:cpp23-arm64 - e41d30b2)"
+#define PACKAGE_STRING "GridLAB-D 5.3.0 Redhawk (Branch:cpp23-arm64 - 06be8d0d)"
 #endif
 
 char *version_copyright(void);

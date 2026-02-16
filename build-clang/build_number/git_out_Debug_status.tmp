@@ -1,3 +1,4 @@
+ M ../../.github/workflows/ci.yml
  M ../../CMakeLists.txt
  D ../CPackConfig.cmake
  D ../CPackSourceConfig.cmake
@@ -60,7 +61,6 @@
  D ../_deps/json-src/nlohmann_json.natvis
  D ../_deps/json-src/single_include/nlohmann/json.hpp
  D ../_deps/json-src/single_include/nlohmann/json_fwd.hpp
- D ../_deps/json-subbuild/CMakeFiles/4.1.2/CMakeSystem.cmake
  D ../_deps/json-subbuild/CMakeFiles/CMakeConfigureLog.yaml
  D ../_deps/json-subbuild/CMakeFiles/CMakeDirectoryInformation.cmake
  D ../_deps/json-subbuild/CMakeFiles/CMakeRuleHashes.txt
@@ -201,7 +201,6 @@
  D ../headers/build.h
  D ../headers/class.h
  D ../headers/config.h
- D ../headers/config_external.h
  D ../headers/debug.h
  D ../headers/enduse.h
  D ../headers/exception.h

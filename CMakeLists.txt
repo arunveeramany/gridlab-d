@@ -1,8 +1,17 @@
 cmake_minimum_required(VERSION 3.13)
 
-# Set policy to silence CMP0126 warning
+
 if(POLICY CMP0126)
     cmake_policy(SET CMP0126 NEW)
+endif()
+if(POLICY CMP0102)
+    cmake_policy(SET CMP0102 NEW)
+endif()
+if(POLICY CMP0156)
+    cmake_policy(SET CMP0156 NEW)
+endif()
+if(POLICY CMP0082)
+    cmake_policy(SET CMP0082 NEW)
 endif()
 
 project(GridLAB-D LANGUAGES C CXX)
@@ -21,6 +30,7 @@ set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 23) # Or 14, 11 if 17 is not supported
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+include(FetchContent)
 
 ## Set up platform specific library linking and platform identification
 if (WIN32 OR MSYS OR MINGW OR CYGWIN)
@@ -121,7 +131,6 @@ include(CheckIncludeFiles)
 include(CheckFunctionExists)
 include(CheckSymbolExists)
 include(CMakeDependentOption)
-include(FetchContent)
 
 # Clean up remnant files from the old autotools build system
 include(cmake/Cleanup.cmake)
@@ -431,7 +440,14 @@ add_subdirectory(tape_plot)
 
 # Add test_gldapi executable
 add_executable(test_gldapi gldcore/test_gldapi.cpp)
-target_link_libraries(test_gldapi PRIVATE gldapi ${DL_LIB} ${SUPERLU_LIB} ${CURSES_LIBRARIES} Threads::Threads)
+
+# Build curses link list conditionally
+set(TEST_GLDAPI_LIBS gldapi ${DL_LIB} ${SUPERLU_LIB} Threads::Threads)
+if(CURSES_FOUND)
+    list(APPEND TEST_GLDAPI_LIBS ${CURSES_LIBRARIES})
+endif()
+
+target_link_libraries(test_gldapi PRIVATE ${TEST_GLDAPI_LIBS})
 set_target_properties(test_gldapi PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin
 )
@@ -469,15 +485,15 @@ set(GLD_DEPS
         ${DL_LIB}
 )
 
-mark_as_advanced(FORCE
-        OS_SPECIFIC_LIBRARIES
-        DISABLED_OPTIMIZATIONS
-        BUILD_SHARED_LIBS
-        GLD_MODULES
-        HEADER_FILE_NAMES
-        GLD_SHARE
-        GLD_CI_BUILD
-)
+# mark_as_advanced(FORCE
+#         OS_SPECIFIC_LIBRARIES
+#         DISABLED_OPTIMIZATIONS
+#         BUILD_SHARED_LIBS
+#         GLD_MODULES
+#         HEADER_FILE_NAMES
+#         GLD_SHARE
+#         GLD_CI_BUILD
+# )
 
 set(FILE_PERMISSIONS PERMISSIONS
         OWNER_EXECUTE OWNER_READ OWNER_WRITE
