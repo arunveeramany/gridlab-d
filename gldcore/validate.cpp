@@ -23,6 +23,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <sys/stat.h>
+#include <format>
 
 #include <mutex>
 #include <atomic>
@@ -1459,15 +1460,25 @@ char *encode_result(std::atomic<char> *data, size_t sz)
 int validate(int argc, char *argv[])
 {
 
-	struct sigaction sa;
-	sa.sa_handler = &sigchld_handler; // Set the handler
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = SA_RESTART | SA_NOCLDSTOP; // Key flags: restart interrupted calls
-	if (sigaction(SIGCHLD, &sa, 0) == -1)
+	// POSIX-only child signal handling. Windows/MSVC does not provide sigaction/SIGCHLD.
+#ifndef _WIN32
+#include <signal.h>
 	{
-		perror("sigaction"); // Or use output_error
-		return FAILED;
+		struct sigaction sa{};
+		sa.sa_handler = &sigchld_handler; // Set the handler
+		sigemptyset(&sa.sa_mask);
+		sa.sa_flags = SA_RESTART | SA_NOCLDSTOP; // restart interrupted calls, ignore stopped children
+		if (sigaction(SIGCHLD, &sa, nullptr) == -1)
+		{
+			perror("sigaction"); // Or use output_error
+			return FAILED;
+		}
 	}
+#else
+	// Windows: no SIGCHLD/sigaction. Child process handling is done explicitly
+	// via CreateProcess/WaitForSingleObject in Windows code paths, and result
+	// decoding uses WIFEXITED/WEXITSTATUS/WTERMSIG macros defined above.
+#endif
 
 	size_t i;
 	int redirect_found = 0;

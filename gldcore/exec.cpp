@@ -95,10 +95,15 @@
 #include <iostream>
 #include <algorithm>
 
+#include <list> // <-- needed on Windows too
+#include <set>
+
 #ifdef _WIN32
 #include <winsock2.h>
 #include <winbase.h>
 #include <direct.h>
+#include <io.h>		   // <-- _unlink
+#define unlink _unlink // <-- map POSIX unlink to MSVC name
 #else
 #include <unistd.h>
 #include <sys/types.h>
@@ -107,8 +112,6 @@
 #include <arpa/inet.h>
 #include <cerrno>
 #include <sys/stat.h>
-#include <list>
-#include <set>
 #include <cmath>
 #include <chrono>
 #include <ratio>
@@ -990,7 +993,6 @@ static STATUS init_by_creation()
 	return rv;
 }
 
-
 /**
  * Retries the initialization of deferred objects until all are initialized or a deadlock is detected.
  *
@@ -999,118 +1001,117 @@ static STATUS init_by_creation()
  */
 static STATUS init_by_deferral_retry(std::vector<OBJECT *> &def_array)
 {
-    int tries = 0;
+	int tries = 0;
 
-    // Loop until the deferred list is empty or we detect a deadlock.
-    while (!def_array.empty())
-    {
-        if (tries++ >= global_init_max_defer)
-        {
-            output_error("init_by_deferral_retry(): exhausted maximum initialization attempts (%d)", global_init_max_defer);
-            for (const auto& obj : def_array)
-            {
-                char obj_name_buf[256];
-                output_error("  - object '%s' (id %d) is still uninitialized.", object_name(obj, obj_name_buf, sizeof(obj_name_buf)), obj->id);
-            }
-            exec_setexitcode(XC_EXCEPTION);
-            return FAILED;
-        }
+	// Loop until the deferred list is empty or we detect a deadlock.
+	while (!def_array.empty())
+	{
+		if (tries++ >= global_init_max_defer)
+		{
+			output_error("init_by_deferral_retry(): exhausted maximum initialization attempts (%d)", global_init_max_defer);
+			for (const auto &obj : def_array)
+			{
+				char obj_name_buf[256];
+				output_error("  - object '%s' (id %d) is still uninitialized.", object_name(obj, obj_name_buf, sizeof(obj_name_buf)), obj->id);
+			}
+			exec_setexitcode(XC_EXCEPTION);
+			return FAILED;
+		}
 
-        // Keep track of how many objects were deferred before this pass.
-        size_t last_deferred_count = def_array.size();
-        
-        // This vector will hold objects that are still deferred after this pass.
-        std::vector<OBJECT *> next_deferred_pass;
+		// Keep track of how many objects were deferred before this pass.
+		size_t last_deferred_count = def_array.size();
 
-        // Attempt to initialize each object in the current deferred list.
-        for (OBJECT *obj : def_array)
-        {
-            if (obj == nullptr || (obj->flags & OF_INIT))
-            {
-                // Should not happen, but good to be safe.
-                continue;
-            }
+		// This vector will hold objects that are still deferred after this pass.
+		std::vector<OBJECT *> next_deferred_pass;
 
-			// Before retrying an object, check if its parent is structurally sound.
-            // This replaces the unreliable OF_INIT flag check.
-            if (obj->parent != nullptr &&
-				(obj->parent->oclass == nullptr ||
-				obj->parent->oclass->magic != CLASSVALID))
-            {
-                // The parent is structurally invalid. Defer the child without calling its init().
-                char obj_name_buf[256], parent_name_buf[256];
-                output_verbose("RETRY_DEFER: Deferring init of '%s' because parent '%s' is structurally invalid.",
-                    object_name(obj, obj_name_buf, sizeof(obj_name_buf)),
-                    object_name(obj->parent, parent_name_buf, sizeof(parent_name_buf)));
-                /* TROUBLESHOOT
-                    This is a normal part of the initialization sequence. An object is being deferred
-                    because its parent object, while created, has not yet been fully initialized
-                    and has an invalid class structure. This will be resolved in a subsequent
-                    initialization pass.
-                */
-                next_deferred_pass.push_back(obj);
-                continue; // Move to the next object in this retry pass.
+		// Attempt to initialize each object in the current deferred list.
+		for (OBJECT *obj : def_array)
+		{
+			if (obj == nullptr || (obj->flags & OF_INIT))
+			{
+				// Should not happen, but good to be safe.
+				continue;
 			}
 
-            int obj_rv = object_init(obj);
-            switch (obj_rv)
-            {
-                case 0: // Hard failure
-                {
-                    char b[64];
-                    output_error("init_by_deferral_retry(): object %s initialization failed", object_name(obj, b, 63));
-                    return FAILED;
-                }
-                case 1: // Success
-                {
-                    //  std::unique_lock<std::shared_mutex> write_lock(SharedMutexManager::get_mutex(&obj->lock));
-                    //  obj->flags |= OF_INIT;
-					//  obj->flags &= ~OF_DEFERRED;
-                    // Do not add it to the next_deferred_pass list.
-                    break;
-                }
-                case 2: // Still deferred
-                {
-                    // Add it to the list for the next retry pass.
-                    next_deferred_pass.push_back(obj);
-                    break;
-                }
-            }
-        }
+			// Before retrying an object, check if its parent is structurally sound.
+			// This replaces the unreliable OF_INIT flag check.
+			if (obj->parent != nullptr &&
+				(obj->parent->oclass == nullptr ||
+				 obj->parent->oclass->magic != CLASSVALID))
+			{
+				// The parent is structurally invalid. Defer the child without calling its init().
+				char obj_name_buf[256], parent_name_buf[256];
+				output_verbose("RETRY_DEFER: Deferring init of '%s' because parent '%s' is structurally invalid.",
+							   object_name(obj, obj_name_buf, sizeof(obj_name_buf)),
+							   object_name(obj->parent, parent_name_buf, sizeof(parent_name_buf)));
+				/* TROUBLESHOOT
+					This is a normal part of the initialization sequence. An object is being deferred
+					because its parent object, while created, has not yet been fully initialized
+					and has an invalid class structure. This will be resolved in a subsequent
+					initialization pass.
+				*/
+				next_deferred_pass.push_back(obj);
+				continue; // Move to the next object in this retry pass.
+			}
 
-        // After the pass, update the main deferred list.
-        def_array = next_deferred_pass;
+			int obj_rv = object_init(obj);
+			switch (obj_rv)
+			{
+			case 0: // Hard failure
+			{
+				char b[64];
+				output_error("init_by_deferral_retry(): object %s initialization failed", object_name(obj, b, 63));
+				return FAILED;
+			}
+			case 1: // Success
+			{
+				//  std::unique_lock<std::shared_mutex> write_lock(SharedMutexManager::get_mutex(&obj->lock));
+				//  obj->flags |= OF_INIT;
+				//  obj->flags &= ~OF_DEFERRED;
+				// Do not add it to the next_deferred_pass list.
+				break;
+			}
+			case 2: // Still deferred
+			{
+				// Add it to the list for the next retry pass.
+				next_deferred_pass.push_back(obj);
+				break;
+			}
+			}
+		}
 
-        // DEADLOCK DETECTION: If the number of deferred objects has not decreased, we're stuck.
-        if (!def_array.empty() && def_array.size() == last_deferred_count)
-        {
-            output_error("init_by_deferral_retry(): all uninitialized objects deferred, model is unable to initialize");
-            /* TROUBLESHOOT
-                This error indicates an initialization deadlock. All remaining uninitialized objects
-                are waiting for other objects that are also waiting, creating a circular dependency
-                that cannot be resolved. Check the model for logical errors in object parenting
-                or dependencies.
-            */
-            for (const auto& obj : def_array)
-            {
-                char obj_name_buf[256];
-                char parent_name_buf[256];
-                output_error("  - object '%s' is waiting for parent '%s' (id %d) which is also deferred.",
-                    object_name(obj, obj_name_buf, sizeof(obj_name_buf)),
-                    (obj->parent ? object_name(obj->parent, parent_name_buf, sizeof(parent_name_buf)) : "none"),
-                    (obj->parent ? obj->parent->id : -1));
-            }
-            // exec_setexitcode(XC_INIT);
+		// After the pass, update the main deferred list.
+		def_array = next_deferred_pass;
+
+		// DEADLOCK DETECTION: If the number of deferred objects has not decreased, we're stuck.
+		if (!def_array.empty() && def_array.size() == last_deferred_count)
+		{
+			output_error("init_by_deferral_retry(): all uninitialized objects deferred, model is unable to initialize");
+			/* TROUBLESHOOT
+				This error indicates an initialization deadlock. All remaining uninitialized objects
+				are waiting for other objects that are also waiting, creating a circular dependency
+				that cannot be resolved. Check the model for logical errors in object parenting
+				or dependencies.
+			*/
+			for (const auto &obj : def_array)
+			{
+				char obj_name_buf[256];
+				char parent_name_buf[256];
+				output_error("  - object '%s' is waiting for parent '%s' (id %d) which is also deferred.",
+							 object_name(obj, obj_name_buf, sizeof(obj_name_buf)),
+							 (obj->parent ? object_name(obj->parent, parent_name_buf, sizeof(parent_name_buf)) : "none"),
+							 (obj->parent ? obj->parent->id : -1));
+			}
+			// exec_setexitcode(XC_INIT);
 			exec_setexitcode(XC_EXCEPTION);
 
 			return FAILED;
-        }
-    }
+		}
+	}
 
-    // If we get here, the deferred list is empty, meaning everything was initialized.
-    return SUCCESS;
+	// If we get here, the deferred list is empty, meaning everything was initialized.
+	return SUCCESS;
 }
-
 
 // static int init_by_deferral_retry(std::vector<OBJECT *> &def_array, int def_ct)
 // {
@@ -1239,9 +1240,6 @@ static STATUS init_by_deferral_retry(std::vector<OBJECT *> &def_array)
 // 	return rv;
 // }
 
-
-
-
 static int init_by_deferral()
 {
 	// OBJECT **def_array = 0;
@@ -1260,20 +1258,20 @@ static int init_by_deferral()
 	{
 
 		// This check must exist on the FIRST pass to prevent a premature
-        // call to object_init() on a child with a corrupted parent.
-        if (obj->parent != nullptr &&
+		// call to object_init() on a child with a corrupted parent.
+		if (obj->parent != nullptr &&
 			(obj->parent->oclass == nullptr ||
-			obj->parent->oclass->magic != CLASSVALID))
+			 obj->parent->oclass->magic != CLASSVALID))
 		{
-            // The parent is structurally invalid. Defer the child immediately.
-            def_array[def_ct++] = obj;
-            std::unique_lock<std::shared_mutex> write_lock(SharedMutexManager::get_mutex(&obj->lock));
-            obj->flags |= OF_DEFERRED;
-            write_lock.unlock();
-            
-            obj = obj->next; 
-            continue; // Skip the object_init() call for this object.
-        }
+			// The parent is structurally invalid. Defer the child immediately.
+			def_array[def_ct++] = obj;
+			std::unique_lock<std::shared_mutex> write_lock(SharedMutexManager::get_mutex(&obj->lock));
+			obj->flags |= OF_DEFERRED;
+			write_lock.unlock();
+
+			obj = obj->next;
+			continue; // Skip the object_init() call for this object.
+		}
 
 		obj_rv = object_init(obj);
 		switch (obj_rv)
@@ -1322,7 +1320,7 @@ static int init_by_deferral()
 	if (def_ct > 0)
 	{
 		// Trim the vector to the actual number of deferred objects before passing it.
-        def_array.resize(def_ct);
+		def_array.resize(def_ct);
 
 		rv = init_by_deferral_retry(def_array);
 		if (rv == FAILED) // got hung up retrying
@@ -1373,8 +1371,8 @@ static STATUS init_all()
 	if (loadshape_initall() == FAILED) // || enduse_initall() == FAILED)
 		return FAILED;
 
-	//ensure parent pointers are linked for reverse-order GLMs
-    resolve_pending_parent_links();
+	// ensure parent pointers are linked for reverse-order GLMs
+	resolve_pending_parent_links();
 
 	switch (global_init_sequence)
 	{
@@ -3347,7 +3345,6 @@ STATUS exec_step(int64 *passes, int64 *tsteps)
 		output_error("exec_step halted: %s", msg);
 		exec_setexitcode(XC_EXCEPTION); // XC_RUNERR is appropriate for a simulation failure.
 
-		
 		result = FAILED;
 	}
 	ENDCATCH

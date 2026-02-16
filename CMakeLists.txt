@@ -18,6 +18,11 @@ project(GridLAB-D LANGUAGES C CXX)
 
 
 
+if(MSVC)
+  add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+endif()
+
+
 message(STATUS "Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_SYSTEM_PROCESSOR}")
 
 
