@@ -75,24 +75,6 @@
 #define HAVE_LIBCPPUNIT
 #endif
 
-// #ifdef __cplusplus
-//	#ifndef CDECL
-//		/** Defines a function as a C-type function **/
-//		#define CDECL extern "C"
-//	#endif
-// #else
-//	#define CDECL
-// #endif
-//
-// #ifdef _WIN32
-// #ifndef EXPORT
-///** Defines a function as exported to core **/
-// #define EXPORT CDECL __declspec(dllexport)
-// #endif
-// #else
-// #define EXPORT CDECL
-// #endif
-
 #ifdef __cplusplus
 #ifndef CDECL
 /** Defines a function as a C-type function **/
@@ -102,14 +84,14 @@
 #define CDECL
 #endif
 
-// #ifdef _WIN32
-// #ifndef EXPORT
-// /** Defines a function as exported to core **/
-// #define EXPORT CDECL __declspec(dllexport)
-// #endif
-// #else
-// #define EXPORT CDECL
-// #endif
+#ifdef _WIN32
+#ifndef EXPORT
+/** Defines a function as exported to core **/
+#define EXPORT CDECL __declspec(dllexport)
+#endif
+#else
+#define EXPORT CDECL
+#endif
 
 #ifdef _WIN32
 #ifndef EXPORT
@@ -126,6 +108,31 @@
 #define EXPORT CDECL
 #endif
 #endif
+#endif
+
+/* gridlabd_api.h (or inside gridlabd.h) */
+
+/* 1) Visibility: flips to dllexport for the library, dllimport for consumers on Windows.
+	  On GCC/Clang, gives default visibility when available, otherwise empty. */
+#if defined(_WIN32)
+#if defined(GLDAPI_EXPORTS) /* defined only when building the gldapi DLL */
+#define GLDAPI_API __declspec(dllexport)
+#else
+#define GLDAPI_API __declspec(dllimport)
+#endif
+#else
+#if defined(__GNUC__) && (__GNUC__ >= 4)
+#define GLDAPI_API __attribute__((visibility("default")))
+#else
+#define GLDAPI_API
+#endif
+#endif
+
+/* 2) Linkage: extern "C" for C++ (mangled names off), extern for C. */
+#ifdef __cplusplus
+#define GLDAPI_EXTERN extern "C"
+#else
+#define GLDAPI_EXTERN extern
 #endif
 
 #include <cstdarg>
@@ -171,28 +178,28 @@ constexpr T *object_data(U *obj);
 template <typename T>
 constexpr OBJECT *object_header(T *data);
 
-// #ifdef DLMAIN
-// #define EXTERN
-// #define INIT(X) = (X)
-// #else
-// #ifdef __cplusplus
-// #define EXTERN
-// #else
-// #define EXTERN extern
-// #endif /* __cplusplus */
-// #define INIT(X)
-// #endif
-// CDECL EXTERN CALLBACKS *callback; // INIT(NULL);
-// #undef INIT
-// #undef EXTERN
+#ifdef DLMAIN
+#define EXTERN
+#define INIT(X) = (X)
+#else
+#ifdef __cplusplus
+#define EXTERN
+#else
+#define EXTERN extern
+#endif /* __cplusplus */
+#define INIT(X)
+#endif
+CDECL EXTERN CALLBACKS *callback; // INIT(NULL);
+#undef INIT
+#undef EXTERN
 
 /* Always declare (never define) the global callback pointer here.
 +    Use C linkage in C++ to match the definition in globals.cpp. */
-#if defined(__cplusplus)
-extern "C" CDECL extern CALLBACKS *callback;
-#else
-CDECL extern CALLBACKS *callback;
-#endif
+// #if defined(__cplusplus)
+// extern "C" CDECL extern CALLBACKS *callback;
+// #else
+// CDECL extern CALLBACKS *callback;
+// #endif
 
 #ifndef MODULENAME
 #define MODULENAME(obj) (obj->oclass->module->name)
