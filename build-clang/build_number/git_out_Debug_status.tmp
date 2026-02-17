@@ -1,9 +1,7 @@
- M git_out_Debug_build.tmp
  M git_out_Debug_status.tmp
- M ../headers/build.h
- M ../headers/config.h
- M ../headers/version.h
- M ../../climate/CMakeLists.txt
+ M ../../gldcore/CMakeLists.txt
+ M ../../gldcore/class.h
+ M ../../gldcore/globals.cpp
 ?? ../../CMakeLists.txt.macos
 ?? ../../assert/double_assert.cpp.macos
 ?? ../../assert/double_assert.h.macos
@@ -23,6 +21,13 @@
 ?? ../gldcore/solvers/CMakeFiles/glsolvers.dir/compiler_depend.internal
 ?? ../market/CMakeFiles/market.dir/compiler_depend.internal
 ?? ../mysql/CMakeFiles/mysql.dir/compiler_depend.internal
+?? ../optimize/CMakeFiles/optimize.dir/compiler_depend.internal
+?? ../powerflow/CMakeFiles/powerflow.dir/compiler_depend.internal
+?? ../reliability/CMakeFiles/reliability.dir/compiler_depend.internal
+?? ../residential/CMakeFiles/residential.dir/compiler_depend.internal
+?? ../tape/CMakeFiles/tape.dir/compiler_depend.internal
+?? ../tape_file/CMakeFiles/tape_file.dir/compiler_depend.internal
+?? ../tape_plot/CMakeFiles/tape_plot.dir/compiler_depend.internal
 ?? ../third_party/SuperLU/CBLAS/CMakeFiles/blas.dir/compiler_depend.internal
 ?? ../third_party/SuperLU/SRC/CMakeFiles/superlu.dir/compiler_depend.internal
 ?? ../../climate/validate_errors.txt

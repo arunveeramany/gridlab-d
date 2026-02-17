@@ -26,25 +26,20 @@
 static GLOBALVAR *global_varlist = nullptr, *lastvar = nullptr;
 // extern "C" CALLBACKS *callback = nullptr;
 
-#if defined(_WIN32)
-#define GLDAPI_API __declspec(dllexport) // since this TU builds the DLL
-#else
-#if defined(__GNUC__) && (__GNUC__ >= 4)
-#define GLDAPI_API __attribute__((visibility("default")))
-#else
-#define GLDAPI_API
-#endif
-#endif
-
+// Ensure we export the single definition with C linkage.
+// The header declares: extern GLDAPI_DATA CALLBACKS* callback;
+// Here, we provide the one and only definition.
 #ifdef __cplusplus
-#define GLDAPI_EXTERN extern "C"
-#else
-#define GLDAPI_EXTERN extern
+extern "C"
+{
 #endif
-
-/* Compiled into gldapi.dll */
-#define GLDAPI_EXPORTS 1 /* flips the macro to dllexport for this target */
-GLDAPI_EXTERN GLDAPI_API CALLBACKS *callback = nullptr;
+#if defined(_WIN32)
+	__declspec(dllexport)
+#endif
+	CALLBACKS *callback = nullptr;
+#ifdef __cplusplus
+}
+#endif
 
 static KEYWORD cnf_keys[] = {
 	{"DEFAULT", CNF_DEFAULT, cnf_keys + 1},

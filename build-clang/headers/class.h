@@ -143,12 +143,26 @@ extern "C"
 
 	// Forward-declare the underlying struct so pointers are valid
 	struct s_callbacks;
-
-	// If other code uses the alias 'CALLBACKS', define it here
 	typedef struct s_callbacks CALLBACKS;
 
-	// Declare the global pointer (declaration only; no initializer!)
-	extern CALLBACKS *callback;
+// Visibility macro for data import/export (Windows) and default visibility (GCC/Clang)
+#if defined(_WIN32)
+// GLDAPI_EXPORTS must be defined only when building the core DLL (e.g., gldapi)
+#if defined(GLDAPI_EXPORTS)
+#define GLDAPI_DATA __declspec(dllexport)
+#else
+#define GLDAPI_DATA __declspec(dllimport)
+#endif
+#else
+#if defined(__GNUC__) && (__GNUC__ >= 4)
+#define GLDAPI_DATA __attribute__((visibility("default")))
+#else
+#define GLDAPI_DATA
+#endif
+#endif
+
+	// Declaration only (no initializer). On Windows, consumers see dllimport; the core DLL sees dllexport.
+	extern GLDAPI_DATA CALLBACKS *callback;
 
 #ifdef __cplusplus
 } // extern "C"

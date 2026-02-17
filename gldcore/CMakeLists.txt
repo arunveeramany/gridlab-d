@@ -137,6 +137,10 @@ set(GLDCORE_SOURCE_LIST
 # -------------------------------------------------------------------------
 add_library(gldapi SHARED ${GLDCORE_SOURCE_LIST})
 
+
+target_compile_definitions(gldapi PRIVATE GLDAPI_EXPORTS)
+
+
 # Preserve your existing link behavior
 target_link_libraries(gldapi PUBLIC nlohmann_json::nlohmann_json)
 target_link_libraries(gldapi PRIVATE ${OS_SPECIFIC_LIBRARIES})
