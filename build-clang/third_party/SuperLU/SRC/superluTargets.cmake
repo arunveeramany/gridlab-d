@@ -54,11 +54,11 @@ set_target_properties(superlu::superlu PROPERTIES
   INTERFACE_LINK_LIBRARIES "blas;m"
 )
 
-# Import target "superlu::superlu" for configuration "Debug"
-set_property(TARGET superlu::superlu APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
+# Import target "superlu::superlu" for configuration ""
+set_property(TARGET superlu::superlu APPEND PROPERTY IMPORTED_CONFIGURATIONS NOCONFIG)
 set_target_properties(superlu::superlu PROPERTIES
-  IMPORTED_LINK_INTERFACE_LANGUAGES_DEBUG "C"
-  IMPORTED_LOCATION_DEBUG "/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/lib/static/libsuperlu.a"
+  IMPORTED_LINK_INTERFACE_LANGUAGES_NOCONFIG "C"
+  IMPORTED_LOCATION_NOCONFIG "/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/lib/static/libsuperlu.a"
   )
 
 # Make sure the targets which have been exported in some other

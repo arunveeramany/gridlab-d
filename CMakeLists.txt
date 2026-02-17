@@ -27,7 +27,7 @@ message(STATUS "Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_SYSTEM_PROCESSOR}")
 
 
 
-set(CMAKE_BUILD_TYPE Debug)
+# set(CMAKE_BUILD_TYPE Debug)
 
 
 
@@ -433,6 +433,13 @@ set(BUILD_SHARED_LIBS ${BUILD_SHARED_CACHE})
 # Core first (defines gldapi + gridlabd targets)
 add_subdirectory(gldcore)
 
+# Auto-export all symbols from the gldapi DLL on Windows
+if (WIN32 AND MSVC)
+    # This generates a .def during build so even non-decorated functions
+    # like convert_to_timestamp get exported for the import library.
+    set_target_properties(gldapi PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif ()
+
 # If these are truly "core components", keep them after gldcore or move them inside gldcore;
 # but keep them AFTER gldcore so gldapi exists.
 add_subdirectory(${CMAKE_SOURCE_DIR}/gldcore/solvers)
@@ -456,6 +463,8 @@ add_subdirectory(tape_plot)
 
 # Add test_gldapi executable
 add_executable(test_gldapi gldcore/test_gldapi.cpp)
+target_link_libraries(test_gldapi PRIVATE gldapi nlohmann_json::nlohmann_json)
+
 
 # Build curses link list conditionally
 set(TEST_GLDAPI_LIBS gldapi ${DL_LIB} ${SUPERLU_LIB} Threads::Threads)
@@ -558,5 +567,14 @@ install(TARGETS
         ARCHIVE DESTINATION lib/static
         COMPONENT Development
 )
+
+
+if (WIN32)
+    add_custom_command(TARGET test_gldapi POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+              $<TARGET_FILE:gldapi>
+              $<TARGET_FILE_DIR:test_gldapi>)
+endif ()
+
 
 include(cmake/CPackConfig.cmake)

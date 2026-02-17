@@ -49,11 +49,11 @@ unset(_cmake_expected_targets)
 # Create imported target blas
 add_library(blas STATIC IMPORTED)
 
-# Import target "blas" for configuration "Debug"
-set_property(TARGET blas APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
+# Import target "blas" for configuration ""
+set_property(TARGET blas APPEND PROPERTY IMPORTED_CONFIGURATIONS NOCONFIG)
 set_target_properties(blas PROPERTIES
-  IMPORTED_LINK_INTERFACE_LANGUAGES_DEBUG "C"
-  IMPORTED_LOCATION_DEBUG "/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/lib/static/libblas.a"
+  IMPORTED_LINK_INTERFACE_LANGUAGES_NOCONFIG "C"
+  IMPORTED_LOCATION_NOCONFIG "/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/lib/static/libblas.a"
   )
 
 # This file does not depend on other imported targets which have

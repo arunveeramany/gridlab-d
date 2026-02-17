@@ -6,7 +6,7 @@ CXX_DEFINES = -DHAVE_CONFIG_H -Dgridlabd_EXPORTS
 
 CXX_INCLUDES = -I/opt/homebrew/include/eigen3 -I/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/headers -I/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/SRC -I/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore/headers -I/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/_deps/json-src/include
 
-CXX_FLAGSarm64 =  -fPIC -g -std=gnu++2b -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fPIE -Werror=return-type -Werror=write-strings -g -O0 -Wno-format-overflow -Wno-format-truncation
+CXX_FLAGSarm64 =  -fPIC -std=gnu++2b -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fPIE -Werror=return-type -Werror=write-strings -Wno-format-overflow -Wno-format-truncation
 
-CXX_FLAGS =  -fPIC -g -std=gnu++2b -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fPIE -Werror=return-type -Werror=write-strings -g -O0 -Wno-format-overflow -Wno-format-truncation
+CXX_FLAGS =  -fPIC -std=gnu++2b -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fPIE -Werror=return-type -Werror=write-strings -Wno-format-overflow -Wno-format-truncation
 

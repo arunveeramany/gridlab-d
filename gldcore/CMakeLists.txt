@@ -1,8 +1,11 @@
 SET(GLD_MODULE_NAME gridlabd)
 
-#set(CMAKE_BUILD_TYPE Debug) # keep your top-level choice if multi-config
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+
+if (NOT MSVC)
+    #set(CMAKE_BUILD_TYPE Debug) # keep your top-level choice if multi-config
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+endif()
 
 # ---- Core sources (the "one true core") ----
 # IMPORTANT: main.cpp must NOT be compiled into the library if you want to avoid duplicate state

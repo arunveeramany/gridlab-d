@@ -6,9 +6,9 @@ C_DEFINES = -DHAVE_CONFIG_H
 
 C_INCLUDES = -I/opt/homebrew/include/eigen3 -I/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/headers -I/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/SRC -I/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/SRC
 
-C_FLAGSarm64 = -g -std=c99 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fPIC -Werror=return-type -Werror=write-strings
+C_FLAGSarm64 = -std=c99 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fPIC -Werror=return-type -Werror=write-strings
 
-C_FLAGS = -g -std=c99 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fPIC -Werror=return-type -Werror=write-strings
+C_FLAGS = -std=c99 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fPIC -Werror=return-type -Werror=write-strings
 
 # Custom flags: third_party/SuperLU/SRC/CMakeFiles/superlu.dir/superlu_timer.c.o_FLAGS = -O0
 

@@ -1,7 +1,34 @@
+ M ../../CMakeLists.txt
+ M ../assert/CMakeFiles/assert.dir/compiler_depend.make
+ M git_out_Debug_build.tmp
  M git_out_Debug_status.tmp
+ M ../climate/CMakeFiles/climate.dir/compiler_depend.make
+ M ../commercial/CMakeFiles/commercial.dir/compiler_depend.make
+ M ../connection/CMakeFiles/connection.dir/compiler_depend.make
+ M ../generators/CMakeFiles/generators.dir/compiler_depend.make
+ M ../gldcore/CMakeFiles/gldapi.dir/compiler_depend.make
+ M ../gldcore/CMakeFiles/gridlabd.dir/compiler_depend.make
+ M ../gldcore/link/engine/CMakeFiles/glxengine.dir/compiler_depend.make
+ M ../gldcore/solvers/CMakeFiles/glsolvers.dir/compiler_depend.make
+ M ../headers/build.h
+ M ../headers/config.h
+ M ../headers/gldapi.h
+ M ../headers/version.h
+ M ../market/CMakeFiles/market.dir/compiler_depend.make
+ M ../mysql/CMakeFiles/mysql.dir/compiler_depend.make
+ M ../optimize/CMakeFiles/optimize.dir/compiler_depend.make
+ M ../powerflow/CMakeFiles/powerflow.dir/compiler_depend.make
+ M ../reliability/CMakeFiles/reliability.dir/compiler_depend.make
+ M ../residential/CMakeFiles/residential.dir/compiler_depend.make
+ M ../tape/CMakeFiles/tape.dir/compiler_depend.make
+ M ../tape_file/CMakeFiles/tape_file.dir/compiler_depend.make
+ M ../tape_plot/CMakeFiles/tape_plot.dir/compiler_depend.make
+ M ../third_party/SuperLU/CBLAS/CMakeFiles/blas.dir/compiler_depend.make
+ M ../third_party/SuperLU/SRC/CMakeFiles/superlu.dir/compiler_depend.make
  M ../../gldcore/CMakeLists.txt
- M ../../gldcore/class.h
- M ../../gldcore/globals.cpp
+ M ../../gldcore/gldapi.cpp
+ M ../../gldcore/gldapi.h
+ M ../../gldcore/timestamp.h
 ?? ../../CMakeLists.txt.macos
 ?? ../../assert/double_assert.cpp.macos
 ?? ../../assert/double_assert.h.macos
@@ -10,26 +37,6 @@
 ?? ../../assert/validate_errors.txt
 ?? ../.cmake/api/v1/reply/
 ?? ../_deps/json-subbuild/CMakeFiles/4.2.3/
-?? ../assert/CMakeFiles/assert.dir/compiler_depend.internal
-?? ../climate/CMakeFiles/climate.dir/compiler_depend.internal
-?? ../commercial/CMakeFiles/commercial.dir/compiler_depend.internal
-?? ../connection/CMakeFiles/connection.dir/compiler_depend.internal
-?? ../generators/CMakeFiles/generators.dir/compiler_depend.internal
-?? ../gldcore/CMakeFiles/gldapi.dir/compiler_depend.internal
-?? ../gldcore/CMakeFiles/gridlabd.dir/compiler_depend.internal
-?? ../gldcore/link/engine/CMakeFiles/glxengine.dir/compiler_depend.internal
-?? ../gldcore/solvers/CMakeFiles/glsolvers.dir/compiler_depend.internal
-?? ../market/CMakeFiles/market.dir/compiler_depend.internal
-?? ../mysql/CMakeFiles/mysql.dir/compiler_depend.internal
-?? ../optimize/CMakeFiles/optimize.dir/compiler_depend.internal
-?? ../powerflow/CMakeFiles/powerflow.dir/compiler_depend.internal
-?? ../reliability/CMakeFiles/reliability.dir/compiler_depend.internal
-?? ../residential/CMakeFiles/residential.dir/compiler_depend.internal
-?? ../tape/CMakeFiles/tape.dir/compiler_depend.internal
-?? ../tape_file/CMakeFiles/tape_file.dir/compiler_depend.internal
-?? ../tape_plot/CMakeFiles/tape_plot.dir/compiler_depend.internal
-?? ../third_party/SuperLU/CBLAS/CMakeFiles/blas.dir/compiler_depend.internal
-?? ../third_party/SuperLU/SRC/CMakeFiles/superlu.dir/compiler_depend.internal
 ?? ../../climate/validate_errors.txt
 ?? ../../commercial/validate_errors.txt
 ?? ../../connection/validate_errors.txt
