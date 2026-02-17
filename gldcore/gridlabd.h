@@ -178,20 +178,29 @@ constexpr T *object_data(U *obj);
 template <typename T>
 constexpr OBJECT *object_header(T *data);
 
-#ifdef DLMAIN
-#define EXTERN
-#define INIT(X) = (X)
-#else
+// #ifdef DLMAIN
+// #define EXTERN
+// #define INIT(X) = (X)
+// #else
+// #ifdef __cplusplus
+// #define EXTERN
+// #else
+// #define EXTERN extern
+// #endif /* __cplusplus */
+// #define INIT(X)
+// #endif
+// CDECL EXTERN CALLBACKS *callback; // INIT(NULL);
+// #undef INIT
+// #undef EXTERN
+
 #ifdef __cplusplus
-#define EXTERN
-#else
-#define EXTERN extern
-#endif /* __cplusplus */
-#define INIT(X)
+extern "C"
+{
 #endif
-CDECL EXTERN CALLBACKS *callback; // INIT(NULL);
-#undef INIT
-#undef EXTERN
+	extern CALLBACKS *callback;
+#ifdef __cplusplus
+}
+#endif
 
 /* Always declare (never define) the global callback pointer here.
 +    Use C linkage in C++ to match the definition in globals.cpp. */
