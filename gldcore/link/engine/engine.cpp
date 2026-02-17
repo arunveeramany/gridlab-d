@@ -5,7 +5,7 @@
 
 #include "engine.h"
 
-CALLBACKS *callback = nullptr;
+extern CALLBACKS *callback; // = nullptr;
 
 #include "link.h"
 #include "build.h"

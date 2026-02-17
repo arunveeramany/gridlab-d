@@ -111,6 +111,7 @@ glxengine_EXTERNAL_OBJECTS =
 lib/glxengine.dylib: gldcore/link/engine/CMakeFiles/glxengine.dir/engine.cpp.o
 lib/glxengine.dylib: gldcore/link/engine/CMakeFiles/glxengine.dir/udpconnection.cpp.o
 lib/glxengine.dylib: gldcore/link/engine/CMakeFiles/glxengine.dir/build.make
+lib/glxengine.dylib: lib/libgldapi.dylib
 lib/glxengine.dylib: gldcore/link/engine/CMakeFiles/glxengine.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX shared library ../../../lib/glxengine.dylib"
 	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore/link/engine && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/glxengine.dir/link.txt --verbose=$(VERBOSE)

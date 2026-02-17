@@ -1,7 +1,16 @@
- M ../../.github/workflows/ci.yml
- M ../../CMakeLists.txt
+ M ../bin/test_gldapi
+ M git_out_Debug_build.tmp
  M git_out_Debug_status.tmp
- M ../../gldcore/validate.cpp
+ M ../gldcore/link/engine/CMakeFiles/glxengine.dir/build.make
+ M ../gldcore/link/engine/CMakeFiles/glxengine.dir/flags.make
+ M ../gldcore/link/engine/CMakeFiles/glxengine.dir/link.txt
+ M ../gldcore/link/engine/CMakeFiles/progress.marks
+ M ../headers/build.h
+ M ../headers/class.h
+ M ../headers/config.h
+ M ../headers/version.h
+ M ../../gldcore/link/engine/CMakeLists.txt
+ M ../../gldcore/link/engine/engine.cpp
 ?? ../../CMakeLists.txt.macos
 ?? ../../assert/double_assert.cpp.macos
 ?? ../../assert/double_assert.h.macos
