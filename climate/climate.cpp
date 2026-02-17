@@ -31,119 +31,113 @@ EXPORT int gld_major = 5;
 EXPORT int gld_minor = 3;
 
 EXPORT int init_climate_object(OBJECT *obj);
-extern "C" CALLBACKS *callback = nullptr;
+extern "C" CALLBACKS *callback; // = nullptr;
 
 EXPORT int create_climate(OBJECT **obj, OBJECT *parent)
 {
-    try
-    {
-        *obj = gl_create_object(climate::oclass);
-        if (*obj != nullptr)
-        {
-            // GET A POINTER TO THE C++ OBJECT'S DATA AREA
-            climate *my = object_data<climate>(*obj);
+	try
+	{
+		*obj = gl_create_object(climate::oclass);
+		if (*obj != nullptr)
+		{
+			// GET A POINTER TO THE C++ OBJECT'S DATA AREA
+			climate *my = object_data<climate>(*obj);
 
+			// Now proceed as before
+			// if (parent != nullptr)
+			// {
+			//     // gl_set_parent(*obj, parent);
+			// }
 
-            // Now proceed as before
-            // if (parent != nullptr)
-            // {
-            //     // gl_set_parent(*obj, parent);
-            // }
-
-			if (!my) {
+			if (!my)
+			{
 				gl_error("create_climate: obj->data is null for class 'climate'");
 				return 0;
 			}
 
-            // The object's own create() method will set the default values.
-            return my->create_instance();
-        }
-        else
-            return 0;
-    }
-    CREATE_CATCHALL(climate);
+			// The object's own create() method will set the default values.
+			return my->create_instance();
+		}
+		else
+			return 0;
+	}
+	CREATE_CATCHALL(climate);
 }
-
-
-
 
 // EXPORT_INIT(climate)
 // EXPORT_SYNC(climate)
 // EXPORT_ISA(climate)
 
-
 extern "C" TIMESTAMP sync_climate(void *obj, ...)
 {
-    va_list args;
-    va_start(args, obj);
-    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
+	va_list args;
+	va_start(args, obj);
+	TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+	PASSCONFIG pass = va_arg(args, PASSCONFIG);
+	va_end(args);
 
-    OBJECT *object = (OBJECT*)obj;  // ← Move this outside try block
-    
-	if (!callback) {
-        gl_error("callback is null in init_climate");
-        return 0;  // Fail module load
-    }
+	OBJECT *object = (OBJECT *)obj; // ← Move this outside try block
 
-	    // Add structure validation
-    // std::cerr << "Callback structure size check:" << std::endl;
-    // std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
-    // std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
-    // std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
-    
+	if (!callback)
+	{
+		gl_error("callback is null in init_climate");
+		return 0; // Fail module load
+	}
 
-	if (!callback->time.local_datetime) {
-        gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
-        return FAILED;
-    }
+	// Add structure validation
+	// std::cerr << "Callback structure size check:" << std::endl;
+	// std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
+	// std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
+	// std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
 
+	if (!callback->time.local_datetime)
+	{
+		gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
+		return FAILED;
+	}
 
-    try
-    {
-        TIMESTAMP t1 = ((long long)((((2147483647 * 2U + 1U)) - 1) >> 1));
-        climate *p = object_data<climate>(object);
-        switch (pass)
-        {
-        case 0x01:
-            t1 = p->presync(t0);
-            break;
-        case 0x02:
-            t1 = p->sync(t0);
-            break;
-        case 0x04:
-            t1 = p->postsync(t0);
-            break;
-        default:
-            throw "invalid pass request";
-            break;
-        }
-        if ((object->oclass->passconfig & (0x01 | 0x02 | 0x04) & (~pass)) <= pass)
-            object->clock = t0;
-        return t1;
-    }
-    catch (char *msg)
-    {
-        (*callback->output_error)("sync_climate(obj=%d;%s): %s",
-                                  object->id, object->name ? object->name : "unnamed", msg);
-        return ((long long)-1);
-    }
-    catch (const char *msg)
-    {
-        (*callback->output_error)("sync_climate(obj=%d;%s): %s",
-                                  object->id, object->name ? object->name : "unnamed", msg);
-        return ((long long)-1);
-    }
-    catch (const std::exception &ex)
-    {
-        (*callback->output_error)("sync_climate(obj=%d;%s): unhandled exception - %s",
-                                  object->id, object->name ? object->name : "unnamed", ex.what());
-        return ((long long)-1);
-    }
+	try
+	{
+		TIMESTAMP t1 = ((long long)((((2147483647 * 2U + 1U)) - 1) >> 1));
+		climate *p = object_data<climate>(object);
+		switch (pass)
+		{
+		case 0x01:
+			t1 = p->presync(t0);
+			break;
+		case 0x02:
+			t1 = p->sync(t0);
+			break;
+		case 0x04:
+			t1 = p->postsync(t0);
+			break;
+		default:
+			throw "invalid pass request";
+			break;
+		}
+		if ((object->oclass->passconfig & (0x01 | 0x02 | 0x04) & (~pass)) <= pass)
+			object->clock = t0;
+		return t1;
+	}
+	catch (char *msg)
+	{
+		(*callback->output_error)("sync_climate(obj=%d;%s): %s",
+								  object->id, object->name ? object->name : "unnamed", msg);
+		return ((long long)-1);
+	}
+	catch (const char *msg)
+	{
+		(*callback->output_error)("sync_climate(obj=%d;%s): %s",
+								  object->id, object->name ? object->name : "unnamed", msg);
+		return ((long long)-1);
+	}
+	catch (const std::exception &ex)
+	{
+		(*callback->output_error)("sync_climate(obj=%d;%s): unhandled exception - %s",
+								  object->id, object->name ? object->name : "unnamed", ex.what());
+		return ((long long)-1);
+	}
 }
-
-
 
 #define RAD(x) (x * PI) / 180
 
@@ -696,84 +690,75 @@ climate *climate::defaults = &defaults_storage;
 // std::atomic_flag climate::city_lock = ATOMIC_FLAG_INIT;
 
 // C-STYLE MODULE ENTRY POINT
-EXPORT CLASS* init(CALLBACKS *fntable, MODULE *mod, int argc, char *argv[])
+EXPORT CLASS *init(CALLBACKS *fntable, MODULE *mod, int argc, char *argv[])
 {
 
-
 	// Save the callback table pointer
-    callback = fntable;
-
+	callback = fntable;
 
 	// Validate the callback structure before storing it
-    if (!callback) {
-        gl_error("FATAL: init_climate received null callback table");
-        return 0;
-    }
+	if (!callback)
+	{
+		gl_error("FATAL: init_climate received null callback table");
+		return 0;
+	}
 
-	if (!callback->time.local_datetime) {
-        gl_error("FATAL: init_climate received invalid callback table - time functions not initialized");
-        gl_error("Callback address: %p", (void*)fntable);
-        gl_error("Expected valid time.local_datetime but got null");
-        return 0; // Fail module load instead of crashing later
-    }
-    
-    // set the global callback table
-    // callback = fntable;
+	if (!callback->time.local_datetime)
+	{
+		gl_error("FATAL: init_climate received invalid callback table - time functions not initialized");
+		gl_error("Callback address: %p", (void *)fntable);
+		gl_error("Expected valid time.local_datetime but got null");
+		return 0; // Fail module load instead of crashing later
+	}
 
-
+	// set the global callback table
+	// callback = fntable;
 
 	gl_output("CLIMATE_INIT_ENTRY_SENTINEL: %s %s",
-          __DATE__, __TIME__);
+			  __DATE__, __TIME__);
 
-	
+	// std::cerr << "Climate module - callback address: " << (void*)callback << std::endl;
+	// std::cerr << "Climate module - time.local_datetime: " << (void*)callback->time.local_datetime << std::endl;
 
-
-    // std::cerr << "Climate module - callback address: " << (void*)callback << std::endl;
-    // std::cerr << "Climate module - time.local_datetime: " << (void*)callback->time.local_datetime << std::endl;
-    
-
-    // instantiate the climate class to trigger registration
-    new climate(mod);
+	// instantiate the climate class to trigger registration
+	new climate(mod);
 
 	// Ensure the csv_reader class is registered in this module on load
-    new csv_reader(mod);
+	new csv_reader(mod);
 
 	// std::cerr << "Climate class oclass after registration: " << (void*)climate::oclass << std::endl;
 
-    // return 1 on success, 0 on failure
-    // return 1;
-    return climate::oclass; // Return the oclass pointer cast to int (or adjust as needed based on expected type)
-
+	// return 1 on success, 0 on failure
+	// return 1;
+	return climate::oclass; // Return the oclass pointer cast to int (or adjust as needed based on expected type)
 }
-
 
 // C-style wrapper for the C++ init method
 EXPORT int init_climate(OBJECT *obj)
 {
 
 	// gl_output("CLIMATE_CLASS_INIT_WRAPPER: id=%d name=%s",
-            //   obj->id, obj->name ? obj->name : "(unnamed)");
+	//   obj->id, obj->name ? obj->name : "(unnamed)");
 
-    try {
-        climate *my = object_data<climate>(obj);
-        return my->init(obj->parent);
-    }
-    catch (const char *msg) {
-        gl_error("init_climate_object(obj=%d; %s) error: %s", obj->id, obj->name, msg);
-        return 0;
-    }
+	try
+	{
+		climate *my = object_data<climate>(obj);
+		return my->init(obj->parent);
+	}
+	catch (const char *msg)
+	{
+		gl_error("init_climate_object(obj=%d; %s) error: %s", obj->id, obj->name, msg);
+		return 0;
+	}
 }
-
-
 
 EXPORT int create_climate_object(OBJECT *obj)
 {
-    // gl_output("CLIMATE_CLASS_CREATE_WRAPPER: id=%d name=%s",
-            //   obj->id, obj->name ? obj->name : "(unnamed)");
-    climate *my = object_data<climate>(obj); // or your allocation pattern
-    return (my != nullptr) ? 1 : 0;
+	// gl_output("CLIMATE_CLASS_CREATE_WRAPPER: id=%d name=%s",
+	//   obj->id, obj->name ? obj->name : "(unnamed)");
+	climate *my = object_data<climate>(obj); // or your allocation pattern
+	return (my != nullptr) ? 1 : 0;
 }
-
 
 climate::climate(MODULE *module)
 {
@@ -783,19 +768,17 @@ climate::climate(MODULE *module)
 	if (oclass == nullptr)
 	{
 		oclass = gld_class::create(module, "climate", sizeof(climate), PC_PRETOPDOWN | PC_AUTOLOCK);
-		
+
 		// register the class definition
-        // oclass = gl_register_class(module, "climate", sizeof(climate), PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_AUTOLOCK);
-        if (oclass == nullptr)
-            throw "unable to register class climate";
-        else
-            oclass->trl = TRL_PROVEN;
-		
+		// oclass = gl_register_class(module, "climate", sizeof(climate), PC_PRETOPDOWN|PC_BOTTOMUP|PC_POSTTOPDOWN|PC_AUTOLOCK);
+		if (oclass == nullptr)
+			throw "unable to register class climate";
+		else
+			oclass->trl = TRL_PROVEN;
 
-        oclass->init = (FUNCTIONADDR)init_climate;
-		gl_output("CLIMATE_CLASS_POINTERS: init=%p", (void*)oclass->init);
-		oclass->create  = (FUNCTIONADDR)create_climate_object;
-
+		oclass->init = (FUNCTIONADDR)init_climate;
+		gl_output("CLIMATE_CLASS_POINTERS: init=%p", (void *)oclass->init);
+		oclass->create = (FUNCTIONADDR)create_climate_object;
 
 		if (gl_publish_variable(oclass,
 								PT_double, "solar_elevation", PADDR(solar_elevation), // sjin: publish solar elevation variable
@@ -959,7 +942,7 @@ int climate::init(OBJECT *parent)
 {
 
 	// gl_output("CLIMATE_CLASS_INIT_SENTINEL: entering init; tmyfile='%s'",
-            //   tmyfile.get_string());
+	//   tmyfile.get_string());
 
 	char *dot = 0;
 	OBJECT *obj = object_header(this);
@@ -967,8 +950,6 @@ int climate::init(OBJECT *parent)
 	TIMESTAMP t0 = obj->clock;
 	double meter_to_feet = 1.0;
 	double tz_num_offset;
-
-	
 
 	reader_type = (enumeration)RT::RT_NONE;
 
@@ -985,23 +966,23 @@ int climate::init(OBJECT *parent)
 		gl_warning("climate: unrecognized filetype, assuming RT_NONE");
 	}
 
-
-	if (reader_type == (enumeration)RT::RT_NONE) {
+	if (reader_type == (enumeration)RT::RT_NONE)
+	{
 		// No TMY reader selected. If no file specified, treat as manual climate.
-		const char* tf = tmyfile.get_string();
-		if (tf == nullptr || strcmp(tf, "") == 0) {
+		const char *tf = tmyfile.get_string();
+		if (tf == nullptr || strcmp(tf, "") == 0)
+		{
 			gl_verbose("Manual or FNCS/HELICS climate control; initializing to the starttime");
 			presync(gl_globalclock);
 			return 1;
 		}
 
 		gl_error("climate:%s: unsupported or unrecognized weather file type '%s'",
-				obj->name ? obj->name : "(unnamed)", tf);
+				 obj->name ? obj->name : "(unnamed)", tf);
 		return 0;
 	}
 
-
-	if(reader_type == (enumeration)RT::RT_TMY2)
+	if (reader_type == (enumeration)RT::RT_TMY2)
 	{
 		// ignore "" files ~ manual climate control is a feature
 		if (strcmp(tmyfile, "") == 0)
@@ -1021,15 +1002,13 @@ int climate::init(OBJECT *parent)
 
 		gl_output("climate:%s: weather file resolved to '%s'", obj->name ? obj->name : "(unnamed)", found_file);
 
-
-		
-		if (file.open(found_file) < 3) {
+		if (file.open(found_file) < 3)
+		{
 			gl_error("climate:%s: weather file header improperly formed: '%s'",
-					obj->name ? obj->name : "(unnamed)", found_file);
+					 obj->name ? obj->name : "(unnamed)", found_file);
 			return 0;
 		}
 		gl_output("climate:%s: TMY header parsed OK: '%s'", obj->name ? obj->name : "(unnamed)", found_file);
-		
 	}
 
 	if (cloud_model != (enumeration)CLOUDMODEL::CM_NONE)
@@ -1357,7 +1336,6 @@ int climate::init(OBJECT *parent)
 #endif
 	return 1;
 }
-
 
 int climate::get_solar_for_location(double latitude, double longitude, double *direct, double *global, double *diffuse)
 {
@@ -2611,16 +2589,17 @@ TIMESTAMP climate::presync(TIMESTAMP t0) /* called in presync */
 {
 
 	// Before calling gl_localtime, check if the callback function exists
-		if (!callback || !callback->time.local_datetime) {
-			// Handle the case where the callback is not available
-			// You could either:
-			// 1. Return an error/default value
-			// 2. Skip the time conversion
-			// 3. Use an alternative method
-			
-			// gl_error("gl_localtime callback not available in climate::presync");
-			return TS_INVALID; // or appropriate error handling
-		}
+	if (!callback || !callback->time.local_datetime)
+	{
+		// Handle the case where the callback is not available
+		// You could either:
+		// 1. Return an error/default value
+		// 2. Skip the time conversion
+		// 3. Use an alternative method
+
+		// gl_error("gl_localtime callback not available in climate::presync");
+		return TS_INVALID; // or appropriate error handling
+	}
 
 	TIMESTAMP csv_rv = 0;
 	TIMESTAMP tmy_rv = 0;
@@ -2637,9 +2616,7 @@ TIMESTAMP climate::presync(TIMESTAMP t0) /* called in presync */
 		double longitude = obj->longitude;
 		double sol_time =
 			sa->solar_time((double)now.get_hour() + (now.get_minute() / 60.0) + (now.get_second() / 3600.0) + (now.get_is_dst() ? -1 : 0), now.get_yearday(), RAD(tz_meridian), RAD(longitude));
-		
-		
-		
+
 		gl_localtime(t0, &dt);
 		short day_of_yr = sa->day_of_yr(dt.month, dt.day);
 		solar_zenith = sa->zenith(day_of_yr, RAD(obj->latitude), sol_time);

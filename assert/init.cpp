@@ -6,7 +6,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
-#include<vector>
+#include <vector>
 
 #include "gridlabd.h"
 
@@ -23,19 +23,19 @@ class int_assert;
 class double_assert;
 
 // 1. DEFINE the global callback pointer here and only here.
-CALLBACKS *callback = nullptr;
+extern CALLBACKS *callback; // = nullptr;
 
-
-extern "C" {
-    // Match your installed core (check with `gridlabd --version`)
-    EXPORT int gld_major = 5;
-    EXPORT int gld_minor = 3;
+extern "C"
+{
+	// Match your installed core (check with `gridlabd --version`)
+	EXPORT int gld_major = 5;
+	EXPORT int gld_minor = 3;
 }
 
-//std::vector<std::pair<std::unique_ptr<gld_object>, std::string>> allocated_objects;
+// std::vector<std::pair<std::unique_ptr<gld_object>, std::string>> allocated_objects;
 
-//template <typename T>
-//void register_object(MODULE* module) {
+// template <typename T>
+// void register_object(MODULE* module) {
 //
 //	//std::cout << "Attempting to register type: " << typeid(T).name() << std::endl;
 //
@@ -45,45 +45,43 @@ extern "C" {
 //
 //
 //	//std::cout << "Registered object of type: " << typeid(T).name() << ", at: " << obj << std::endl;
-//}
-
+// }
 
 #ifdef _GLD_ASSERT_H
 static_assert(true, "gld_assert.h successfully included.");
 #endif
 
-
-
-EXPORT CLASS* init(CALLBACKS *fntable, MODULE *mod, int argc, char *argv[])
+EXPORT CLASS *init(CALLBACKS *fntable, MODULE *mod, int argc, char *argv[])
 {
-    callback = fntable;
+	callback = fntable;
 	// std::cerr << "Received callback table in init_enum_assert at address: " << (void*)callback << std::endl;
 
-	if (!callback) {
-        std::cerr << "FATAL: init_enum_assert received null callback table" << std::endl;
-        return 0;
-    }
-    // std::cerr << "Callback initialized at address: " << (void*)callback << std::endl;
+	if (!callback)
+	{
+		std::cerr << "FATAL: init_enum_assert received null callback table" << std::endl;
+		return 0;
+	}
+	// std::cerr << "Callback initialized at address: " << (void*)callback << std::endl;
 	// std::cerr << "properties.get_property callback value: " << (void*)callback->properties.get_property << std::endl;
 
-	if (!callback->properties.get_property) {
-        std::cerr << "FATAL: properties.get_property callback is null" << std::endl;
-        return 0;
-    }
+	if (!callback->properties.get_property)
+	{
+		std::cerr << "FATAL: properties.get_property callback is null" << std::endl;
+		return 0;
+	}
 	// std::cerr << "properties.get_property callback initialized at address: " << (void*)callback->properties.get_property << std::endl;
 
 	new g_assert(mod);
-    new enum_assert(mod); // Instantiate the class to trigger registration
+	new enum_assert(mod); // Instantiate the class to trigger registration
 	new complex_assert(mod);
 	new int_assert(mod);
 	new double_assert(mod);
 
-    // return 1;
+	// return 1;
 	return enum_assert::oclass;
 }
 
-
-// 
+//
 // EXPORT CLASS *init(CALLBACKS *fntable, MODULE *module, int argc, char *argv[])
 // {
 // 	if (set_callback(fntable)==nullptr)
@@ -97,7 +95,6 @@ EXPORT CLASS* init(CALLBACKS *fntable, MODULE *mod, int argc, char *argv[])
 // 	new complex_assert(module);
 // 	new enum_assert(module);
 //     new int_assert(module);
-	
 
 // 	/*register_object <g_assert>(module);
 // 	register_object < double_assert>(module);
@@ -105,19 +102,18 @@ EXPORT CLASS* init(CALLBACKS *fntable, MODULE *mod, int argc, char *argv[])
 // 	register_object < enum_assert>(module);
 // 	register_object < int_assert>(module);*/
 
-
 // 	/* always return the first class registered */
 // 	return g_assert::oclass;
 // }
 
-
-EXPORT int do_kill(void*)
+EXPORT int do_kill(void *)
 {
 	/* if global memory needs to be released, this is a good time to do it */
 	return 0;
 }
 
-EXPORT int check(){
+EXPORT int check()
+{
 	/* if any assert objects have bad filenames, they'll fail on init() */
 	return 0;
 }
