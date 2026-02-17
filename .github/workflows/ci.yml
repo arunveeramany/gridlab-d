@@ -22,6 +22,11 @@ jobs:
           - os: ubuntu-latest
             arch: x86_64
     runs-on: ${{matrix.os}}
+
+    env:
+      BUILD_TYPE: ${{ github.event.inputs.config || 'Release' }}   # define build type
+      helics-ref: v3.4.0                                           # or 'main' if you prefer latest
+
     steps:
       - name: Install Dependencies
         run: |
@@ -56,7 +61,7 @@ jobs:
           threads=`nproc`
           cmake -B ${{github.workspace}}/helics-build/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
           -DCMAKE_INSTALL_PREFIX=~/.cache/HELICS -DHELICS_ZMQ_SUBPROJECT=ON
-          cmake --build ${{github.workspace}}/helics-build/build --config ${{env.BUILD_TYPE}} --parallel $threads
+          cmake --build ${{github.workspace}}/helics-build/build --parallel $threads
           cmake --install ${{github.workspace}}/helics-build/build
 
       - name: Checkout GridLAB-D
@@ -66,15 +71,15 @@ jobs:
 
       - name: Build GridLAB-D
         run: |
-          threads=`nproc`
+          threads=$(nproc)
           cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
           -DCMAKE_INSTALL_PREFIX=~/.temp/GridLAB-D -DGLD_USE_HELICS=ON -DGLD_HELICS_DIR=~/.cache/HELICS \
           -DGLD_CI_BUILD=ON
-          cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel $threads
+          cmake --build ${{github.workspace}}/build  --parallel $threads
 
       - name: Install GridLAB-D
         working-directory: ${{github.workspace}}/build
-        run: cmake --install . --config ${{env.BUILD_TYPE}}
+        run: cmake --install . 
 
       - name: Run GridLAB-D autotests
         working-directory: ${{github.workspace}}
@@ -280,7 +285,7 @@ jobs:
       - name: Build (Release)
         shell: bash
         run: |
-          cmake --build out/build/ci-macos --config Release -- -v
+          cmake --build out/build/ci-macos -- -v
 
       - name: Run gridlabd --validate
         shell: bash
