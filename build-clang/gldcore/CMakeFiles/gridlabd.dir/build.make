@@ -76,15 +76,15 @@ gldcore/CMakeFiles/gridlabd.dir/main.cpp.o: gldcore/CMakeFiles/gridlabd.dir/flag
 gldcore/CMakeFiles/gridlabd.dir/main.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/main.cpp
 gldcore/CMakeFiles/gridlabd.dir/main.cpp.o: gldcore/CMakeFiles/gridlabd.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object gldcore/CMakeFiles/gridlabd.dir/main.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT gldcore/CMakeFiles/gridlabd.dir/main.cpp.o -MF CMakeFiles/gridlabd.dir/main.cpp.o.d -o CMakeFiles/gridlabd.dir/main.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/main.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT gldcore/CMakeFiles/gridlabd.dir/main.cpp.o -MF CMakeFiles/gridlabd.dir/main.cpp.o.d -o CMakeFiles/gridlabd.dir/main.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/main.cpp
 
 gldcore/CMakeFiles/gridlabd.dir/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/gridlabd.dir/main.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/main.cpp > CMakeFiles/gridlabd.dir/main.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/main.cpp > CMakeFiles/gridlabd.dir/main.cpp.i
 
 gldcore/CMakeFiles/gridlabd.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/gridlabd.dir/main.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/main.cpp -o CMakeFiles/gridlabd.dir/main.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/gldcore && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/gldcore/main.cpp -o CMakeFiles/gridlabd.dir/main.cpp.s
 
 # Object files for target gridlabd
 gridlabd_OBJECTS = \

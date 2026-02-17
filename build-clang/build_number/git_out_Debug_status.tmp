@@ -1,16 +1,188 @@
+ M ../_deps/json-subbuild/CMakeFiles/CMakeConfigureLog.yaml
+ M ../assert/CMakeFiles/assert.dir/build.make
+ M ../assert/CMakeFiles/assert.dir/compiler_depend.make
+ M ../assert/CMakeFiles/assert.dir/flags.make
+ M ../assert/CMakeFiles/assert.dir/link.txt
  M ../bin/test_gldapi
  M git_out_Debug_build.tmp
  M git_out_Debug_status.tmp
+ M ../climate/CMakeFiles/climate.dir/build.make
+ M ../climate/CMakeFiles/climate.dir/compiler_depend.make
+ M ../climate/CMakeFiles/climate.dir/flags.make
+ M ../climate/CMakeFiles/climate.dir/link.txt
+ M ../commercial/CMakeFiles/commercial.dir/build.make
+ M ../commercial/CMakeFiles/commercial.dir/compiler_depend.make
+ M ../commercial/CMakeFiles/commercial.dir/flags.make
+ M ../commercial/CMakeFiles/commercial.dir/link.txt
+ M ../connection/CMakeFiles/connection.dir/build.make
+ M ../connection/CMakeFiles/connection.dir/compiler_depend.make
+ M ../connection/CMakeFiles/connection.dir/flags.make
+ M ../connection/CMakeFiles/connection.dir/link.txt
+ M ../generators/CMakeFiles/generators.dir/build.make
+ M ../generators/CMakeFiles/generators.dir/compiler_depend.make
+ M ../generators/CMakeFiles/generators.dir/flags.make
+ M ../generators/CMakeFiles/generators.dir/link.txt
+ M ../gldcore/CMakeFiles/gldapi.dir/build.make
+ M ../gldcore/CMakeFiles/gldapi.dir/compiler_depend.make
+ M ../gldcore/CMakeFiles/gldapi.dir/flags.make
+ M ../gldcore/CMakeFiles/gldapi.dir/link.txt
+ M ../gldcore/CMakeFiles/gridlabd.dir/build.make
+ M ../gldcore/CMakeFiles/gridlabd.dir/compiler_depend.make
+ M ../gldcore/CMakeFiles/gridlabd.dir/flags.make
+ M ../gldcore/CMakeFiles/gridlabd.dir/link.txt
  M ../gldcore/link/engine/CMakeFiles/glxengine.dir/build.make
+ M ../gldcore/link/engine/CMakeFiles/glxengine.dir/compiler_depend.make
  M ../gldcore/link/engine/CMakeFiles/glxengine.dir/flags.make
  M ../gldcore/link/engine/CMakeFiles/glxengine.dir/link.txt
- M ../gldcore/link/engine/CMakeFiles/progress.marks
+ M ../gldcore/solvers/CMakeFiles/glsolvers.dir/build.make
+ M ../gldcore/solvers/CMakeFiles/glsolvers.dir/compiler_depend.make
+ M ../gldcore/solvers/CMakeFiles/glsolvers.dir/flags.make
+ M ../gldcore/solvers/CMakeFiles/glsolvers.dir/link.txt
+ M ../gldcore/solvers/CMakeFiles/progress.marks
  M ../headers/build.h
- M ../headers/class.h
  M ../headers/config.h
  M ../headers/version.h
- M ../../gldcore/link/engine/CMakeLists.txt
- M ../../gldcore/link/engine/engine.cpp
+ M ../market/CMakeFiles/market.dir/build.make
+ M ../market/CMakeFiles/market.dir/compiler_depend.make
+ M ../market/CMakeFiles/market.dir/flags.make
+ M ../market/CMakeFiles/market.dir/link.txt
+ M ../mysql/CMakeFiles/mysql.dir/build.make
+ M ../mysql/CMakeFiles/mysql.dir/compiler_depend.make
+ M ../mysql/CMakeFiles/mysql.dir/flags.make
+ M ../mysql/CMakeFiles/mysql.dir/link.txt
+ M ../optimize/CMakeFiles/optimize.dir/build.make
+ M ../optimize/CMakeFiles/optimize.dir/flags.make
+ M ../optimize/CMakeFiles/optimize.dir/link.txt
+ M ../powerflow/CMakeFiles/powerflow.dir/build.make
+ M ../powerflow/CMakeFiles/powerflow.dir/flags.make
+ M ../powerflow/CMakeFiles/powerflow.dir/link.txt
+ M ../reliability/CMakeFiles/reliability.dir/build.make
+ M ../reliability/CMakeFiles/reliability.dir/flags.make
+ M ../reliability/CMakeFiles/reliability.dir/link.txt
+ M ../residential/CMakeFiles/residential.dir/build.make
+ M ../residential/CMakeFiles/residential.dir/flags.make
+ M ../residential/CMakeFiles/residential.dir/link.txt
+ M ../script/gridlabd.sh
+ M ../tape/CMakeFiles/tape.dir/build.make
+ M ../tape/CMakeFiles/tape.dir/flags.make
+ M ../tape/CMakeFiles/tape.dir/link.txt
+ M ../tape_file/CMakeFiles/tape_file.dir/build.make
+ M ../tape_file/CMakeFiles/tape_file.dir/flags.make
+ M ../tape_file/CMakeFiles/tape_file.dir/link.txt
+ M ../tape_plot/CMakeFiles/tape_plot.dir/build.make
+ M ../tape_plot/CMakeFiles/tape_plot.dir/flags.make
+ M ../tape_plot/CMakeFiles/tape_plot.dir/link.txt
+ M ../third_party/SuperLU/CBLAS/CMakeFiles/blas.dir/build.make
+ M ../third_party/SuperLU/CBLAS/CMakeFiles/blas.dir/compiler_depend.make
+ M ../third_party/SuperLU/CBLAS/CMakeFiles/blas.dir/flags.make
+ M ../third_party/SuperLU/CMakeFiles/CTestScript.cmake
+ M ../third_party/SuperLU/DartConfiguration.tcl
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/citersol.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/citersol.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/citersol.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/citersol1.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/citersol1.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/citersol1.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/clinsol.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/clinsol.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/clinsol.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/clinsol1.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/clinsol1.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/clinsol1.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/clinsolx.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/clinsolx.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/clinsolx.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/clinsolx1.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/clinsolx1.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/clinsolx1.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/clinsolx2.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/clinsolx2.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/clinsolx2.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/clinsolx3.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/clinsolx3.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/clinsolx3.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/ditersol.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/ditersol.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/ditersol.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/ditersol1.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/ditersol1.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/ditersol1.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/dlinsol.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/dlinsol.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/dlinsol.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/dlinsol1.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/dlinsol1.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/dlinsol1.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/dlinsolx.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/dlinsolx.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/dlinsolx.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/dlinsolx1.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/dlinsolx1.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/dlinsolx1.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/dlinsolx2.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/dlinsolx2.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/dlinsolx2.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/dlinsolx3.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/dlinsolx3.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/dlinsolx3.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol1.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol1.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol1.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/slinsol.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/slinsol.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/slinsol.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/slinsol1.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/slinsol1.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/slinsol1.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/slinsolx.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/slinsolx.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/slinsolx.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/slinsolx1.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/slinsolx1.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/slinsolx1.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/slinsolx2.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/slinsolx2.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/slinsolx2.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/slinsolx3.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/slinsolx3.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/slinsolx3.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/superlu_example.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/superlu_example.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/superlu_example.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol1.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol1.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol1.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsol.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsol.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsol.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsol1.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsol1.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsol1.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsolx.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsolx.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsolx.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsolx1.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsolx1.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsolx1.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsolx2.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsolx2.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsolx2.dir/link.txt
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsolx3.dir/build.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsolx3.dir/flags.make
+ M ../third_party/SuperLU/EXAMPLE/CMakeFiles/zlinsolx3.dir/link.txt
+ M ../third_party/SuperLU/SRC/CMakeFiles/superlu.dir/build.make
+ M ../third_party/SuperLU/SRC/CMakeFiles/superlu.dir/compiler_depend.make
+ M ../third_party/SuperLU/SRC/CMakeFiles/superlu.dir/flags.make
+ M ../../gldcore/gridlabd.h
+ M ../../gldcore/server.cpp
+ M ../../gldcore/solvers/CMakeLists.txt
+ M ../../mysql/CMakeLists.txt
 ?? ../../CMakeLists.txt.macos
 ?? ../../assert/double_assert.cpp.macos
 ?? ../../assert/double_assert.h.macos
@@ -30,13 +202,6 @@
 ?? ../gldcore/solvers/CMakeFiles/glsolvers.dir/compiler_depend.internal
 ?? ../market/CMakeFiles/market.dir/compiler_depend.internal
 ?? ../mysql/CMakeFiles/mysql.dir/compiler_depend.internal
-?? ../optimize/CMakeFiles/optimize.dir/compiler_depend.internal
-?? ../powerflow/CMakeFiles/powerflow.dir/compiler_depend.internal
-?? ../reliability/CMakeFiles/reliability.dir/compiler_depend.internal
-?? ../residential/CMakeFiles/residential.dir/compiler_depend.internal
-?? ../tape/CMakeFiles/tape.dir/compiler_depend.internal
-?? ../tape_file/CMakeFiles/tape_file.dir/compiler_depend.internal
-?? ../tape_plot/CMakeFiles/tape_plot.dir/compiler_depend.internal
 ?? ../third_party/SuperLU/CBLAS/CMakeFiles/blas.dir/compiler_depend.internal
 ?? ../third_party/SuperLU/SRC/CMakeFiles/superlu.dir/compiler_depend.internal
 ?? ../../climate/validate_errors.txt

@@ -58,7 +58,6 @@
 #include <string>
 #include <cstddef>
 
-
 /* permanently disable use of CPPUNIT */
 #ifndef _NO_CPPUNIT
 #define _NO_CPPUNIT
@@ -121,7 +120,7 @@
 #ifndef EXPORT
 #if __GNUC__ >= 4
 /** Defines a function as exported to core **/
-#define EXPORT CDECL __attribute__ ((visibility ("default")))
+#define EXPORT CDECL __attribute__((visibility("default")))
 #warning ">>> Using macOS/Clang EXPORT definition <<<"
 #else
 #define EXPORT CDECL
@@ -172,20 +171,28 @@ constexpr T *object_data(U *obj);
 template <typename T>
 constexpr OBJECT *object_header(T *data);
 
-#ifdef DLMAIN
-#define EXTERN
-#define INIT(X) = (X)
+// #ifdef DLMAIN
+// #define EXTERN
+// #define INIT(X) = (X)
+// #else
+// #ifdef __cplusplus
+// #define EXTERN
+// #else
+// #define EXTERN extern
+// #endif /* __cplusplus */
+// #define INIT(X)
+// #endif
+// CDECL EXTERN CALLBACKS *callback; // INIT(NULL);
+// #undef INIT
+// #undef EXTERN
+
+/* Always declare (never define) the global callback pointer here.
++    Use C linkage in C++ to match the definition in globals.cpp. */
+#if defined(__cplusplus)
+extern "C" CDECL extern CALLBACKS *callback;
 #else
-#ifdef __cplusplus
-#define EXTERN
-#else
-#define EXTERN extern
-#endif /* __cplusplus */
-#define INIT(X)
+CDECL extern CALLBACKS *callback;
 #endif
-CDECL EXTERN CALLBACKS *callback INIT(NULL);
-#undef INIT
-#undef EXTERN
 
 #ifndef MODULENAME
 #define MODULENAME(obj) (obj->oclass->module->name)
@@ -238,22 +245,17 @@ CDECL EXTERN CALLBACKS *callback INIT(NULL);
 // 			return NULL;                                                                         \
 // 	}
 
-
-
-
-#include <cstddef>   // size_t
-#include <new>       // placement new
+#include <cstddef> // size_t
+#include <new>	   // placement new
 #include <type_traits>
 
-
-
-
-#define PUBLISH_STRUCT(C, T, N)                                                         \
-do {                                                                                    \
-    size_t off = offsetof(struct C, N);                                                 \
-    if (gl_publish_variable(C##_class, PT_##T, #N, off, NULL) < 1)                      \
-        return NULL;                                                                    \
-} while (0)
+#define PUBLISH_STRUCT(C, T, N)                                        \
+	do                                                                 \
+	{                                                                  \
+		size_t off = offsetof(struct C, N);                            \
+		if (gl_publish_variable(C##_class, PT_##T, #N, off, NULL) < 1) \
+			return NULL;                                               \
+	} while (0)
 
 /** The PUBLISH_CLASS macro is used to publish a member of a class (C++ only).
  **/
@@ -524,7 +526,7 @@ inline int gl_module_depends(char *name,			   /**< module name */
 	Note that C file may publish structures, even they are not implemented as classes.
 	@see class_register()
  **/
- #define gl_register_class (*callback->register_class)
+#define gl_register_class (*callback->register_class)
 // #define gl_class_get_first (*callback->class_getfirst)
 // #define gl_class_get_by_name (*callback->class_getname)
 /** @} **/
@@ -569,47 +571,46 @@ inline bool gl_object_isa(OBJECT *obj, /**< object to test */
 	// bool mv = modname ? obj->oclass->module == (*callback->module_find)(modname) : true;
 	// return (rv && mv);
 
-	    try
-    {
-        // 1. Primary safety check for clearly NULL pointers.
-        if (obj == NULL || obj->oclass == NULL || type == NULL)
-        {
-            return false;
-        }
+	try
+	{
+		// 1. Primary safety check for clearly NULL pointers.
+		if (obj == NULL || obj->oclass == NULL || type == NULL)
+		{
+			return false;
+		}
 
-        // 2. Perform the module check first. This might also crash if obj is garbage,
-        // but it's inside the try block, so it's safe.
-        if (modname != NULL)
-        {
-            MODULE *mod = (*callback->module_find)(modname);
-            if (obj->oclass->module != mod)
-            {
-                return false; // Not in the right module.
-            }
-        }
+		// 2. Perform the module check first. This might also crash if obj is garbage,
+		// but it's inside the try block, so it's safe.
+		if (modname != NULL)
+		{
+			MODULE *mod = (*callback->module_find)(modname);
+			if (obj->oclass->module != mod)
+			{
+				return false; // Not in the right module.
+			}
+		}
 
-        // 3. Traverse the class inheritance chain.
-        CLASS *pclass = obj->oclass;
-        while (pclass != NULL)
-        {
-            // Check that the name pointer itself is not NULL before comparing.
-            if (pclass->name[0] != '\0' && strcmp(pclass->name, type) == 0)
-            {
-                return true; // Found a match.
-            }
-            pclass = pclass->parent; // Move up to the parent class.
-        }
+		// 3. Traverse the class inheritance chain.
+		CLASS *pclass = obj->oclass;
+		while (pclass != NULL)
+		{
+			// Check that the name pointer itself is not NULL before comparing.
+			if (pclass->name[0] != '\0' && strcmp(pclass->name, type) == 0)
+			{
+				return true; // Found a match.
+			}
+			pclass = pclass->parent; // Move up to the parent class.
+		}
 
-        // 4. No match found in the entire chain.
-        return false;
-    }
-    catch (...)
-    {
-        // If any memory access inside the try block fails (e.g., EXC_BAD_ACCESS),
-        // this will catch it and safely return false instead of crashing.
-        return false;
-    }
-
+		// 4. No match found in the entire chain.
+		return false;
+	}
+	catch (...)
+	{
+		// If any memory access inside the try block fails (e.g., EXC_BAD_ACCESS),
+		// this will catch it and safely return false instead of crashing.
+		return false;
+	}
 }
 
 // inline bool gl_object_isa(OBJECT *obj, /**< object to test */
@@ -1878,10 +1879,13 @@ public: // constructors
 		// if (!callback->time.local_datetime(ts, &dt))
 		// 	memset(&dt, 0, sizeof(dt));
 
-		if (callback && callback->time.local_datetime) {
+		if (callback && callback->time.local_datetime)
+		{
 			if (!callback->time.local_datetime(ts, &dt))
 				memset(&dt, 0, sizeof(dt));
-		} else {
+		}
+		else
+		{
 			// Fallback - just zero out the structure for now
 			memset(&dt, 0, sizeof(dt));
 			// You might want to log this for debugging
@@ -3058,8 +3062,7 @@ public: // special operations
 
 		static std::shared_mutex property_mutex;
 		std::scoped_lock lock(property_mutex);
-		*static_cast<T*>(get_addr()) = value;
-			
+		*static_cast<T *>(get_addr()) = value;
 
 		// *(T *)get_addr() = value;
 		// gld_core::wunlock(&obj->lock);
@@ -3085,9 +3088,7 @@ public: // special operations
 
 		static std::shared_mutex property_mutex;
 		std::scoped_lock lock(property_mutex);
-		*static_cast<T*>(get_addr()) = value;
-
-
+		*static_cast<T *>(get_addr()) = value;
 	};
 	inline void setp(enumeration value)
 	{

@@ -1,4 +1,4 @@
-/* $Id: server.c 4738 2014-07-03 00:55:39Z dchassin $ 
+/* $Id: server.c 4738 2014-07-03 00:55:39Z dchassin $
  * server.c
  */
 
@@ -25,15 +25,14 @@
 #include <cerrno>
 #include <cstring>
 #include <memory.h>
-//#include <pthread.h>
-//#include <unistd.h>
-
+// #include <pthread.h>
+// #include <unistd.h>
 
 #ifdef _WIN32
-	// Windows-specific includes for system functions
+// Windows-specific includes for system functions
 #include <windows.h>
 #else
-	// Unix-like systems
+// Unix-like systems
 #include <unistd.h>
 #endif
 
@@ -55,28 +54,27 @@
 #define IN_MYCONTEXT
 SET_MYCONTEXT(DMC_SERVER)
 
-#define MAXSTR		1024		// maximum string length
-
+#define MAXSTR 1024 // maximum string length
 
 // Define access mode constants for portability (mimicking POSIX R_OK, W_OK, etc.)
 #ifdef _WIN32
-#include <io.h> // For _access on Windows
-#define R_OK 4  // Read access (POSIX value, for compatibility)
-#define W_OK 2  // Write access
-#define X_OK 1  // Execute access (not always meaningful on Windows)
-#define F_OK 0  // File existence
+#include <io.h>		   // For _access on Windows
+#define R_OK 4		   // Read access (POSIX value, for compatibility)
+#define W_OK 2		   // Write access
+#define X_OK 1		   // Execute access (not always meaningful on Windows)
+#define F_OK 0		   // File existence
 #define access _access // Map POSIX access to Windows _access
 #else
 #include <unistd.h> // For POSIX access on Unix-like systems
 #endif
 
 static int shutdown_server = 0; /**< flag to stop accepting incoming connections */
-SOCKET sockfd = (SOCKET)0; /**< socket on which incomming connections are accepted */
+SOCKET sockfd = (SOCKET)0;		/**< socket on which incomming connections are accepted */
 
 /** Callback function to shut server down
- 
-    This process halts both the server and the simulator.
-	
+
+	This process halts both the server and the simulator.
+
 	@return Nothing
  **/
 static void shutdown_now(void)
@@ -84,11 +82,11 @@ static void shutdown_now(void)
 	IN_MYCONTEXT output_verbose("server shutdown on exit in progress...");
 	exec_setexitcode(XC_SVRKLL);
 	shutdown_server = 1;
-	if (sockfd!=(SOCKET)0)
+	if (sockfd != (SOCKET)0)
 #ifdef _WIN32
-		shutdown(sockfd,SD_BOTH);
+		shutdown(sockfd, SD_BOTH);
 #else
-		shutdown(sockfd,SHUT_RDWR);
+		shutdown(sockfd, SHUT_RDWR);
 #endif
 	sockfd = (SOCKET)0;
 	gui_wait_status(GUIACT_HALT);
@@ -105,7 +103,7 @@ int GetLastError()
 }
 #endif
 
-void server_request(int);	// Function to handle clients' request(s)
+void server_request(int); // Function to handle clients' request(s)
 void *http_response(void *ptr);
 
 /** Send the data to the client
@@ -114,33 +112,33 @@ void *http_response(void *ptr);
 static size_t send_data(SOCKET s, char *buffer, size_t len)
 {
 #ifdef _WIN32
-	return (size_t)send(s,buffer,(int)len,0);
+	return (size_t)send(s, buffer, (int)len, 0);
 #else
-	return (size_t)write(s,buffer,len);
-#endif	
+	return (size_t)write(s, buffer, len);
+#endif
 }
 
 /** Receive data from the client (blocking)
 	@returns the number of bytes received if successful, -1 if failed (errno is set).
  **/
-static size_t recv_data(SOCKET s,char *buffer, size_t len)
+static size_t recv_data(SOCKET s, char *buffer, size_t len)
 {
 #ifdef _WIN32
-	return (size_t)recv(s,buffer,(int)len,0);
+	return (size_t)recv(s, buffer, (int)len, 0);
 #else
-	return (size_t)read(s,(void *)buffer,len);
+	return (size_t)read(s, (void *)buffer, len);
 #endif
 }
 
 int client_allowed(char *saddr)
 {
-	return strncmp(saddr,global_client_allowed,strlen(global_client_allowed))==0;
+	return strncmp(saddr, global_client_allowed, strlen(global_client_allowed)) == 0;
 }
-/** Main server wait loop 
-    @returns a pointer to the status flag
+/** Main server wait loop
+	@returns a pointer to the status flag
  **/
 static unsigned int n_threads = 0;
-//static pthread_t thread_id;
+// static pthread_t thread_id;
 static std::thread thread_id;
 static void *server_routine(void *arg)
 {
@@ -152,11 +150,10 @@ static void *server_routine(void *arg)
 		return nullptr;
 	}
 	started = 1;
-	
-	//sockfd = *reinterpret_cast<SOCKET*>(arg);
-	SOCKET sockfd = *reinterpret_cast<SOCKET*>(arg);
-	delete reinterpret_cast<SOCKET*>(arg);  // clean up
 
+	// sockfd = *reinterpret_cast<SOCKET*>(arg);
+	SOCKET sockfd = *reinterpret_cast<SOCKET *>(arg);
+	delete reinterpret_cast<SOCKET *>(arg); // clean up
 
 	// repeat forever..
 	static int active = 0;
@@ -176,35 +173,37 @@ static void *server_routine(void *arg)
 
 		/* accept client request and get client address */
 		newsockfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen);
-		if ((int)newsockfd<0 && errno!=EINTR)
+		if ((int)newsockfd < 0 && errno != EINTR)
 		{
 			status = GetLastError();
 			output_warning("server accept failed on socket %d: code %d", sockfd, status);
-			//goto Done;
+			// goto Done;
 		}
 		else if ((int)newsockfd > 0)
 		{
 			char *saddr = inet_ntoa(cli_addr.sin_addr);
-			if ( !client_allowed(saddr) )
+			if (!client_allowed(saddr))
 			{
-				output_error("denying connection from %s on port %d",saddr, cli_addr.sin_port);
+				output_error("denying connection from %s on port %d", saddr, cli_addr.sin_port);
 				close(newsockfd);
 				continue;
 			}
-			IN_MYCONTEXT output_verbose("accepting connection from %s on port %d",saddr, cli_addr.sin_port);
-			if ( active )
-				//pthread_join(thread_id,&result);
+			IN_MYCONTEXT output_verbose("accepting connection from %s on port %d", saddr, cli_addr.sin_port);
+			if (active)
+				// pthread_join(thread_id,&result);
 				thread_id.join();
-			
-			SOCKET* sock_arg = new SOCKET(sockfd);  // dynamically allocate
+
+			SOCKET *sock_arg = new SOCKET(sockfd); // dynamically allocate
 			/*if ( pthread_create(&thread_id,nullptr, http_response, sock_arg)!=0 )
 				output_error("unable to start http response thread");*/
 
-			try {
-				thread_id= std::thread(http_response, sock_arg);
+			try
+			{
+				thread_id = std::thread(http_response, sock_arg);
 				thread_id.detach(); // Detach thread if it should run independently (similar to original behavior)
 			}
-			catch (const std::system_error& e) {
+			catch (const std::system_error &e)
+			{
 				output_error("unable to start http response thread: %s", e.what());
 			}
 
@@ -218,20 +217,20 @@ static void *server_routine(void *arg)
 	IN_MYCONTEXT output_verbose("server shutdown");
 Done:
 	started = 0;
-	return (void*)&status;
+	return (void *)&status;
 }
 
 /** Start accepting incoming connections on the designated server socket
 	@returns SUCCESS/FAILED status code
  **/
 #define DEFAULT_PORTNUM 6267
-//static pthread_t startup_thread;
+// static pthread_t startup_thread;
 static std::thread startup_thread;
 STATUS server_startup(int argc, char *argv[])
 {
 	static int started = 0;
 	int enable = 1;
-	int portNumber = global_server_portnum==0 ? DEFAULT_PORTNUM : global_server_portnum;
+	int portNumber = global_server_portnum == 0 ? DEFAULT_PORTNUM : global_server_portnum;
 	SOCKET sockfd;
 	struct sockaddr_in serv_addr;
 #ifdef _WIN32
@@ -244,30 +243,30 @@ STATUS server_startup(int argc, char *argv[])
 
 #ifdef _WIN32
 	IN_MYCONTEXT output_debug("starting WS2");
-	if (WSAStartup(MAKEWORD(2,0),&wsaData)!=0)
+	if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0)
 	{
-		output_error("socket library initialization failed: %s",strerror(GetLastError()));
-		return FAILED;	
+		output_error("socket library initialization failed: %s", strerror(GetLastError()));
+		return FAILED;
 	}
 #endif
 
 	/* create a new socket */
-	if ((sockfd = socket(AF_INET,SOCK_STREAM,IPPROTO_TCP)) == INVALID_SOCKET)
+	if ((sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET)
 	{
-		output_error("can't create stream socket: %s",strerror(GetLastError()));
+		output_error("can't create stream socket: %s", strerror(GetLastError()));
 		return FAILED;
 	}
 	atexit(shutdown_now);
-	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&enable), sizeof(enable)) < 0)
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&enable), sizeof(enable)) < 0)
 		output_error("setsockopt(SO_REUSEADDR) failed: %s", strerror(GetLastError()));
-	memset(&serv_addr,0,sizeof(serv_addr));
+	memset(&serv_addr, 0, sizeof(serv_addr));
 
 Retry:
 	serv_addr.sin_family = AF_INET;
-	if ( strlen(global_server_inaddr)>0 )
+	if (strlen(global_server_inaddr) > 0)
 	{
 		serv_addr.sin_addr.s_addr = inet_addr(global_server_inaddr);
-		if ( !serv_addr.sin_addr.s_addr )
+		if (!serv_addr.sin_addr.s_addr)
 		{
 			output_error("invalid server_inaddr argument supplied : %s", global_server_inaddr);
 			return FAILED;
@@ -280,28 +279,28 @@ Retry:
 	serv_addr.sin_port = htons(portNumber);
 
 	/* bind socket to server address */
-	if ( bind(sockfd,(struct sockaddr *)&serv_addr,sizeof(serv_addr)) < 0 )
+	if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
 	{
-		if ( global_server_portnum == 0 && portNumber < (DEFAULT_PORTNUM+1000) )
+		if (global_server_portnum == 0 && portNumber < (DEFAULT_PORTNUM + 1000))
 		{
 			portNumber++;
 			output_warning("server port not available, trying port %d...", portNumber);
 			goto Retry;
 		}
 #ifdef _WIN32
-		output_error("can't bind to %d.%d.%d.%d",serv_addr.sin_addr.S_un.S_un_b.s_b1,serv_addr.sin_addr.S_un.S_un_b.s_b2,serv_addr.sin_addr.S_un.S_un_b.s_b3,serv_addr.sin_addr.S_un.S_un_b.s_b4);
+		output_error("can't bind to %d.%d.%d.%d", serv_addr.sin_addr.S_un.S_un_b.s_b1, serv_addr.sin_addr.S_un.S_un_b.s_b2, serv_addr.sin_addr.S_un.S_un_b.s_b3, serv_addr.sin_addr.S_un.S_un_b.s_b4);
 #else
-		output_error("can't bind address: %s",strerror(GetLastError()));
+		output_error("can't bind address: %s", strerror(GetLastError()));
 #endif
 		return FAILED;
 	}
 #ifdef _WIN32
-	IN_MYCONTEXT output_verbose("bind ok to %d.%d.%d.%d",serv_addr.sin_addr.S_un.S_un_b.s_b1,serv_addr.sin_addr.S_un.S_un_b.s_b2,serv_addr.sin_addr.S_un.S_un_b.s_b3,serv_addr.sin_addr.S_un.S_un_b.s_b4);
+	IN_MYCONTEXT output_verbose("bind ok to %d.%d.%d.%d", serv_addr.sin_addr.S_un.S_un_b.s_b1, serv_addr.sin_addr.S_un.S_un_b.s_b2, serv_addr.sin_addr.S_un.S_un_b.s_b3, serv_addr.sin_addr.S_un.S_un_b.s_b4);
 #else
 	IN_MYCONTEXT output_verbose("bind ok to address");
-#endif	
+#endif
 	/* listen for connection */
-	if ( listen(sockfd,5) < 0 )
+	if (listen(sockfd, 5) < 0)
 	{
 		output_error("socket listen failed: sockfd=%d, error='%s'", sockfd, strerror(GetLastError()));
 		return FAILED;
@@ -310,24 +309,27 @@ Retry:
 	global_server_portnum = portNumber;
 
 	/* join the old thread and wait if it hasn't finished yet */
-	if ( started ) {
-		//pthread_join(startup_thread,&result);
+	if (started)
+	{
+		// pthread_join(startup_thread,&result);
 		startup_thread.join();
 	}
 
 	/* start the new thread */
-	SOCKET* sock_arg = new SOCKET(sockfd);  // dynamically allocate
+	SOCKET *sock_arg = new SOCKET(sockfd); // dynamically allocate
 	/*if (pthread_create(&startup_thread,nullptr,server_routine, sock_arg))
 	{
 		output_error("server thread startup failed: %s",strerror(GetLastError()));
 		return FAILED;
 	}*/
 
-	try {
+	try
+	{
 		startup_thread = std::thread(server_routine, sock_arg);
 		startup_thread.detach(); // Detach thread if it should run independently (similar to original behavior)
 	}
-	catch (const std::system_error& e) {
+	catch (const std::system_error &e)
+	{
 		output_error("server thread startup failed: %s", e.what());
 		return STATUS::FAILED;
 	}
@@ -337,7 +339,7 @@ Retry:
 }
 STATUS server_join(void)
 {
-	//void *result;
+	// void *result;
 	/*if (pthread_join(startup_thread,&result)==0)
 		return *static_cast<STATUS*>(result);*/
 	/*else
@@ -346,14 +348,15 @@ STATUS server_join(void)
 		return FAILED;
 	}*/
 
-
-	try {
+	try
+	{
 		startup_thread.join();
 		// Note: std::thread::join does not return a value like pthread_join
 		// If result is needed, it must be handled via another mechanism (see notes)
 		return STATUS::SUCCESS; // Placeholder, adjust based on how result is captured
 	}
-	catch (const std::system_error& e) {
+	catch (const std::system_error &e)
+	{
 		output_error("error joining server thread: %s", e.what());
 		return STATUS::FAILED;
 	}
@@ -363,7 +366,8 @@ STATUS server_join(void)
  HTTPCNX routines
  */
 
-typedef struct s_httpcnx {
+typedef struct s_httpcnx
+{
 	char query[1024];
 	char *buffer;
 	size_t len;
@@ -375,12 +379,12 @@ typedef struct s_httpcnx {
 } HTTPCNX;
 
 /** Create an HTTPCNX connection handle
-    @returns HTTPCNX connection handle pointer on success, nullptr on failure
+	@returns HTTPCNX connection handle pointer on success, nullptr on failure
  **/
 static HTTPCNX *http_create(SOCKET s)
 {
-	HTTPCNX *http = (HTTPCNX*)malloc(sizeof(HTTPCNX));
-	memset(http,0,sizeof(HTTPCNX));
+	HTTPCNX *http = (HTTPCNX *)malloc(sizeof(HTTPCNX));
+	memset(http, 0, sizeof(HTTPCNX));
 	http->s = s;
 	http->max_size = 65536;
 	http->buffer = static_cast<char *>(malloc(http->max_size));
@@ -390,7 +394,7 @@ static HTTPCNX *http_create(SOCKET s)
 /** Reset an HTTPCNX connection handle
 
 	This function clears the contents of HTTPCNX connection block so that it can be reused to handle a new message.
-    @returns Nothing
+	@returns Nothing
  **/
 static void http_reset(HTTPCNX *http)
 {
@@ -445,70 +449,76 @@ static void http_reset(HTTPCNX *http)
 /** Set the HTTPCNX response status code **/
 static void http_status(HTTPCNX *http, const char *status)
 {
-	http->status = const_cast<char*>(status);
+	http->status = const_cast<char *>(status);
 }
 /** Set the HTTPCNX response message type **/
 static void http_type(HTTPCNX *http, const char *type)
 {
-	http->type = const_cast<char*>(type);
+	http->type = const_cast<char *>(type);
 }
 /** Send the HTTPCNX response **/
 static void http_send(HTTPCNX *http)
 {
 	char header[4096];
-	int len=0;
-	len += sprintf(header+len, "HTTP/1.1 %s", http->status?http->status:HTTP_INTERNALSERVERERROR);
-	IN_MYCONTEXT output_verbose("%s (len=%d, mime=%s)",header,http->len,http->type?http->type:"none");
-	len += sprintf(header+len, "\nContent-Length: %ld\n", http->len);
-	if (http->type && http->type[0]!='\0')
-		len += sprintf(header+len, "Content-Type: %s\n", http->type);
-	len += sprintf(header+len, "Cache-Control: no-cache\n");
-	len += sprintf(header+len, "Cache-Control: no-store\n");
-	len += sprintf(header+len, "Expires: -1\n");
-	len += sprintf(header+len,"\n");
-	send_data(http->s,header,len);
-	if (http->len>0)
-		send_data(http->s,http->buffer,http->len);
+	int len = 0;
+	len += sprintf(header + len, "HTTP/1.1 %s", http->status ? http->status : HTTP_INTERNALSERVERERROR);
+	IN_MYCONTEXT output_verbose("%s (len=%d, mime=%s)", header, http->len, http->type ? http->type : "none");
+	len += sprintf(header + len, "\nContent-Length: %ld\n", http->len);
+	if (http->type && http->type[0] != '\0')
+		len += sprintf(header + len, "Content-Type: %s\n", http->type);
+	len += sprintf(header + len, "Cache-Control: no-cache\n");
+	len += sprintf(header + len, "Cache-Control: no-store\n");
+	len += sprintf(header + len, "Expires: -1\n");
+	len += sprintf(header + len, "\n");
+	send_data(http->s, header, len);
+	if (http->len > 0)
+		send_data(http->s, http->buffer, http->len);
 	http->len = 0;
 }
 /** Cook the contents of the HTTPCNX message buffer, if limit==0 returns only bytes needed to store result */
 static size_t http_rewrite(char *out, char *in, size_t len, size_t limit)
 {
-	char name[64], *n;
+	char name[64];
+	char *n = nullptr;
 	size_t count = 0;
-	enum {RAW, COOKED} state = RAW;
-	size_t i;
-	for ( i = 0 ; i < len ; i++ )
+	enum
 	{
-		if ( state==RAW )
+		RAW,
+		COOKED
+	} state = RAW;
+	size_t i;
+	for (i = 0; i < len; i++)
+	{
+		if (state == RAW)
 		{
-			if ( in[i]=='<' && in[i+1]=='<' && in[i+2]=='<' )
+			if (in[i] == '<' && in[i + 1] == '<' && in[i + 2] == '<')
 			{
 				i += 2;
 				state = COOKED;
-				memset(name,0,sizeof(name));
+				memset(name, 0, sizeof(name));
 				n = name;
 			}
 			else
-			{	if ( count<limit )
+			{
+				if (count < limit)
 					out[count] = in[i];
 				count++;
 			}
 		}
-		else if ( state==COOKED )
+		else if (state == COOKED)
 		{
-			if ( in[i]=='>' && in[i+1]=='>' && in[i+2]=='>' )
+			if (in[i] == '>' && in[i + 1] == '>' && in[i + 2] == '>')
 			{
 				char buffer[1024];
-				if ( global_getvar(name,buffer,sizeof(buffer))==nullptr )
+				if (global_getvar(name, buffer, sizeof(buffer)) == nullptr)
 				{
 					output_error("http_rewrite(): '%s' not found", name);
 				}
 				else
 				{
 					int vlen = strlen(buffer);
-					if ( count+vlen < limit )
-						strcpy(out+count,buffer);
+					if (count + vlen < limit)
+						strcpy(out + count, buffer);
 					count += strlen(buffer);
 				}
 				i += 2;
@@ -525,30 +535,30 @@ static size_t http_rewrite(char *out, char *in, size_t len, size_t limit)
 static void http_write(HTTPCNX *http, const char *data, size_t len)
 {
 	char *tmp = nullptr;
-	if ( http->cooked )
+	if (http->cooked)
 	{
-		size_t need = http_rewrite(tmp, const_cast<char*>(data),len,0);
-		tmp = (char*)malloc(need*2+1);
-		len = http_rewrite(tmp, const_cast<char*>(data),len,need*2);
+		size_t need = http_rewrite(tmp, const_cast<char *>(data), len, 0);
+		tmp = (char *)malloc(need * 2 + 1);
+		len = http_rewrite(tmp, const_cast<char *>(data), len, need * 2);
 	}
-	if (http->len+len>=http->max_size)
+	if (http->len + len >= http->max_size)
 	{
 		/* extend buffer */
 		void *old = http->buffer;
-		if (http->len+len < http->max_size*2)
+		if (http->len + len < http->max_size * 2)
 		{
 			http->max_size *= 2;
 		}
 		else
 		{
-			http->max_size = http->len+len+1;
+			http->max_size = http->len + len + 1;
 		}
 		http->buffer = static_cast<char *>(malloc(http->max_size));
-		memcpy(http->buffer,old,http->len);
+		memcpy(http->buffer, old, http->len);
 		free(old);
 	}
-	memcpy(http->buffer+http->len,tmp?tmp:data,len);
-	if ( tmp )
+	memcpy(http->buffer + http->len, tmp ? tmp : data, len);
+	if (tmp)
 		free(tmp);
 	http->len += len;
 }
@@ -556,7 +566,7 @@ static void http_write(HTTPCNX *http, const char *data, size_t len)
 /** Close the HTTPCNX connection after sending content **/
 static void http_close(HTTPCNX *http)
 {
-	if (http->len>0)
+	if (http->len > 0)
 		http_send(http);
 #ifdef _WIN32
 	closesocket(http->s);
@@ -569,26 +579,27 @@ static void http_close(HTTPCNX *http)
 static void http_mime(HTTPCNX *http, char *path)
 {
 	size_t len = strlen(path);
-	static struct s_map {
+	static struct s_map
+	{
 		const char *ext;
 		const char *mime;
 	} map[] = {
-		{".png","image/png"},
-		{".js","text/javascript"},
-		{".kml","application/vnd.google-earth.kml+xml"},
-		{".htm","text/html"},
-		{".ico","image/x-icon"},
-		{".txt","text/plain"},
-		{".log","text/plain"},
-		{".glm","text/plain"},
-		{".php","text/plain"},
+		{".png", "image/png"},
+		{".js", "text/javascript"},
+		{".kml", "application/vnd.google-earth.kml+xml"},
+		{".htm", "text/html"},
+		{".ico", "image/x-icon"},
+		{".txt", "text/plain"},
+		{".log", "text/plain"},
+		{".glm", "text/plain"},
+		{".php", "text/plain"},
 	};
 	int n;
-	for ( n=0 ; n<sizeof(map)/sizeof(map[0]) ; n++ )
+	for (n = 0; n < sizeof(map) / sizeof(map[0]); n++)
 	{
-		if (strcmp(path+len-strlen(map[n].ext),map[n].ext)==0)
+		if (strcmp(path + len - strlen(map[n].ext), map[n].ext) == 0)
 		{
-			http->type = const_cast<char*>(map[n].mime);
+			http->type = const_cast<char *>(map[n].mime);
 			return;
 		}
 	}
@@ -604,11 +615,11 @@ static int http_format(HTTPCNX *http, const char *format, ...)
 	char data[65536];
 	va_list ptr;
 
-	va_start(ptr,format);
-	len = vsprintf(data,format,ptr);
+	va_start(ptr, format);
+	len = vsprintf(data, format, ptr);
 	va_end(ptr);
 
-	http_write(http,data,len);
+	http_write(http, data, len);
 
 	return len;
 }
@@ -616,9 +627,11 @@ static int http_format(HTTPCNX *http, const char *format, ...)
 /** Upquote message buffer content **/
 char *http_unquote(char *buffer)
 {
-	char *eob = buffer+strlen(buffer)-1;
-	if (buffer[0]=='"') buffer++;
-	if (*eob=='"') *eob='\0';
+	char *eob = buffer + strlen(buffer) - 1;
+	if (buffer[0] == '"')
+		buffer++;
+	if (*eob == '"')
+		*eob = '\0';
 	return buffer;
 }
 
@@ -627,7 +640,8 @@ char *http_unquote(char *buffer)
  **/
 static char hex(char c)
 {
-	switch (c) {
+	switch (c)
+	{
 	case '0':
 	case '1':
 	case '2':
@@ -638,21 +652,21 @@ static char hex(char c)
 	case '7':
 	case '8':
 	case '9':
-		return c-'0';
+		return c - '0';
 	case 'A':
 	case 'B':
 	case 'C':
 	case 'D':
 	case 'E':
 	case 'F':
-		return c-'A'+10;
+		return c - 'A' + 10;
 	case 'a':
 	case 'b':
 	case 'c':
 	case 'd':
 	case 'e':
 	case 'f':
-		return c-'a'+10;
+		return c - 'a' + 10;
 	default:
 		return 0;
 	}
@@ -662,25 +676,25 @@ static char hex(char c)
 void http_decode(char *buffer)
 {
 	char result[1024], *in, *out = result;
-	for ( in=buffer ; *in!='\0' ; in++ )
+	for (in = buffer; *in != '\0'; in++)
 	{
-		if (*in=='%')
+		if (*in == '%')
 		{
 			char hi = *++in;
 			char lo = *++in;
-			*out++ = hex(hi)*16 + hex(lo);			
+			*out++ = hex(hi) * 16 + hex(lo);
 		}
 		else
 			*out++ = *in;
 	}
-	*out='\0';
-	strcpy(buffer,result);
+	*out = '\0';
+	strcpy(buffer, result);
 }
 
 int get_value_with_unit(OBJECT *obj, char *arg1, char *arg2, char *buffer, size_t len)
 {
-	char *uname = strchr(arg2,'[');
-	if ( uname!=nullptr )
+	char *uname = strchr(arg2, '[');
+	if (uname != nullptr)
 	{
 		UNIT *unit;
 		PROPERTY *prop;
@@ -691,23 +705,25 @@ int get_value_with_unit(OBJECT *obj, char *arg1, char *arg2, char *buffer, size_
 		char fmt[64];
 
 		/* find the end of the unit definition */
-		char *p = strchr(uname,']');
-		if ( p!=nullptr ) *p='\0';
-		else {
+		char *p = strchr(uname, ']');
+		if (p != nullptr)
+			*p = '\0';
+		else
+		{
 			output_error("object '%s' property '%s' unit spec in incomplete or invalid", arg1, arg2);
 			return 0;
 		}
 		*uname++ = '\0';
 
 		/* find the format specs */
-		spec = strchr(uname,',');
-		if ( spec!=nullptr )
+		spec = strchr(uname, ',');
+		if (spec != nullptr)
 			*spec++ = '\0';
 		else
-			spec = const_cast<char*>("4g");
+			spec = const_cast<char *>("4g");
 
 		/* check spec for conformance */
-		if ( strchr("0123456789",spec[0])==nullptr || strchr("aAfFgGeE",spec[1])==nullptr )
+		if (strchr("0123456789", spec[0]) == nullptr || strchr("aAfFgGeE", spec[1]) == nullptr)
 		{
 			output_error("object '%s' property '%s' unit format '%s' is invalid (must be [0-9][aAeEfFgG])", arg1, arg2, spec);
 			return 0;
@@ -715,89 +731,90 @@ int get_value_with_unit(OBJECT *obj, char *arg1, char *arg2, char *buffer, size_
 
 		/* get the unit */
 		unit = unit_find(uname);
-		if ( unit==nullptr )
+		if (unit == nullptr)
 		{
 			output_error("object '%s' property '%s' unit '%s' not found", arg1, arg2, uname);
 			return 0;
 		}
 
 		/* get the property */
-		prop = object_get_property(obj,arg2,nullptr);
-		if ( prop==nullptr )
+		prop = object_get_property(obj, arg2, nullptr);
+		if (prop == nullptr)
 		{
 			output_error("object '%s' property '%s' not found", arg1, arg2);
 			return 0;
 		}
-		if ( prop->unit==nullptr )
+		if (prop->unit == nullptr)
 		{
 			output_error("class '%s' property '%s' has no units", obj->oclass->name, prop->name);
 			return 0;
 		}
 
 		/* handle complex numbers */
-		if ( prop->ptype==PT_complex )
+		if (prop->ptype == PT_complex)
 		{
-			cvalue = *object_get_complex_quick(obj,prop);
-			if ( !unit_convert_complex(prop->unit,unit,&cvalue) )
+			cvalue = *object_get_complex_quick(obj, prop);
+			if (!unit_convert_complex(prop->unit, unit, &cvalue))
 			{
 				output_error("object '%s' property '%s' conversion from '%s' to '%s' failed", arg1, arg2, prop->unit->name, unit);
 				return 0;
 			}
-			switch ( spec[2]=='\0' ? cvalue.Notation() : spec[2] ) {
+			switch (spec[2] == '\0' ? cvalue.Notation() : spec[2])
+			{
 			case I: // i-notation
-				sprintf(fmt,"%%.%c%c%%+.%c%ci %%s",spec[0],spec[1],spec[0],spec[1]);
-				snprintf(buffer,len,fmt,cvalue.Re(),cvalue.Im(),uname);
+				sprintf(fmt, "%%.%c%c%%+.%c%ci %%s", spec[0], spec[1], spec[0], spec[1]);
+				snprintf(buffer, len, fmt, cvalue.Re(), cvalue.Im(), uname);
 				break;
 			case J: // j-notation
-				sprintf(fmt,"%%.%c%c%%+.%c%cj %%s",spec[0],spec[1],spec[0],spec[1]);
-				snprintf(buffer,len,fmt,cvalue.Re(),cvalue.Im(),uname);
+				sprintf(fmt, "%%.%c%c%%+.%c%cj %%s", spec[0], spec[1], spec[0], spec[1]);
+				snprintf(buffer, len, fmt, cvalue.Re(), cvalue.Im(), uname);
 				break;
 			case A: // degrees
-				sprintf(fmt,"%%.%c%c%%+.%c%cd %%s",spec[0],spec[1],spec[0],spec[1]);
-				snprintf(buffer,len,fmt,cvalue.Mag(),cvalue.Arg()*180/PI,uname);
+				sprintf(fmt, "%%.%c%c%%+.%c%cd %%s", spec[0], spec[1], spec[0], spec[1]);
+				snprintf(buffer, len, fmt, cvalue.Mag(), cvalue.Arg() * 180 / PI, uname);
 				break;
 			case R: // radians
-				sprintf(fmt,"%%.%c%c%%+.%c%cr %%s",spec[0],spec[1],spec[0],spec[1]);
-				snprintf(buffer,len,fmt,cvalue.Mag(),cvalue.Arg(),uname);
+				sprintf(fmt, "%%.%c%c%%+.%c%cr %%s", spec[0], spec[1], spec[0], spec[1]);
+				snprintf(buffer, len, fmt, cvalue.Mag(), cvalue.Arg(), uname);
 				break;
 			case 'M': // magnitude only
-				sprintf(fmt,"%%.%c%c %%s",spec[0],spec[1]);
-				snprintf(buffer,len,fmt,cvalue.Mag(),uname);
+				sprintf(fmt, "%%.%c%c %%s", spec[0], spec[1]);
+				snprintf(buffer, len, fmt, cvalue.Mag(), uname);
 				break;
 			case 'D': // angle only in degrees
-				sprintf(fmt,"%%.%c%c deg",spec[0],spec[1]);
-				snprintf(buffer,len,fmt,cvalue.Arg()*180/PI,uname);
+				sprintf(fmt, "%%.%c%c deg", spec[0], spec[1]);
+				snprintf(buffer, len, fmt, cvalue.Arg() * 180 / PI, uname);
 				break;
 			case 'R': // angle only in radians
-				sprintf(fmt,"%%.%c%c rad",spec[0],spec[1]);
-				sprintf(buffer,fmt,cvalue.Arg(),uname);
+				sprintf(fmt, "%%.%c%c rad", spec[0], spec[1]);
+				sprintf(buffer, fmt, cvalue.Arg(), uname);
 				break;
 			case 'X': // real part only
-				sprintf(fmt,"%%.%c%c %%s",spec[0],spec[1]);
-				sprintf(buffer,fmt,cvalue.Re(),uname);
+				sprintf(fmt, "%%.%c%c %%s", spec[0], spec[1]);
+				sprintf(buffer, fmt, cvalue.Re(), uname);
 				break;
 			case 'Y': // imaginary part only
-				sprintf(fmt,"%%.%c%c %%s",spec[0],spec[1]);
-				sprintf(buffer,fmt,cvalue.Im(),uname);
+				sprintf(fmt, "%%.%c%c %%s", spec[0], spec[1]);
+				sprintf(buffer, fmt, cvalue.Im(), uname);
 				break;
 			default:
-				output_error("object '%s' property '%s' complex angle notation '%c' is not valid", arg1, arg2, spec[2]=='\0' ? cvalue.Notation() : spec[3]);
+				output_error("object '%s' property '%s' complex angle notation '%c' is not valid", arg1, arg2, spec[2] == '\0' ? cvalue.Notation() : spec[3]);
 				return 0;
 			}
 		}
 		else /* handle doubles */
 		{
-			sprintf(fmt,"%%.%c%c %%s",spec[0],spec[1]);
-			rvalue = *object_get_double_quick(obj,prop);
-			if ( !unit_convert_ex(prop->unit,unit,&rvalue) )
+			sprintf(fmt, "%%.%c%c %%s", spec[0], spec[1]);
+			rvalue = *object_get_double_quick(obj, prop);
+			if (!unit_convert_ex(prop->unit, unit, &rvalue))
 			{
 				output_error("object '%s' property '%s' conversion from '%s' to '%s' failed", arg1, arg2, prop->unit->name, unit);
 				return 0;
 			}
-			sprintf(buffer,fmt,rvalue,uname);
+			sprintf(buffer, fmt, rvalue, uname);
 		}
 	}
-	else if ( !object_get_value_by_name(obj,arg2,buffer,len) )
+	else if (!object_get_value_by_name(obj, arg2, buffer, len))
 	{
 		output_error("object '%s' property '%s' not found", arg1, arg2);
 		return 0;
@@ -809,74 +826,78 @@ int get_value_with_unit(OBJECT *obj, char *arg1, char *arg2, char *buffer, size_
  */
 int http_raw_request(HTTPCNX *http, char *uri)
 {
-	char arg1[1024]="", arg2[1024]="";
-	int nargs = sscanf(uri,"%1023[^/=\r\n]/%1023[^\r\n=]",arg1,arg2);
-	char *value = strchr(uri,'=');
-	char buffer[1024]="";
-	OBJECT *obj=nullptr;
+	char arg1[1024] = "", arg2[1024] = "";
+	int nargs = sscanf(uri, "%1023[^/=\r\n]/%1023[^\r\n=]", arg1, arg2);
+	char *value = strchr(uri, '=');
+	char buffer[1024] = "";
+	OBJECT *obj = nullptr;
 	char *id;
 
 	/* value */
-	if (value) value++;
+	if (value)
+		value++;
 
 	/* decode %.. */
 	http_decode(arg1);
 	http_decode(arg2);
-	if (value) http_decode(value);
+	if (value)
+		http_decode(value);
 
 	/* process request */
-	switch (nargs) {
+	switch (nargs)
+	{
 
 	/* get global variable */
 	case 1:
 
 		/* find the variable */
-		if (global_getvar(arg1,buffer,sizeof(buffer))==nullptr)
+		if (global_getvar(arg1, buffer, sizeof(buffer)) == nullptr)
 		{
 			output_error("global variable '%s' not found", arg1);
 			return 0;
 		}
 
 		/* assignment, if any */
-		if (value) global_setvar(arg1,value);
+		if (value)
+			global_setvar(arg1, value);
 
 		/* post the response */
-		http_format(http,"%s", http_unquote(buffer));
-		http_type(http,"text/plain");
+		http_format(http, "%s", http_unquote(buffer));
+		http_type(http, "text/plain");
 		return 1;
 
 	/* get object property */
 	case 2:
 
 		/* find the object */
-		id = strchr(arg1,':');
-		if ( id==nullptr )
+		id = strchr(arg1, ':');
+		if (id == nullptr)
 			obj = object_find_name(arg1);
 		else
-			obj = object_find_by_id(atoi(id+1));
-		if ( obj==nullptr )
+			obj = object_find_by_id(atoi(id + 1));
+		if (obj == nullptr)
 		{
 			output_error("object '%s' not found", arg1);
 			return 0;
 		}
 
 		/* post the current value */
-		if ( !get_value_with_unit(obj,arg1,arg2,buffer,sizeof(buffer)) )
+		if (!get_value_with_unit(obj, arg1, arg2, buffer, sizeof(buffer)))
 		{
 			output_error("object '%s' property '%s' not found", arg1, arg2);
 			return 0;
 		}
 
 		/* assignment, if any */
-		if ( value && !object_set_value_by_name(obj,arg2,value) )
+		if (value && !object_set_value_by_name(obj, arg2, value))
 		{
 			output_error("cannot set object '%s' property '%s' to '%s'", arg1, arg2, value);
 			return 0;
 		}
 
 		/* post the response */
-		http_format(http,"%s", http_unquote(buffer));
-		http_type(http,"text/plain");
+		http_format(http, "%s", http_unquote(buffer));
+		http_type(http, "text/plain");
 		return 1;
 
 	default:
@@ -888,123 +909,140 @@ int http_raw_request(HTTPCNX *http, char *uri)
 /** Process an incoming XML data request
 	@returns non-zero on success, 0 on failure (errno set)
  **/
-int http_xml_request(HTTPCNX *http,char *uri)
+int http_xml_request(HTTPCNX *http, char *uri)
 {
-	char arg1[1024]="", arg2[1024]="";
-	int nargs = sscanf(uri,"%1023[^/=\r\n]/%1023[^\r\n=]",arg1,arg2);
-	char *value = strchr(uri,'=');
-	char buffer[1024]="";
-	OBJECT *obj=nullptr;
+	char arg1[1024] = "", arg2[1024] = "";
+	int nargs = sscanf(uri, "%1023[^/=\r\n]/%1023[^\r\n=]", arg1, arg2);
+	char *value = strchr(uri, '=');
+	char buffer[1024] = "";
+	OBJECT *obj = nullptr;
 	char *id;
 
 	/* value */
-	if (value) value++;
+	if (value)
+		value++;
 
 	/* decode %.. */
 	http_decode(arg1);
 	http_decode(arg2);
-	if (value) http_decode(value);
+	if (value)
+		http_decode(value);
 
 	/* process request */
-	switch (nargs) {
+	switch (nargs)
+	{
 
 	/* get global variable */
-	case 1: 
+	case 1:
 
 		/* find the variable */
-		if (global_getvar(arg1,buffer,sizeof(buffer))==nullptr)
+		if (global_getvar(arg1, buffer, sizeof(buffer)) == nullptr)
 		{
 			output_error("global variable '%s' not found", arg1);
 			return 0;
 		}
 
 		/* assignment, if any */
-		if (value) global_setvar(arg1,value);
-		
+		if (value)
+			global_setvar(arg1, value);
+
 		/* post the response */
-		http_format(http,"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
-		http_format(http,"<globalvar>\n\t<name>%s</name>\n\t<value>%s</value>\n</globalvar>\n",
-			arg1, http_unquote(buffer));
-		http_type(http,"text/xml");
+		http_format(http, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
+		http_format(http, "<globalvar>\n\t<name>%s</name>\n\t<value>%s</value>\n</globalvar>\n",
+					arg1, http_unquote(buffer));
+		http_type(http, "text/xml");
 		return 1;
 
 	/* get object property */
 	case 2:
 
 		/* find the object */
-		id = strchr(arg1,':');
-		if ( id==nullptr )
+		id = strchr(arg1, ':');
+		if (id == nullptr)
 			obj = object_find_name(arg1);
 		else
-			obj = object_find_by_id(atoi(id+1));
-		if ( obj==nullptr )
+			obj = object_find_by_id(atoi(id + 1));
+		if (obj == nullptr)
 		{
 			output_error("object '%s' not found", arg1);
 			return 0;
 		}
 
-		if ( strcmp(arg2,"*")==0 )
+		if (strcmp(arg2, "*") == 0)
 		{
 			PROPERTY *prop;
 			char buffer[1024];
-			http_format(http,"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
-			http_format(http,"<properties>\n");
-#define PROPERTY(N,F,V) http_format(http,"\t<property>\n\t\t<name>N##</name>\n\t\t<value>F##</value>\n\t</property>\n", V)
-			PROPERTY("id","%d",obj->id);
-			PROPERTY("class","%s",obj->oclass->name);
-			if ( obj->name ) PROPERTY("name","%s",object_name(obj,buffer,sizeof(buffer)));
-			if ( strlen(obj->groupid)>0 ) PROPERTY("groupid","%s",obj->groupid.get_string());
-			if ( obj->parent ) PROPERTY("parent","%s",object_name(obj->parent,buffer,sizeof(buffer)));
-			PROPERTY("rank","%d",obj->rank);
-			PROPERTY("clock","%lld",obj->clock);
-			if ( obj->valid_to < TS_NEVER ) PROPERTY("valid_to","%lld",obj->valid_to);
-			if ( obj->schedule_skew ) PROPERTY("schedule_skew","%lld",obj->schedule_skew);
-			if ( !isnan(obj->latitude) ) PROPERTY("latitude","%.6f",obj->latitude);
-			if ( !isnan(obj->longitude) ) PROPERTY("longitude","%.6f",obj->longitude);
-			if ( obj->in_svc > TS_ZERO ) {
-				PROPERTY("in_svc","%lld",obj->in_svc);
-				if ( obj->in_svc_micro > 0 ) PROPERTY("in_svc_micro","%f",obj->in_svc_micro);
-			}
-			if ( obj->out_svc< TS_NEVER )
+			http_format(http, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
+			http_format(http, "<properties>\n");
+#define PROPERTY(N, F, V) http_format(http, "\t<property>\n\t\t<name>N##</name>\n\t\t<value>F##</value>\n\t</property>\n", V)
+			PROPERTY("id", "%d", obj->id);
+			PROPERTY("class", "%s", obj->oclass->name);
+			if (obj->name)
+				PROPERTY("name", "%s", object_name(obj, buffer, sizeof(buffer)));
+			if (strlen(obj->groupid) > 0)
+				PROPERTY("groupid", "%s", obj->groupid.get_string());
+			if (obj->parent)
+				PROPERTY("parent", "%s", object_name(obj->parent, buffer, sizeof(buffer)));
+			PROPERTY("rank", "%d", obj->rank);
+			PROPERTY("clock", "%lld", obj->clock);
+			if (obj->valid_to < TS_NEVER)
+				PROPERTY("valid_to", "%lld", obj->valid_to);
+			if (obj->schedule_skew)
+				PROPERTY("schedule_skew", "%lld", obj->schedule_skew);
+			if (!isnan(obj->latitude))
+				PROPERTY("latitude", "%.6f", obj->latitude);
+			if (!isnan(obj->longitude))
+				PROPERTY("longitude", "%.6f", obj->longitude);
+			if (obj->in_svc > TS_ZERO)
 			{
-				PROPERTY("out_svc","%lld",obj->out_svc);
-				if ( obj->out_svc_micro > 0 ) PROPERTY("out_svc_micro","%f",obj->out_svc_micro);
+				PROPERTY("in_svc", "%lld", obj->in_svc);
+				if (obj->in_svc_micro > 0)
+					PROPERTY("in_svc_micro", "%f", obj->in_svc_micro);
 			}
-			if ( obj->heartbeat > 0 ) PROPERTY("heartbeat","%lld",obj->heartbeat);
-			if ( obj->flags > 0 ) PROPERTY("flags","0x%lx",obj->flags);
+			if (obj->out_svc < TS_NEVER)
+			{
+				PROPERTY("out_svc", "%lld", obj->out_svc);
+				if (obj->out_svc_micro > 0)
+					PROPERTY("out_svc_micro", "%f", obj->out_svc_micro);
+			}
+			if (obj->heartbeat > 0)
+				PROPERTY("heartbeat", "%lld", obj->heartbeat);
+			if (obj->flags > 0)
+				PROPERTY("flags", "0x%lx", obj->flags);
 
-			for ( prop=obj->oclass->pmap; prop!=nullptr; prop=(prop->next?prop->next:(prop->oclass->parent?prop->oclass->parent->pmap:nullptr)) )
+			for (prop = obj->oclass->pmap; prop != nullptr; prop = (prop->next ? prop->next : (prop->oclass->parent ? prop->oclass->parent->pmap : nullptr)))
 			{
-				http_format(http,"\t<property>\n\t\t<name>%s</name>\n",prop->name);
-				http_format(http,"\t\t<value>%s</value>\n\t</property>\n",object_get_value_by_name(obj,prop->name,buffer,sizeof(buffer))>0?buffer:"");
+				http_format(http, "\t<property>\n\t\t<name>%s</name>\n", prop->name);
+				http_format(http, "\t\t<value>%s</value>\n\t</property>\n", object_get_value_by_name(obj, prop->name, buffer, sizeof(buffer)) > 0 ? buffer : "");
 			}
 #undef PROPERTY
-			http_format(http,"</properties>\n");
+			http_format(http, "</properties>\n");
 		}
 		else
-		{	
+		{
 			PROPERTY *prop = object_get_property(obj, arg2, nullptr);
 			PROPERTYSPEC *spec = prop ? property_getspec(prop->ptype) : nullptr;
 			/* get the unit (if any) */
-			if ( !get_value_with_unit(obj,arg1,arg2,buffer,sizeof(buffer)) )
+			if (!get_value_with_unit(obj, arg1, arg2, buffer, sizeof(buffer)))
 				return 0;
 
 			/* assignment, if any */
-			if ( value && !object_set_value_by_name(obj,arg2,value) )
+			if (value && !object_set_value_by_name(obj, arg2, value))
 			{
 				output_error("cannot set object '%s' property '%s' to '%s'", arg1, arg2, value);
 				return 0;
 			}
 
 			/* post the response */
-			http_format(http,"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
-			http_format(http,"<property>\n\t<object>%s</object>\n", arg1);
-			http_format(http,"\t<name>%s</name>\n", arg2);
-			http_format(http,"\t<value>%s</value>\n", http_unquote(buffer));
-			if ( spec!=nullptr ) http_format(http,"\t<type>%s</type>\n", spec->name);
-			http_format(http,"</property>\n");
+			http_format(http, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
+			http_format(http, "<property>\n\t<object>%s</object>\n", arg1);
+			http_format(http, "\t<name>%s</name>\n", arg2);
+			http_format(http, "\t<value>%s</value>\n", http_unquote(buffer));
+			if (spec != nullptr)
+				http_format(http, "\t<type>%s</type>\n", spec->name);
+			http_format(http, "</property>\n");
 		}
-		http_type(http,"text/xml");
+		http_type(http, "text/xml");
 		return 1;
 
 	default:
@@ -1016,31 +1054,34 @@ int http_xml_request(HTTPCNX *http,char *uri)
 /** Process an incoming JSON data request
 	@returns non-zero on success, 0 on failure (errno set)
  **/
-int http_json_request(HTTPCNX *http,char *uri)
+int http_json_request(HTTPCNX *http, char *uri)
 {
-	char arg1[1024]="", arg2[1024]="";
-	int nargs = sscanf(uri,"%1023[^/=\r\n]/%1023[^\r\n=]",arg1,arg2);
-	char *value = strchr(uri,'=');
-	char buffer[1024]="";
-	OBJECT *obj=nullptr;
+	char arg1[1024] = "", arg2[1024] = "";
+	int nargs = sscanf(uri, "%1023[^/=\r\n]/%1023[^\r\n=]", arg1, arg2);
+	char *value = strchr(uri, '=');
+	char buffer[1024] = "";
+	OBJECT *obj = nullptr;
 	char *id;
 
 	/* value */
-	if (value) *value++;
+	if (value)
+		*value++;
 
 	/* decode %.. */
 	http_decode(arg1);
 	http_decode(arg2);
-	if (value) http_decode(value);
+	if (value)
+		http_decode(value);
 
 	/* process request */
-	switch (nargs) {
+	switch (nargs)
+	{
 
 	/* get global variable */
 	case 1:
 
 		/* find the variable */
-		if (global_getvar(arg1,buffer,sizeof(buffer))==nullptr)
+		if (global_getvar(arg1, buffer, sizeof(buffer)) == nullptr)
 		{
 			http_format(http, const_cast<char *>("{\"error\": \"globalvar not found\", \"query\": \"%s\"}\n"), arg1);
 			http_type(http, const_cast<char *>("text/json"));
@@ -1048,11 +1089,12 @@ int http_json_request(HTTPCNX *http,char *uri)
 		}
 
 		/* assignment, if any */
-		if (value) global_setvar(arg1,value);
+		if (value)
+			global_setvar(arg1, value);
 
 		/* post the response */
 		http_format(http, const_cast<char *>("{\"%s\": \"%s\"}\n"),
-			arg1, http_unquote(buffer));
+					arg1, http_unquote(buffer));
 		http_type(http, const_cast<char *>("text/json"));
 		return 1;
 
@@ -1060,22 +1102,22 @@ int http_json_request(HTTPCNX *http,char *uri)
 	case 2:
 
 		/* find the object */
-		id = strchr(arg1,':');
-		if ( id==nullptr )
+		id = strchr(arg1, ':');
+		if (id == nullptr)
 			obj = object_find_name(arg1);
 		else
-			obj = object_find_by_id(atoi(id+1));
-		if ( obj==nullptr )
+			obj = object_find_by_id(atoi(id + 1));
+		if (obj == nullptr)
 		{
 			http_format(http, const_cast<char *>("{\"error\": \"object not found\", \"query\": \"%s\"}\n"), arg1);
 			http_type(http, const_cast<char *>("text/json"));
 			return 1;
 		}
 
-		if ( arg2[0]=='*' )
+		if (arg2[0] == '*')
 		{
-			bool use_tuple = strcmp(arg2,"*")==0 || strcmp(arg2,"*[tuple]")==0;
-			if ( !use_tuple && strcmp(arg2,"*[dict]")!=0 )
+			bool use_tuple = strcmp(arg2, "*") == 0 || strcmp(arg2, "*[tuple]") == 0;
+			if (!use_tuple && strcmp(arg2, "*[dict]") != 0)
 			{
 				http_format(http, const_cast<char *>("{\"error\": \"invalid '*' query format\", \"query\": \"%s\"}\n"), arg2);
 				http_type(http, const_cast<char *>("text/json"));
@@ -1083,45 +1125,69 @@ int http_json_request(HTTPCNX *http,char *uri)
 			}
 			PROPERTY *prop;
 			char buffer[1024];
-			if ( use_tuple ) http_format(http,"["); else http_format(http, const_cast<char *>("{"));
-#define PROPERTY(N,F,V) {if ( use_tuple ) http_format(http,"\n\t{\"N##\": \"F##\"},", V); else http_format(http," \"N##\": \"F##\",", V);}
-			PROPERTY("id","%d",obj->id);
-			PROPERTY("class","%s",obj->oclass->name);
-			if ( obj->name ) PROPERTY("name","%s",object_name(obj,buffer,sizeof(buffer)));
-			if ( strlen(obj->groupid)>0 ) PROPERTY("groupid","%s",obj->groupid.get_string());
-			if ( obj->parent ) PROPERTY("parent","%s",object_name(obj->parent,buffer,sizeof(buffer)));
-			PROPERTY("rank","%d",obj->rank);
-			PROPERTY("clock","%lld",obj->clock);
-			if ( obj->valid_to < TS_NEVER ) PROPERTY("valid_to","%lld",obj->valid_to);
-			if ( obj->schedule_skew ) PROPERTY("schedule_skew","%lld",obj->schedule_skew);
-			if ( !isnan(obj->latitude) ) PROPERTY("latitude","%.6f",obj->latitude);
-			if ( !isnan(obj->longitude) ) PROPERTY("longitude","%.6f",obj->longitude);
-			if ( obj->in_svc > TS_ZERO ) {
-				PROPERTY("in_svc","%lld",obj->in_svc);
-				if ( obj->in_svc_micro > 0 ) PROPERTY("in_svc_micro","%f",obj->in_svc_micro);
-			}
-			if ( obj->out_svc< TS_NEVER )
+			if (use_tuple)
+				http_format(http, "[");
+			else
+				http_format(http, const_cast<char *>("{"));
+#define PROPERTY(N, F, V)                                    \
+	{                                                        \
+		if (use_tuple)                                       \
+			http_format(http, "\n\t{\"N##\": \"F##\"},", V); \
+		else                                                 \
+			http_format(http, " \"N##\": \"F##\",", V);      \
+	}
+			PROPERTY("id", "%d", obj->id);
+			PROPERTY("class", "%s", obj->oclass->name);
+			if (obj->name)
+				PROPERTY("name", "%s", object_name(obj, buffer, sizeof(buffer)));
+			if (strlen(obj->groupid) > 0)
+				PROPERTY("groupid", "%s", obj->groupid.get_string());
+			if (obj->parent)
+				PROPERTY("parent", "%s", object_name(obj->parent, buffer, sizeof(buffer)));
+			PROPERTY("rank", "%d", obj->rank);
+			PROPERTY("clock", "%lld", obj->clock);
+			if (obj->valid_to < TS_NEVER)
+				PROPERTY("valid_to", "%lld", obj->valid_to);
+			if (obj->schedule_skew)
+				PROPERTY("schedule_skew", "%lld", obj->schedule_skew);
+			if (!isnan(obj->latitude))
+				PROPERTY("latitude", "%.6f", obj->latitude);
+			if (!isnan(obj->longitude))
+				PROPERTY("longitude", "%.6f", obj->longitude);
+			if (obj->in_svc > TS_ZERO)
 			{
-				PROPERTY("out_svc","%lld",obj->out_svc);
-				if ( obj->out_svc_micro > 0 ) PROPERTY("out_svc_micro","%f",obj->out_svc_micro);
+				PROPERTY("in_svc", "%lld", obj->in_svc);
+				if (obj->in_svc_micro > 0)
+					PROPERTY("in_svc_micro", "%f", obj->in_svc_micro);
 			}
-			if ( obj->heartbeat > 0 ) PROPERTY("heartbeat","%lld",obj->heartbeat);
-			PROPERTY("flags","0x%lx",obj->flags);
+			if (obj->out_svc < TS_NEVER)
+			{
+				PROPERTY("out_svc", "%lld", obj->out_svc);
+				if (obj->out_svc_micro > 0)
+					PROPERTY("out_svc_micro", "%f", obj->out_svc_micro);
+			}
+			if (obj->heartbeat > 0)
+				PROPERTY("heartbeat", "%lld", obj->heartbeat);
+			PROPERTY("flags", "0x%lx", obj->flags);
 
-			for ( prop=obj->oclass->pmap; prop!=nullptr; prop=(prop->next?prop->next:(prop->oclass->parent?prop->oclass->parent->pmap:nullptr)) )
+			for (prop = obj->oclass->pmap; prop != nullptr; prop = (prop->next ? prop->next : (prop->oclass->parent ? prop->oclass->parent->pmap : nullptr)))
 			{
-				if ( prop!=obj->oclass->pmap)
+				if (prop != obj->oclass->pmap)
 				{
-					if ( use_tuple ) http_format(http, const_cast<char *>("%s\n"), ","); else http_format(http,
-																										  const_cast<char *>("%s "), ",");
+					if (use_tuple)
+						http_format(http, const_cast<char *>("%s\n"), ",");
+					else
+						http_format(http,
+									const_cast<char *>("%s "), ",");
 				}
 				else
 				{
-					if ( use_tuple ) http_format(http,"%s","\n");
+					if (use_tuple)
+						http_format(http, "%s", "\n");
 				}
-				if ( object_get_value_by_name(obj,prop->name,buffer,sizeof(buffer))>0 )
+				if (object_get_value_by_name(obj, prop->name, buffer, sizeof(buffer)) > 0)
 				{
-					if ( use_tuple )
+					if (use_tuple)
 						http_format(http, const_cast<char *>("\t{\"%s\": \"%s\"}"), prop->name, http_unquote(buffer));
 					else
 						http_format(http, const_cast<char *>("\"%s\": \"%s\""), prop->name, http_unquote(buffer));
@@ -1135,14 +1201,17 @@ int http_json_request(HTTPCNX *http,char *uri)
 				}
 			}
 #undef PROPERTY
-			if ( use_tuple ) http_format(http, const_cast<char *>("\n\t]\n")); else http_format(http,
-																								const_cast<char *>("}\n"));
+			if (use_tuple)
+				http_format(http, const_cast<char *>("\n\t]\n"));
+			else
+				http_format(http,
+							const_cast<char *>("}\n"));
 		}
 		else
 		{
 			PROPERTY *prop = object_get_property(obj, arg2, nullptr);
 			PROPERTYSPEC *spec = prop ? property_getspec(prop->ptype) : nullptr;
-			if ( !get_value_with_unit(obj,arg1,arg2,buffer,sizeof(buffer)) )
+			if (!get_value_with_unit(obj, arg1, arg2, buffer, sizeof(buffer)))
 			{
 				http_format(http,
 							const_cast<char *>("{\"error\": \"property not found\", \"object\": \"%s\", \"property\": \"%s\"}\n"), arg1, arg2);
@@ -1151,7 +1220,7 @@ int http_json_request(HTTPCNX *http,char *uri)
 			}
 
 			/* assignment, if any */
-			if ( value && !object_set_value_by_name(obj,arg2,value) )
+			if (value && !object_set_value_by_name(obj, arg2, value))
 			{
 				http_format(http,
 							const_cast<char *>("{\"error\": \"property write failed\", \"object\": \"%s\", \"property\": \"%s\", \"value\": \"%s\"}\n"), arg1, arg2, value);
@@ -1162,7 +1231,7 @@ int http_json_request(HTTPCNX *http,char *uri)
 			/* post the response */
 			http_format(http, const_cast<char *>("{\t\"object\" : \"%s\", \n"), arg1);
 			http_format(http, const_cast<char *>("\t\"name\" : \"%s\", \n"), arg2);
-			if ( spec!=nullptr )
+			if (spec != nullptr)
 				http_format(http, const_cast<char *>("\t\"type\" : \"%s\", \n"), spec->name);
 			http_format(http, const_cast<char *>("\t\"value\" : \"%s\"\n}\n"), http_unquote(buffer));
 		}
@@ -1176,115 +1245,116 @@ int http_json_request(HTTPCNX *http,char *uri)
 }
 
 /** Process an incoming find request
-    @returns non-zero on success, 0 on failure (errno set)
+	@returns non-zero on success, 0 on failure (errno set)
  **/
-int http_find_request(HTTPCNX *http,char *uri)
+int http_find_request(HTTPCNX *http, char *uri)
 {
 	FINDPGM *finder = find_mkpgm(uri);
 	FINDLIST *list;
 	OBJECT *obj;
-	if ( finder == nullptr )
+	if (finder == nullptr)
 		return 0;
-	list = find_runpgm(nullptr,finder);
-	if ( list == nullptr )
+	list = find_runpgm(nullptr, finder);
+	if (list == nullptr)
 		return 0;
-	http_format(http,"[\n");
+	http_format(http, "[\n");
 	obj = find_first(list);
-	while ( 1 )
+	while (1)
 	{
-		if ( obj->name == nullptr )
-			http_format(http,"\t{\"name\" : \"%s:%d\"}",obj->oclass->name,obj->id);
+		if (obj->name == nullptr)
+			http_format(http, "\t{\"name\" : \"%s:%d\"}", obj->oclass->name, obj->id);
 		else
-			http_format(http,"\t{\"name\" : \"%s\"}",obj->name);
-		obj = find_next(list,obj);
-		if ( obj!=nullptr )
-			http_format(http,",\n\t");
+			http_format(http, "\t{\"name\" : \"%s\"}", obj->name);
+		obj = find_next(list, obj);
+		if (obj != nullptr)
+			http_format(http, ",\n\t");
 		else
 			break;
 	}
-	http_format(http,"\n\t]\n");
-	http_type(http,"text/json");
+	http_format(http, "\n\t]\n");
+	http_type(http, "text/json");
 	return 1;
 }
 
 /** Process a bulk modify request
-    @returns non-zero on success, 0 on failure (errno set)
+	@returns non-zero on success, 0 on failure (errno set)
  **/
 int http_modify_request(HTTPCNX *http, char *uri)
 {
 	char *p = uri;
-	while ( p != nullptr && *p != '\0' )
+	while (p != nullptr && *p != '\0')
 	{
 		char oname[1024], pname[1024], value[1024];
-		if ( sscanf(p,"%[^.].%[^=]=%[^;]",oname,pname,value) == 3 )
+		if (sscanf(p, "%[^.].%[^=]=%[^;]", oname, pname, value) == 3)
 		{
 			OBJECT *obj = object_find_name(oname);
-			if ( obj == nullptr )
+			if (obj == nullptr)
 				output_error("object '%s' not found", oname);
-			else if ( object_set_value_by_name(obj,pname,value) <= 0 )
+			else if (object_set_value_by_name(obj, pname, value) <= 0)
 				output_error("object '%s' property '%s' set to '%s' failed", oname, pname, value);
-		} 
+		}
 		else
 			output_error("modify syntax error at '%s'", p);
-		p = strchr(p+1,';');
-		if ( p != nullptr ) p++;
+		p = strchr(p + 1, ';');
+		if (p != nullptr)
+			p++;
 	};
 	return 1;
 }
 
 /** Process a bulk read request
-    @returns non-zero on success, 0 on failure (errno set)
+	@returns non-zero on success, 0 on failure (errno set)
  **/
 int http_read_request(HTTPCNX *http, char *uri)
 {
 	char *p = uri;
-	http_format(http,"[\n\t");
-	int first=1;
-	while ( *p != '\0' )
+	http_format(http, "[\n\t");
+	int first = 1;
+	while (*p != '\0')
 	{
 		char oname[1024], pname[1024];
-		if ( sscanf(p,"%[^.].%[^;]",oname,pname) == 2 )
+		if (sscanf(p, "%[^.].%[^;]", oname, pname) == 2)
 		{
 			char value[1024];
 			OBJECT *obj = object_find_name(oname);
-			if ( obj == nullptr )
+			if (obj == nullptr)
 				output_error("object '%s' not found", oname);
-			else if ( object_get_value_by_name(obj,pname,value,sizeof(value)) <= 0 )
+			else if (object_get_value_by_name(obj, pname, value, sizeof(value)) <= 0)
 				output_error("object '%s' property '%s' get failed", oname, pname);
 			else
 			{
-				if ( !first )
-					http_format(http,",\n\t");
+				if (!first)
+					http_format(http, ",\n\t");
 				else
 					first = 0;
-				http_format(http,"{\"object\" : \"%s\" , \"property\" : \"%s\" , \"value\" : \"%s\" }",oname,pname,value);
+				http_format(http, "{\"object\" : \"%s\" , \"property\" : \"%s\" , \"value\" : \"%s\" }", oname, pname, value);
 			}
 		}
 		else
 			output_error("read syntax error at '%s'", p);
-		p = strchr(p+1,';');
-		if ( p != nullptr )
+		p = strchr(p + 1, ';');
+		if (p != nullptr)
 			p++;
 		else
 			break;
 	}
-	http_format(http,"\n\t]\n");
-	http_type(http,"text/json");
+	http_format(http, "\n\t]\n");
+	http_type(http, "text/json");
 	return 1;
 }
 
 /** Process an incoming GUI request
 	@returns non-zero on success, 0 on failure (errno set)
  **/
-int http_gui_request(HTTPCNX *http,char *uri)
+int http_gui_request(HTTPCNX *http, char *uri)
 {
-	gui_set_html_stream((void*)http, reinterpret_cast<GUISTREAMFN>(http_format));
-	if (gui_html_output_page(uri)>=0)
+	gui_set_html_stream((void *)http, reinterpret_cast<GUISTREAMFN>(http_format));
+	if (gui_html_output_page(uri) >= 0)
 	{
-		http_type(http,"text/html");
+		http_type(http, "text/html");
 		return 1;
 	}
-	else 
+	else
 		return 0;
 }
 
@@ -1295,7 +1365,7 @@ int http_gui_request(HTTPCNX *http,char *uri)
 int filelength(int fd)
 {
 	struct stat fs;
-	if (fstat(fd,&fs))
+	if (fstat(fd, &fs))
 		return -1;
 	else
 		return fs.st_size;
@@ -1310,49 +1380,49 @@ int http_copy(HTTPCNX *http, const char *context, char *source, int cook, size_t
 	char *buffer;
 	size_t len;
 	int old_cooked;
-	FILE *fp = fopen(source,"rb");
-	if (fp==nullptr)
+	FILE *fp = fopen(source, "rb");
+	if (fp == nullptr)
 	{
 		output_error("unable to find %s output '%s': %s", context, source, strerror(errno));
 		return 0;
 	}
-	if ( pos >= 0 )
-		fseek(fp,pos,SEEK_SET);
+	if (pos >= 0)
+		fseek(fp, pos, SEEK_SET);
 	else
 		pos = 0;
 	len = filelength(fileno(fp)) - pos;
-	if (len<0)
+	if (len < 0)
 	{
 		output_error("%s output '%s' not accessible", context, source);
 		fclose(fp);
 		return 0;
 	}
-	if ( len == 0 )
+	if (len == 0)
 	{
-		http_mime(http,source);
-		http_write(http,"",0);
+		http_mime(http, source);
+		http_write(http, "", 0);
 		fclose(fp);
 		return 1;
 	}
-	buffer = (char*)malloc(len);
-	if (buffer==nullptr)
+	buffer = (char *)malloc(len);
+	if (buffer == nullptr)
 	{
 		output_error("%s output buffer for '%s' not available", context, source);
 		fclose(fp);
 		return 0;
 	}
-	size_t result = fread(buffer,1,len,fp);
-	if (result<0)
+	size_t result = fread(buffer, 1, len, fp);
+	if (result < 0)
 	{
 		output_error("%s output '%s' read failed", context, source);
 		free(buffer);
 		fclose(fp);
 		return 0;
 	}
-	http_mime(http,source);
+	http_mime(http, source);
 	old_cooked = http->cooked;
 	http->cooked = cook;
-	http_write(http,buffer,len);
+	http_write(http, buffer, len);
 	http->cooked = old_cooked;
 	free(buffer);
 	fclose(fp);
@@ -1362,57 +1432,60 @@ int http_copy(HTTPCNX *http, const char *context, char *source, int cook, size_t
 /** Process an incoming output data request
 	@returns non-zero on success, 0 on failure (errno set)
  **/
- 
-int http_output_request(HTTPCNX *http,char *uri)
+
+int http_output_request(HTTPCNX *http, char *uri)
 {
 	char fullpath[1024];
-	strcpy(fullpath,global_workdir);
-	if (*(fullpath+strlen(fullpath)-1)!='/' || *(fullpath+strlen(fullpath)-1)!='\\' )
-		strcat(fullpath,"/");
-	strcat(fullpath,uri);
-	return http_copy(http,"file",fullpath,false,0);
+	strcpy(fullpath, global_workdir);
+	if (*(fullpath + strlen(fullpath) - 1) != '/' || *(fullpath + strlen(fullpath) - 1) != '\\')
+		strcat(fullpath, "/");
+	strcat(fullpath, uri);
+	return http_copy(http, "file", fullpath, false, 0);
 }
 
 /** Process an incoming Java request
 	@returns non-zero on success, 0 on failure (errno set)
  **/
-int http_run_java(HTTPCNX *http,char *uri)
+int http_run_java(HTTPCNX *http, char *uri)
 {
 	char script[1024];
 	char command[1024];
 	char output[1024];
-	char *mime = strchr(uri,'?');
-	char *ext = mime?strchr(mime,'/'):nullptr;
-	char *jar = strrchr(uri,'.');
+	char *mime = strchr(uri, '?');
+	char *ext = mime ? strchr(mime, '/') : nullptr;
+	char *jar = strrchr(uri, '.');
 	int rc = 0;
 
 	/* find mime and extension */
-	if (mime==nullptr)
+	if (mime == nullptr)
 	{
 		output_error("Java runtime request does not include mime type");
 		return 0;
 	}
 	else
 		*mime++ = '\0'; /* mime type actually start at next character */
-	if (ext) ext++;
+	if (ext)
+		ext++;
 
 	/* if not a plot request */
-	if (jar==nullptr || strcmp(jar,".jar")!=0)
+	if (jar == nullptr || strcmp(jar, ".jar") != 0)
 	{
 		output_error("Java runtime request does not specify is a Java runtime filename with extension .jar");
 		return 0;
 	}
 
 	/* setup gnuplot command */
-	sprintf(script,"%s",uri);
-	sprintf(command,"java -jar %s",script);
+	sprintf(script, "%s", uri);
+	sprintf(command, "java -jar %s", script);
 
 	/* temporary cut off of plt extension to build output file */
-	*jar = '\0'; sprintf(output,"%s.%s",uri,ext); *jar='.';
+	*jar = '\0';
+	sprintf(output, "%s.%s", uri, ext);
+	*jar = '.';
 
 	/* run gnuplot */
 	IN_MYCONTEXT output_verbose("%s", command);
-	if ((rc=system(command))!=0)
+	if ((rc = system(command)) != 0)
 	{
 		switch (rc)
 		{
@@ -1427,50 +1500,53 @@ int http_run_java(HTTPCNX *http,char *uri)
 	}
 
 	/* copy output to http */
-	return http_copy(http,"Java",output,true,0);
+	return http_copy(http, "Java", output, true, 0);
 }
 
 /** Process an incoming Perl data request
 	@returns non-zero on success, 0 on failure (errno set)
  **/
 
-int http_run_perl(HTTPCNX *http,char *uri)
+int http_run_perl(HTTPCNX *http, char *uri)
 {
 	char script[1024];
 	char command[1024];
 	char output[1024];
-	char *mime = strchr(uri,'?');
-	char *ext = mime?strchr(mime,'/'):nullptr;
-	char *pl = strrchr(uri,'.');
+	char *mime = strchr(uri, '?');
+	char *ext = mime ? strchr(mime, '/') : nullptr;
+	char *pl = strrchr(uri, '.');
 	int rc = 0;
 
 	/* find mime and extension */
-	if (mime==nullptr)
+	if (mime == nullptr)
 	{
 		output_error("Perl request does not include mime type");
 		return 0;
 	}
 	else
 		*mime++ = '\0'; /* mime type actually start at next character */
-	if (ext) ext++;
+	if (ext)
+		ext++;
 
 	/* if not a plot request */
-	if (pl==nullptr || strcmp(pl,".pl")!=0)
+	if (pl == nullptr || strcmp(pl, ".pl") != 0)
 	{
 		output_error("Perl request does not specify a Perl script filename with extension .pl");
 		return 0;
 	}
 
 	/* setup gnuplot command */
-	sprintf(script,"%s",uri);
-	sprintf(command,"perl %s",script);
+	sprintf(script, "%s", uri);
+	sprintf(command, "perl %s", script);
 
 	/* temporary cut off of plt extension to build output file */
-	*pl = '\0'; sprintf(output,"%s.%s",uri,ext); *pl='.';
+	*pl = '\0';
+	sprintf(output, "%s.%s", uri, ext);
+	*pl = '.';
 
 	/* run gnuplot */
 	IN_MYCONTEXT output_verbose("%s", command);
-	if ((rc=system(command))!=0)
+	if ((rc = system(command)) != 0)
 	{
 		switch (rc)
 		{
@@ -1485,49 +1561,52 @@ int http_run_perl(HTTPCNX *http,char *uri)
 	}
 
 	/* copy output to http */
-	return http_copy(http,"Perl",output,true,0);
+	return http_copy(http, "Perl", output, true, 0);
 }
 
 /** Process an incoming Python data request
 	@returns non-zero on success, 0 on failure (errno set)
  **/
-int http_run_python(HTTPCNX *http,char *uri)
+int http_run_python(HTTPCNX *http, char *uri)
 {
 	char script[1024];
 	char command[1024];
 	char output[1024];
-	char *mime = strchr(uri,'?');
-	char *ext = mime?strchr(mime,'/'):nullptr;
-	char *py = strrchr(uri,'.');
+	char *mime = strchr(uri, '?');
+	char *ext = mime ? strchr(mime, '/') : nullptr;
+	char *py = strrchr(uri, '.');
 	int rc = 0;
 
 	/* find mime and extension */
-	if (mime==nullptr)
+	if (mime == nullptr)
 	{
 		output_error("Python request does not include mime type");
 		return 0;
 	}
 	else
 		*mime++ = '\0'; /* mime type actually start at next character */
-	if (ext) ext++;
+	if (ext)
+		ext++;
 
 	/* if not a plot request */
-	if (py==nullptr || strcmp(py,".py")!=0)
+	if (py == nullptr || strcmp(py, ".py") != 0)
 	{
 		output_error("Python request does not specify a Python script filename with extension .py");
 		return 0;
 	}
 
 	/* setup gnuplot command */
-	sprintf(script,"%s",uri);
-	sprintf(command,"python %s",script);
+	sprintf(script, "%s", uri);
+	sprintf(command, "python %s", script);
 
 	/* temporary cut off of plt extension to build output file */
-	*py = '\0'; sprintf(output,"%s.%s",uri,ext); *py='.';
+	*py = '\0';
+	sprintf(output, "%s.%s", uri, ext);
+	*py = '.';
 
 	/* run gnuplot */
 	IN_MYCONTEXT output_verbose("%s", command);
-	if ((rc=system(command))!=0)
+	if ((rc = system(command)) != 0)
 	{
 		switch (rc)
 		{
@@ -1542,53 +1621,56 @@ int http_run_python(HTTPCNX *http,char *uri)
 	}
 
 	/* copy output to http */
-	return http_copy(http,"Python",output,true,0);
+	return http_copy(http, "Python", output, true, 0);
 }
 
 /** Process an incoming R data request
 	@returns non-zero on success, 0 on failure (errno set)
  **/
-int http_run_r(HTTPCNX *http,char *uri)
+int http_run_r(HTTPCNX *http, char *uri)
 {
 	char script[1024];
 	char command[1024];
 	char output[1024];
-	char *mime = strchr(uri,'?');
-	char *ext = mime?strchr(mime,'/'):nullptr;
-	char *r = strrchr(uri,'.');
+	char *mime = strchr(uri, '?');
+	char *ext = mime ? strchr(mime, '/') : nullptr;
+	char *r = strrchr(uri, '.');
 	int rc = 0;
 
 	/* find mime and extension */
-	if (mime==nullptr)
+	if (mime == nullptr)
 	{
 		output_error("R request does not include mime type");
 		return 0;
 	}
 	else
 		*mime++ = '\0'; /* mime type actually start at next character */
-	if (ext) ext++;
+	if (ext)
+		ext++;
 
 	/* if not a plot request */
-	if (r==nullptr || strcmp(r,".r")!=0)
+	if (r == nullptr || strcmp(r, ".r") != 0)
 	{
 		output_error("R request does not specify an R script filename with extension .r");
 		return 0;
 	}
 
 	/* setup gnuplot command */
-	sprintf(script,"%s",uri);
+	sprintf(script, "%s", uri);
 #ifdef _WIN32
-	sprintf(command,"r CMD BATCH %s",script);
+	sprintf(command, "r CMD BATCH %s", script);
 #else
-	sprintf(command,"R --vanilla CMD BATCH %s",script);
+	sprintf(command, "R --vanilla CMD BATCH %s", script);
 #endif
 
 	/* temporary cut off of plt extension to build output file */
-	*r = '\0'; sprintf(output,"%s.%s",uri,ext); *r='.';
+	*r = '\0';
+	sprintf(output, "%s.%s", uri, ext);
+	*r = '.';
 
 	/* run gnuplot */
 	IN_MYCONTEXT output_verbose("%s", command);
-	if ((rc=system(command))!=0)
+	if ((rc = system(command)) != 0)
 	{
 		switch (rc)
 		{
@@ -1603,49 +1685,52 @@ int http_run_r(HTTPCNX *http,char *uri)
 	}
 
 	/* copy output to http */
-	return http_copy(http,"R",output,true,0);
+	return http_copy(http, "R", output, true, 0);
 }
 
 /** Process an incoming Scilab data request
 	@returns non-zero on success, 0 on failure (errno set)
  **/
-int http_run_scilab(HTTPCNX *http,char *uri)
+int http_run_scilab(HTTPCNX *http, char *uri)
 {
 	char script[1024];
 	char command[1024];
 	char output[1024];
-	char *mime = strchr(uri,'?');
-	char *ext = mime?strchr(mime,'/'):nullptr;
-	char *sce = strrchr(uri,'.');
+	char *mime = strchr(uri, '?');
+	char *ext = mime ? strchr(mime, '/') : nullptr;
+	char *sce = strrchr(uri, '.');
 	int rc = 0;
 
 	/* find mime and extension */
-	if (mime==nullptr)
+	if (mime == nullptr)
 	{
 		output_error("Scilab request does not include mime type");
 		return 0;
 	}
 	else
 		*mime++ = '\0'; /* mime type actually start at next character */
-	if (ext) ext++;
+	if (ext)
+		ext++;
 
 	/* if not a plot request */
-	if (sce==nullptr || strcmp(sce,".sce")!=0)
+	if (sce == nullptr || strcmp(sce, ".sce") != 0)
 	{
 		output_error("Scilab request does not specify a Scilab script filename with extension .sce");
 		return 0;
 	}
 
 	/* setup gnuplot command */
-	sprintf(script,"%s",uri);
-	sprintf(command,"scilab %s",script);
+	sprintf(script, "%s", uri);
+	sprintf(command, "scilab %s", script);
 
 	/* temporary cut off of plt extension to build output file */
-	*sce = '\0'; sprintf(output,"%s.%s",uri,ext); *sce='.';
+	*sce = '\0';
+	sprintf(output, "%s.%s", uri, ext);
+	*sce = '.';
 
 	/* run gnuplot */
 	IN_MYCONTEXT output_verbose("%s", command);
-	if ((rc=system(command))!=0)
+	if ((rc = system(command)) != 0)
 	{
 		switch (rc)
 		{
@@ -1660,49 +1745,52 @@ int http_run_scilab(HTTPCNX *http,char *uri)
 	}
 
 	/* copy output to http */
-	return http_copy(http,"Scilab",output,true,0);
+	return http_copy(http, "Scilab", output, true, 0);
 }
 
 /** Process an incoming Octave data request
 	@returns non-zero on success, 0 on failure (errno set)
  **/
-int http_run_octave(HTTPCNX *http,char *uri)
+int http_run_octave(HTTPCNX *http, char *uri)
 {
 	char script[1024];
 	char command[1024];
 	char output[1024];
-	char *mime = strchr(uri,'?');
-	char *ext = mime?strchr(mime,'/'):nullptr;
-	char *m = strrchr(uri,'.');
+	char *mime = strchr(uri, '?');
+	char *ext = mime ? strchr(mime, '/') : nullptr;
+	char *m = strrchr(uri, '.');
 	int rc = 0;
 
 	/* find mime and extension */
-	if (mime==nullptr)
+	if (mime == nullptr)
 	{
 		output_error("Octave request does not include mime type");
 		return 0;
 	}
 	else
 		*mime++ = '\0'; /* mime type actually start at next character */
-	if (ext) ext++;
+	if (ext)
+		ext++;
 
 	/* if not a plot request */
-	if (m==nullptr || strcmp(m,".m")!=0)
+	if (m == nullptr || strcmp(m, ".m") != 0)
 	{
 		output_error("Octave request does not specify an Octave script filename with extension .m");
 		return 0;
 	}
 
 	/* setup gnuplot command */
-	sprintf(script,"%s",uri);
-	sprintf(command,"octave %s",script);
+	sprintf(script, "%s", uri);
+	sprintf(command, "octave %s", script);
 
 	/* temporary cut off of plt extension to build output file */
-	*m = '\0'; sprintf(output,"%s.%s",uri,ext); *m='.';
+	*m = '\0';
+	sprintf(output, "%s.%s", uri, ext);
+	*m = '.';
 
 	/* run gnuplot */
 	IN_MYCONTEXT output_verbose("%s", command);
-	if ((rc=system(command))!=0)
+	if ((rc = system(command)) != 0)
 	{
 		switch (rc)
 		{
@@ -1717,52 +1805,55 @@ int http_run_octave(HTTPCNX *http,char *uri)
 	}
 
 	/* copy output to http */
-	return http_copy(http,"Octave",output,true,0);
+	return http_copy(http, "Octave", output, true, 0);
 }
 
 /** Process an incoming Gnuplot data request
 	@returns non-zero on success, 0 on failure (errno set)
  **/
-int http_run_gnuplot(HTTPCNX *http,char *uri)
+int http_run_gnuplot(HTTPCNX *http, char *uri)
 {
 	char script[1024];
 	char command[1024];
 	char output[1024];
-	char *mime = strchr(uri,'?');
-	char *ext = mime?strchr(mime,'/'):nullptr;
-	char *plt = strrchr(uri,'.');
+	char *mime = strchr(uri, '?');
+	char *ext = mime ? strchr(mime, '/') : nullptr;
+	char *plt = strrchr(uri, '.');
 	int rc = 0;
 
 	/* find mime and extension */
-	if (mime==nullptr)
+	if (mime == nullptr)
 	{
 		output_error("gnuplot request does not include mime type");
 		return 0;
 	}
 	else
 		*mime++ = '\0'; /* mime type actually start at next character */
-	if (ext) ext++;
+	if (ext)
+		ext++;
 
 	/* if not a plot request */
-	if (plt==nullptr || strcmp(plt,".plt")!=0)
+	if (plt == nullptr || strcmp(plt, ".plt") != 0)
 	{
 		output_error("gnuplot request does not specify a plot script filename with extension .plt");
 		return 0;
 	}
 
 	/* setup gnuplot command */
-	sprintf(script,"%s",uri);
+	sprintf(script, "%s", uri);
 #ifdef _WIN32
-	sprintf(command,"wgnuplot %s",script);
+	sprintf(command, "wgnuplot %s", script);
 #else
-	sprintf(command,"gnuplot %s",script);
+	sprintf(command, "gnuplot %s", script);
 #endif
 	/* temporary cut off of plt extension to build output file */
-	*plt = '\0'; sprintf(output,"%s.%s",uri,ext); *plt='.';
+	*plt = '\0';
+	sprintf(output, "%s.%s", uri, ext);
+	*plt = '.';
 
 	/* run gnuplot */
 	IN_MYCONTEXT output_verbose("%s", command);
-	if ((rc=system(command))!=0)
+	if ((rc = system(command)) != 0)
 	{
 		switch (rc)
 		{
@@ -1777,86 +1868,87 @@ int http_run_gnuplot(HTTPCNX *http,char *uri)
 	}
 
 	/* copy output to http */
-	return http_copy(http,"gnuplot",output,true,0);
+	return http_copy(http, "gnuplot", output, true, 0);
 }
 
 /** Process an incoming runtime file request
 	@returns non-zero on success, 0 on failure (errno set)
  **/
-int http_get_rt(HTTPCNX *http,char *uri)
+int http_get_rt(HTTPCNX *http, char *uri)
 {
 	char fullpath[1024];
 	char filename[1024];
 	size_t pos = 0;
-	if ( sscanf(uri,"%1023[^:]:%ld",filename,&pos)==0 )
-		strncpy(filename,uri,sizeof(filename)-1);
-	if (!find_file(filename,nullptr,R_OK,fullpath,sizeof(fullpath)))
+	if (sscanf(uri, "%1023[^:]:%ld", filename, &pos) == 0)
+		strncpy(filename, uri, sizeof(filename) - 1);
+	if (!find_file(filename, nullptr, R_OK, fullpath, sizeof(fullpath)))
 	{
-		output_error("runtime file '%s' couldn't be located in GLPATH='%s'", filename,getenv("GLPATH"));
+		output_error("runtime file '%s' couldn't be located in GLPATH='%s'", filename, getenv("GLPATH"));
 		return 0;
 	}
-	return http_copy(http,"runtime",fullpath,true,pos);
+	return http_copy(http, "runtime", fullpath, true, pos);
 }
 
 /** Process an incoming runtime file request
 	@returns non-zero on success, 0 on failure (errno set)
  **/
-int http_get_rb(HTTPCNX *http,char *uri)
+int http_get_rb(HTTPCNX *http, char *uri)
 {
 	char fullpath[1024];
-	if (!find_file(uri,nullptr,R_OK,fullpath,sizeof(fullpath)))
+	if (!find_file(uri, nullptr, R_OK, fullpath, sizeof(fullpath)))
 	{
-		output_error("binary file '%s' couldn't be located in GLPATH='%s'", uri,getenv("GLPATH"));
+		output_error("binary file '%s' couldn't be located in GLPATH='%s'", uri, getenv("GLPATH"));
 		return 0;
 	}
-	return http_copy(http,"runtime",fullpath,false,0);
+	return http_copy(http, "runtime", fullpath, false, 0);
 }
 
 /** Collect a KML documnent
-    @returns non-zero on success, 0 on failure (errno set)
+	@returns non-zero on success, 0 on failure (errno set)
  **/
 int http_kml_request(HTTPCNX *http, char *action)
 {
-//	static long long lock;
-//	wlock(&lock);
-	char *p = strchr(action,'?');
-	http_type(http,"text/kml");
-	if ( p==nullptr )
-	{	kml_dump(action); // simple dump of everything
-		return http_copy(http,"KML",action,false,0);
+	//	static long long lock;
+	//	wlock(&lock);
+	char *p = strchr(action, '?');
+	http_type(http, "text/kml");
+	if (p == nullptr)
+	{
+		kml_dump(action); // simple dump of everything
+		return http_copy(http, "KML", action, false, 0);
 	}
 	else
 	{
 		char buffer[1024];
-		char *propname = p+1; // now "property=value"
+		char *propname = p + 1; // now "property=value"
 		OBJECT *obj;
-		*p='\0'; // action is now the target object name
+		*p = '\0'; // action is now the target object name
 		obj = object_find_name(action);
-		if ( obj==nullptr )
+		if (obj == nullptr)
 		{
-			http_status(http,HTTP_NOTACCEPTABLE);
+			http_status(http, HTTP_NOTACCEPTABLE);
 			return 0;
 		}
-		p = strchr(propname,'=');
-		object_get_value_by_name(obj,propname,buffer,sizeof(buffer));
-		if ( p!=nullptr )
-		{	// set the value
-			object_set_value_by_name(obj,propname,p+1);
+		p = strchr(propname, '=');
+		object_get_value_by_name(obj, propname, buffer, sizeof(buffer));
+		if (p != nullptr)
+		{ // set the value
+			object_set_value_by_name(obj, propname, p + 1);
 		}
-		return http_format(http,"%s",buffer);
+		return http_format(http, "%s", buffer);
 	}
-//	wunlock(&lock);
+	//	wunlock(&lock);
 }
 /** Process an incoming action request
 	@returns non-zero on success, 0 on failure (errno set)
  **/
-int http_action_request(HTTPCNX *http,char *action)
+int http_action_request(HTTPCNX *http, char *action)
 {
-	if (gui_post_action(action)==-1)
+	if (gui_post_action(action) == -1)
 	{
-		http_status(http,HTTP_ACCEPTED);
-		http_type(http,"text/plain");
-		http_format(http,"Goodbye");
+		http_status(http, HTTP_ACCEPTED);
+		http_type(http, "text/plain");
+		http_format(http, "Goodbye");
 		http_send(http);
 		http_close(http);
 		shutdown_now();
@@ -1867,41 +1959,41 @@ int http_action_request(HTTPCNX *http,char *action)
 }
 
 /** Process an incoming main loop control request
-    @returns non-zero on success, 0 on failure (errno set)
+	@returns non-zero on success, 0 on failure (errno set)
  **/
 int http_control_request(HTTPCNX *http, char *action)
 {
 	char buffer[1024];
 
-	if ( strcmp(action,"resume")==0 )
+	if (strcmp(action, "resume") == 0)
 	{
 		output_verbose("main loop resume");
 		exec_mls_resume(TS_NEVER);
 		return 1;
 	}
-	else if ( strcmp(action,"pause")==0 )
+	else if (strcmp(action, "pause") == 0)
 	{
 		output_verbose("main loop pause");
 		exec_mls_resume(global_clock);
 		return 1;
 	}
-	else if ( strcmp(action,"pause_wait")==0 )
+	else if (strcmp(action, "pause_wait") == 0)
 	{
 		output_verbose("main loop pause");
 		exec_mls_resume(global_clock);
 		output_verbose("waiting for pause");
-		while ( global_mainloopstate!=MLS_PAUSED )
-		/*	usleep(100000);*/
+		while (global_mainloopstate != MLS_PAUSED)
+			/*	usleep(100000);*/
 			// Portable sleep for 100,000 microseconds (100 milliseconds)
 			std::this_thread::sleep_for(std::chrono::microseconds(100000));
 		return 1;
 	}
-	else if ( sscanf(action,"pauseat=%[-0-9%:A-Za-z ]",buffer)==1 )
+	else if (sscanf(action, "pauseat=%[-0-9%:A-Za-z ]", buffer) == 1)
 	{
 		TIMESTAMP ts;
 		http_decode(buffer);
 		ts = convert_to_timestamp(buffer);
-		if ( ts!=TS_INVALID )
+		if (ts != TS_INVALID)
 		{
 			output_verbose("main loop pause at %s", buffer);
 			exec_mls_resume(ts);
@@ -1913,15 +2005,15 @@ int http_control_request(HTTPCNX *http, char *action)
 			return 0;
 		}
 	}
-	else if ( strcmp(action,"shutdown")==0 )
+	else if (strcmp(action, "shutdown") == 0)
 	{
 		output_verbose("server shutdown by client");
-		http_status(http,HTTP_OK);
+		http_status(http, HTTP_OK);
 		http_send(http);
 		http_close(http);
 		exit(XC_SUCCESS);
 	}
-	else if ( strcmp(action,"stop")==0 )
+	else if (strcmp(action, "stop") == 0)
 	{
 		output_verbose("main loop stopped");
 		global_stoptime = global_clock;
@@ -1930,11 +2022,11 @@ int http_control_request(HTTPCNX *http, char *action)
 }
 
 /** Process an incoming main loop control request
-    @returns non-zero on success, 0 on failure (errno set)
+	@returns non-zero on success, 0 on failure (errno set)
  **/
 int http_open_request(HTTPCNX *http, char *action)
 {
-	if ( loadall(action) )
+	if (loadall(action))
 		return 1;
 	else
 		return 0;
@@ -1945,12 +2037,12 @@ int http_open_request(HTTPCNX *http, char *action)
 int http_favicon(HTTPCNX *http)
 {
 	char fullpath[1024];
-	if ( find_file("favicon.ico",nullptr,R_OK,fullpath,sizeof(fullpath))==nullptr )
+	if (find_file("favicon.ico", nullptr, R_OK, fullpath, sizeof(fullpath)) == nullptr)
 	{
 		output_error("file 'favicon.ico' not found", fullpath);
 		return 0;
 	}
-	return http_copy(http,"icon",fullpath,false,0);
+	return http_copy(http, "icon", fullpath, false, 0);
 }
 
 /** Process an incoming request
@@ -1958,9 +2050,9 @@ int http_favicon(HTTPCNX *http)
  **/
 void *http_response(void *ptr)
 {
-	int sockfd = *reinterpret_cast<int*>(ptr);
-	delete reinterpret_cast<int*>(ptr);  // Free the allocated memory
-	SOCKET fd = sockfd;  // Safe reuse
+	int sockfd = *reinterpret_cast<int *>(ptr);
+	delete reinterpret_cast<int *>(ptr); // Free the allocated memory
+	SOCKET fd = sockfd;					 // Safe reuse
 
 	/*SOCKET fd = *static_cast<SOCKET*>(ptr);*/
 	HTTPCNX *http = http_create(fd);
@@ -1971,63 +2063,77 @@ void *http_response(void *ptr)
 	int keep_alive = 0;
 	char *connection = nullptr;
 	char *accept = nullptr;
-	typedef enum {INTEGER,STRING} response_type;
-	struct s_map {
+	typedef enum
+	{
+		INTEGER,
+		STRING
+	} response_type;
+	struct s_map
+	{
 		const char *name;
 		response_type type;
 		void *value;
 		size_t sz;
 	} map[] = {
-		{"Content-Length", INTEGER, (void*)&content_length, 0},
-		{"Host", STRING, (void*)&host, 0},
-		{"Keep-Alive", INTEGER, (void*)&keep_alive, 0},
-		{"Connection", STRING, (void*)&connection, 0},
-		{"Accept", STRING, (void*)&accept, 0},
+		{"Content-Length", INTEGER, (void *)&content_length, 0},
+		{"Host", STRING, (void *)&host, 0},
+		{"Keep-Alive", INTEGER, (void *)&keep_alive, 0},
+		{"Connection", STRING, (void *)&connection, 0},
+		{"Accept", STRING, (void *)&accept, 0},
 	};
 
-	while ( (int)(len=recv_data(fd,http->query,sizeof(http->query)))>0 )
+	while ((int)(len = recv_data(fd, http->query, sizeof(http->query))) > 0)
 	{
 		/* first term is always the request */
 		char *request = http->query;
 		char method[32];
 		char uri[1024];
 		char version[32];
-		char *p = strchr(http->query,'\r');
+		char *p = strchr(http->query, '\r');
 		int v;
-		
+
 		/* initialize the response */
 		http_reset(http);
 
 		/* read the request string */
-		if (sscanf(request,"%s %s %s",method,uri,version)!=3)
+		if (sscanf(request, "%s %s %s", method, uri, version) != 3)
 		{
-			http_status(http,HTTP_BADREQUEST);
+			http_status(http, HTTP_BADREQUEST);
 			output_error("request [%s] is bad", request);
 			http_send(http);
 			break;
 		}
 
 		/* read the rest of the header */
-		while (p!=nullptr && (p=strchr(p,'\r'))!=nullptr)
+		while (p != nullptr && (p = strchr(p, '\r')) != nullptr)
 		{
- 			*p = '\0';
-			p+=2;
-			for ( v=0 ; v<sizeof(map)/sizeof(map[0]) ; v++ )
+			*p = '\0';
+			p += 2;
+			for (v = 0; v < sizeof(map) / sizeof(map[0]); v++)
 			{
-				if (map[v].sz==0) map[v].sz = strlen(map[v].name);
-				if (strnicmp_portable(map[v].name,p,map[v].sz)==0 && strncmp(p+map[v].sz,": ",2)==0)
+				if (map[v].sz == 0)
+					map[v].sz = strlen(map[v].name);
+				if (strnicmp_portable(map[v].name, p, map[v].sz) == 0 && strncmp(p + map[v].sz, ": ", 2) == 0)
 				{
-					if (map[v].type==INTEGER) { *(int*)(map[v].value) = atoi(p+map[v].sz+2); break; }
-					else if (map[v].type==STRING) { *(char**)map[v].value = p+map[v].sz+2; break; }
+					if (map[v].type == INTEGER)
+					{
+						*(int *)(map[v].value) = atoi(p + map[v].sz + 2);
+						break;
+					}
+					else if (map[v].type == STRING)
+					{
+						*(char **)map[v].value = p + map[v].sz + 2;
+						break;
+					}
 				}
 			}
 		}
-		IN_MYCONTEXT output_verbose("%s (host='%s', len=%d, keep-alive=%d)",http->query,host?host:"???",content_length, keep_alive);
+		IN_MYCONTEXT output_verbose("%s (host='%s', len=%d, keep-alive=%d)", http->query, host ? host : "???", content_length, keep_alive);
 
 		/* reject anything but a GET */
-		if (stricmp_portable(method,"GET")!=0)
+		if (stricmp_portable(method, "GET") != 0)
 		{
-			http_status(http,HTTP_METHODNOTALLOWED);
+			http_status(http, HTTP_METHODNOTALLOWED);
 			/* technically, we should add an Allow entry to the response header */
 			output_error("request [%s %s %s]: '%s' is not an allowed method", method, uri, version, method);
 			http_send(http);
@@ -2035,58 +2141,60 @@ void *http_response(void *ptr)
 		}
 
 		/* handle request */
-		if ( strcmp(uri,"/favicon.ico")==0 )
+		if (strcmp(uri, "/favicon.ico") == 0)
 		{
-			if ( http_favicon(http) )
-				http_status(http,HTTP_OK);
+			if (http_favicon(http))
+				http_status(http, HTTP_OK);
 			else
-				http_status(http,HTTP_NOTFOUND);
+				http_status(http, HTTP_NOTFOUND);
 			http_send(http);
 		}
-		else {
-			static struct s_path_map {
+		else
+		{
+			static struct s_path_map
+			{
 				const char *path;
-				int (*request)(HTTPCNX*,char*);
+				int (*request)(HTTPCNX *, char *);
 				const char *success;
 				const char *failure;
 			} map[] = {
 				/* this is the map of recognize request types */
-				{"/control/",	http_control_request,	HTTP_ACCEPTED, HTTP_NOTFOUND},
-				{"/open/",		http_open_request,		HTTP_ACCEPTED, HTTP_NOTFOUND},
-				{"/raw/",		http_raw_request,		HTTP_OK, HTTP_NOTFOUND},
-				{"/xml/",		http_xml_request,		HTTP_OK, HTTP_NOTFOUND},
-				{"/gui/",		http_gui_request,		HTTP_OK, HTTP_NOTFOUND},
-				{"/output/",	http_output_request,	HTTP_OK, HTTP_NOTFOUND},
-				{"/action/",	http_action_request,	HTTP_ACCEPTED,HTTP_NOTFOUND},
-				{"/rt/",		http_get_rt,			HTTP_OK, HTTP_NOTFOUND},
-				{"/rb/",		http_get_rb,			HTTP_OK, HTTP_NOTFOUND},
-				{"/perl/",		http_run_perl,			HTTP_OK, HTTP_NOTFOUND},
-				{"/gnuplot/",	http_run_gnuplot,		HTTP_OK, HTTP_NOTFOUND},
-				{"/java/",		http_run_java,			HTTP_OK, HTTP_NOTFOUND},
-				{"/python/",	http_run_python,		HTTP_OK, HTTP_NOTFOUND},
-				{"/r/",			http_run_r,				HTTP_OK, HTTP_NOTFOUND},
-				{"/scilab/",	http_run_scilab,		HTTP_OK, HTTP_NOTFOUND},
-				{"/octave/",	http_run_octave,		HTTP_OK, HTTP_NOTFOUND},
-				{"/kml/", 		http_kml_request,		HTTP_OK, HTTP_NOTFOUND},
-				{"/json/",		http_json_request,		HTTP_OK, HTTP_NOTFOUND},
-				{"/find/",	http_find_request,	HTTP_OK, HTTP_NOTFOUND},
-				{"/modify/",	http_modify_request,	HTTP_OK, HTTP_NOTFOUND},
-				{"/read/",	http_read_request,	HTTP_OK, HTTP_NOTFOUND},
+				{"/control/", http_control_request, HTTP_ACCEPTED, HTTP_NOTFOUND},
+				{"/open/", http_open_request, HTTP_ACCEPTED, HTTP_NOTFOUND},
+				{"/raw/", http_raw_request, HTTP_OK, HTTP_NOTFOUND},
+				{"/xml/", http_xml_request, HTTP_OK, HTTP_NOTFOUND},
+				{"/gui/", http_gui_request, HTTP_OK, HTTP_NOTFOUND},
+				{"/output/", http_output_request, HTTP_OK, HTTP_NOTFOUND},
+				{"/action/", http_action_request, HTTP_ACCEPTED, HTTP_NOTFOUND},
+				{"/rt/", http_get_rt, HTTP_OK, HTTP_NOTFOUND},
+				{"/rb/", http_get_rb, HTTP_OK, HTTP_NOTFOUND},
+				{"/perl/", http_run_perl, HTTP_OK, HTTP_NOTFOUND},
+				{"/gnuplot/", http_run_gnuplot, HTTP_OK, HTTP_NOTFOUND},
+				{"/java/", http_run_java, HTTP_OK, HTTP_NOTFOUND},
+				{"/python/", http_run_python, HTTP_OK, HTTP_NOTFOUND},
+				{"/r/", http_run_r, HTTP_OK, HTTP_NOTFOUND},
+				{"/scilab/", http_run_scilab, HTTP_OK, HTTP_NOTFOUND},
+				{"/octave/", http_run_octave, HTTP_OK, HTTP_NOTFOUND},
+				{"/kml/", http_kml_request, HTTP_OK, HTTP_NOTFOUND},
+				{"/json/", http_json_request, HTTP_OK, HTTP_NOTFOUND},
+				{"/find/", http_find_request, HTTP_OK, HTTP_NOTFOUND},
+				{"/modify/", http_modify_request, HTTP_OK, HTTP_NOTFOUND},
+				{"/read/", http_read_request, HTTP_OK, HTTP_NOTFOUND},
 			};
 			int n;
-			for ( n=0 ; n<sizeof(map)/sizeof(map[0]) ; n++ )
+			for (n = 0; n < sizeof(map) / sizeof(map[0]); n++)
 			{
 				size_t len = strlen(map[n].path);
-				if (strncmp(uri,map[n].path,len)==0)
+				if (strncmp(uri, map[n].path, len) == 0)
 				{
-					if ( map[n].request(http,uri+len) )
-						http_status(http,map[n].success);
+					if (map[n].request(http, uri + len))
+						http_status(http, map[n].success);
 					else
-						http_status(http,map[n].failure);
+						http_status(http, map[n].failure);
 					http_send(http);
 
 					/* keep-alive not desired*/
-					if (connection && stricmp_portable(connection,"close")==0)
+					if (connection && stricmp_portable(connection, "close") == 0)
 						break;
 					else
 						continue;
@@ -2098,8 +2206,6 @@ void *http_response(void *ptr)
 	}
 	http_close(http);
 	free(http);
-	IN_MYCONTEXT output_verbose("socket %d closed",http->s);
+	IN_MYCONTEXT output_verbose("socket %d closed", http->s);
 	return 0;
 }
-
-

@@ -76,183 +76,183 @@ market/CMakeFiles/market.dir/auction.cpp.o: market/CMakeFiles/market.dir/flags.m
 market/CMakeFiles/market.dir/auction.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/auction.cpp
 market/CMakeFiles/market.dir/auction.cpp.o: market/CMakeFiles/market.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object market/CMakeFiles/market.dir/auction.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/auction.cpp.o -MF CMakeFiles/market.dir/auction.cpp.o.d -o CMakeFiles/market.dir/auction.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/auction.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/auction.cpp.o -MF CMakeFiles/market.dir/auction.cpp.o.d -o CMakeFiles/market.dir/auction.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/auction.cpp
 
 market/CMakeFiles/market.dir/auction.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/market.dir/auction.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/auction.cpp > CMakeFiles/market.dir/auction.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/auction.cpp > CMakeFiles/market.dir/auction.cpp.i
 
 market/CMakeFiles/market.dir/auction.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/market.dir/auction.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/auction.cpp -o CMakeFiles/market.dir/auction.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/auction.cpp -o CMakeFiles/market.dir/auction.cpp.s
 
 market/CMakeFiles/market.dir/bid.cpp.o: market/CMakeFiles/market.dir/flags.make
 market/CMakeFiles/market.dir/bid.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/bid.cpp
 market/CMakeFiles/market.dir/bid.cpp.o: market/CMakeFiles/market.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object market/CMakeFiles/market.dir/bid.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/bid.cpp.o -MF CMakeFiles/market.dir/bid.cpp.o.d -o CMakeFiles/market.dir/bid.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/bid.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/bid.cpp.o -MF CMakeFiles/market.dir/bid.cpp.o.d -o CMakeFiles/market.dir/bid.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/bid.cpp
 
 market/CMakeFiles/market.dir/bid.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/market.dir/bid.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/bid.cpp > CMakeFiles/market.dir/bid.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/bid.cpp > CMakeFiles/market.dir/bid.cpp.i
 
 market/CMakeFiles/market.dir/bid.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/market.dir/bid.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/bid.cpp -o CMakeFiles/market.dir/bid.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/bid.cpp -o CMakeFiles/market.dir/bid.cpp.s
 
 market/CMakeFiles/market.dir/collect.cpp.o: market/CMakeFiles/market.dir/flags.make
 market/CMakeFiles/market.dir/collect.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/collect.cpp
 market/CMakeFiles/market.dir/collect.cpp.o: market/CMakeFiles/market.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object market/CMakeFiles/market.dir/collect.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/collect.cpp.o -MF CMakeFiles/market.dir/collect.cpp.o.d -o CMakeFiles/market.dir/collect.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/collect.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/collect.cpp.o -MF CMakeFiles/market.dir/collect.cpp.o.d -o CMakeFiles/market.dir/collect.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/collect.cpp
 
 market/CMakeFiles/market.dir/collect.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/market.dir/collect.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/collect.cpp > CMakeFiles/market.dir/collect.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/collect.cpp > CMakeFiles/market.dir/collect.cpp.i
 
 market/CMakeFiles/market.dir/collect.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/market.dir/collect.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/collect.cpp -o CMakeFiles/market.dir/collect.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/collect.cpp -o CMakeFiles/market.dir/collect.cpp.s
 
 market/CMakeFiles/market.dir/controller.cpp.o: market/CMakeFiles/market.dir/flags.make
 market/CMakeFiles/market.dir/controller.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/controller.cpp
 market/CMakeFiles/market.dir/controller.cpp.o: market/CMakeFiles/market.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object market/CMakeFiles/market.dir/controller.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/controller.cpp.o -MF CMakeFiles/market.dir/controller.cpp.o.d -o CMakeFiles/market.dir/controller.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/controller.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/controller.cpp.o -MF CMakeFiles/market.dir/controller.cpp.o.d -o CMakeFiles/market.dir/controller.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/controller.cpp
 
 market/CMakeFiles/market.dir/controller.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/market.dir/controller.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/controller.cpp > CMakeFiles/market.dir/controller.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/controller.cpp > CMakeFiles/market.dir/controller.cpp.i
 
 market/CMakeFiles/market.dir/controller.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/market.dir/controller.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/controller.cpp -o CMakeFiles/market.dir/controller.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/controller.cpp -o CMakeFiles/market.dir/controller.cpp.s
 
 market/CMakeFiles/market.dir/curve.cpp.o: market/CMakeFiles/market.dir/flags.make
 market/CMakeFiles/market.dir/curve.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/curve.cpp
 market/CMakeFiles/market.dir/curve.cpp.o: market/CMakeFiles/market.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object market/CMakeFiles/market.dir/curve.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/curve.cpp.o -MF CMakeFiles/market.dir/curve.cpp.o.d -o CMakeFiles/market.dir/curve.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/curve.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/curve.cpp.o -MF CMakeFiles/market.dir/curve.cpp.o.d -o CMakeFiles/market.dir/curve.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/curve.cpp
 
 market/CMakeFiles/market.dir/curve.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/market.dir/curve.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/curve.cpp > CMakeFiles/market.dir/curve.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/curve.cpp > CMakeFiles/market.dir/curve.cpp.i
 
 market/CMakeFiles/market.dir/curve.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/market.dir/curve.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/curve.cpp -o CMakeFiles/market.dir/curve.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/curve.cpp -o CMakeFiles/market.dir/curve.cpp.s
 
 market/CMakeFiles/market.dir/double_controller.cpp.o: market/CMakeFiles/market.dir/flags.make
 market/CMakeFiles/market.dir/double_controller.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/double_controller.cpp
 market/CMakeFiles/market.dir/double_controller.cpp.o: market/CMakeFiles/market.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object market/CMakeFiles/market.dir/double_controller.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/double_controller.cpp.o -MF CMakeFiles/market.dir/double_controller.cpp.o.d -o CMakeFiles/market.dir/double_controller.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/double_controller.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/double_controller.cpp.o -MF CMakeFiles/market.dir/double_controller.cpp.o.d -o CMakeFiles/market.dir/double_controller.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/double_controller.cpp
 
 market/CMakeFiles/market.dir/double_controller.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/market.dir/double_controller.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/double_controller.cpp > CMakeFiles/market.dir/double_controller.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/double_controller.cpp > CMakeFiles/market.dir/double_controller.cpp.i
 
 market/CMakeFiles/market.dir/double_controller.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/market.dir/double_controller.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/double_controller.cpp -o CMakeFiles/market.dir/double_controller.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/double_controller.cpp -o CMakeFiles/market.dir/double_controller.cpp.s
 
 market/CMakeFiles/market.dir/generator_controller.cpp.o: market/CMakeFiles/market.dir/flags.make
 market/CMakeFiles/market.dir/generator_controller.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/generator_controller.cpp
 market/CMakeFiles/market.dir/generator_controller.cpp.o: market/CMakeFiles/market.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object market/CMakeFiles/market.dir/generator_controller.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/generator_controller.cpp.o -MF CMakeFiles/market.dir/generator_controller.cpp.o.d -o CMakeFiles/market.dir/generator_controller.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/generator_controller.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/generator_controller.cpp.o -MF CMakeFiles/market.dir/generator_controller.cpp.o.d -o CMakeFiles/market.dir/generator_controller.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/generator_controller.cpp
 
 market/CMakeFiles/market.dir/generator_controller.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/market.dir/generator_controller.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/generator_controller.cpp > CMakeFiles/market.dir/generator_controller.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/generator_controller.cpp > CMakeFiles/market.dir/generator_controller.cpp.i
 
 market/CMakeFiles/market.dir/generator_controller.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/market.dir/generator_controller.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/generator_controller.cpp -o CMakeFiles/market.dir/generator_controller.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/generator_controller.cpp -o CMakeFiles/market.dir/generator_controller.cpp.s
 
 market/CMakeFiles/market.dir/init.cpp.o: market/CMakeFiles/market.dir/flags.make
 market/CMakeFiles/market.dir/init.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/init.cpp
 market/CMakeFiles/market.dir/init.cpp.o: market/CMakeFiles/market.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object market/CMakeFiles/market.dir/init.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/init.cpp.o -MF CMakeFiles/market.dir/init.cpp.o.d -o CMakeFiles/market.dir/init.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/init.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/init.cpp.o -MF CMakeFiles/market.dir/init.cpp.o.d -o CMakeFiles/market.dir/init.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/init.cpp
 
 market/CMakeFiles/market.dir/init.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/market.dir/init.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/init.cpp > CMakeFiles/market.dir/init.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/init.cpp > CMakeFiles/market.dir/init.cpp.i
 
 market/CMakeFiles/market.dir/init.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/market.dir/init.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/init.cpp -o CMakeFiles/market.dir/init.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/init.cpp -o CMakeFiles/market.dir/init.cpp.s
 
 market/CMakeFiles/market.dir/main.cpp.o: market/CMakeFiles/market.dir/flags.make
 market/CMakeFiles/market.dir/main.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/main.cpp
 market/CMakeFiles/market.dir/main.cpp.o: market/CMakeFiles/market.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object market/CMakeFiles/market.dir/main.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/main.cpp.o -MF CMakeFiles/market.dir/main.cpp.o.d -o CMakeFiles/market.dir/main.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/main.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/main.cpp.o -MF CMakeFiles/market.dir/main.cpp.o.d -o CMakeFiles/market.dir/main.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/main.cpp
 
 market/CMakeFiles/market.dir/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/market.dir/main.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/main.cpp > CMakeFiles/market.dir/main.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/main.cpp > CMakeFiles/market.dir/main.cpp.i
 
 market/CMakeFiles/market.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/market.dir/main.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/main.cpp -o CMakeFiles/market.dir/main.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/main.cpp -o CMakeFiles/market.dir/main.cpp.s
 
 market/CMakeFiles/market.dir/passive_controller.cpp.o: market/CMakeFiles/market.dir/flags.make
 market/CMakeFiles/market.dir/passive_controller.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/passive_controller.cpp
 market/CMakeFiles/market.dir/passive_controller.cpp.o: market/CMakeFiles/market.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object market/CMakeFiles/market.dir/passive_controller.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/passive_controller.cpp.o -MF CMakeFiles/market.dir/passive_controller.cpp.o.d -o CMakeFiles/market.dir/passive_controller.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/passive_controller.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/passive_controller.cpp.o -MF CMakeFiles/market.dir/passive_controller.cpp.o.d -o CMakeFiles/market.dir/passive_controller.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/passive_controller.cpp
 
 market/CMakeFiles/market.dir/passive_controller.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/market.dir/passive_controller.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/passive_controller.cpp > CMakeFiles/market.dir/passive_controller.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/passive_controller.cpp > CMakeFiles/market.dir/passive_controller.cpp.i
 
 market/CMakeFiles/market.dir/passive_controller.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/market.dir/passive_controller.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/passive_controller.cpp -o CMakeFiles/market.dir/passive_controller.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/passive_controller.cpp -o CMakeFiles/market.dir/passive_controller.cpp.s
 
 market/CMakeFiles/market.dir/stub_bidder.cpp.o: market/CMakeFiles/market.dir/flags.make
 market/CMakeFiles/market.dir/stub_bidder.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/stub_bidder.cpp
 market/CMakeFiles/market.dir/stub_bidder.cpp.o: market/CMakeFiles/market.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object market/CMakeFiles/market.dir/stub_bidder.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/stub_bidder.cpp.o -MF CMakeFiles/market.dir/stub_bidder.cpp.o.d -o CMakeFiles/market.dir/stub_bidder.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/stub_bidder.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/stub_bidder.cpp.o -MF CMakeFiles/market.dir/stub_bidder.cpp.o.d -o CMakeFiles/market.dir/stub_bidder.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/stub_bidder.cpp
 
 market/CMakeFiles/market.dir/stub_bidder.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/market.dir/stub_bidder.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/stub_bidder.cpp > CMakeFiles/market.dir/stub_bidder.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/stub_bidder.cpp > CMakeFiles/market.dir/stub_bidder.cpp.i
 
 market/CMakeFiles/market.dir/stub_bidder.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/market.dir/stub_bidder.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/stub_bidder.cpp -o CMakeFiles/market.dir/stub_bidder.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/stub_bidder.cpp -o CMakeFiles/market.dir/stub_bidder.cpp.s
 
 market/CMakeFiles/market.dir/stubauction.cpp.o: market/CMakeFiles/market.dir/flags.make
 market/CMakeFiles/market.dir/stubauction.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/stubauction.cpp
 market/CMakeFiles/market.dir/stubauction.cpp.o: market/CMakeFiles/market.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object market/CMakeFiles/market.dir/stubauction.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/stubauction.cpp.o -MF CMakeFiles/market.dir/stubauction.cpp.o.d -o CMakeFiles/market.dir/stubauction.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/stubauction.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/stubauction.cpp.o -MF CMakeFiles/market.dir/stubauction.cpp.o.d -o CMakeFiles/market.dir/stubauction.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/stubauction.cpp
 
 market/CMakeFiles/market.dir/stubauction.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/market.dir/stubauction.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/stubauction.cpp > CMakeFiles/market.dir/stubauction.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/stubauction.cpp > CMakeFiles/market.dir/stubauction.cpp.i
 
 market/CMakeFiles/market.dir/stubauction.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/market.dir/stubauction.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/stubauction.cpp -o CMakeFiles/market.dir/stubauction.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/stubauction.cpp -o CMakeFiles/market.dir/stubauction.cpp.s
 
 market/CMakeFiles/market.dir/supervisory_control.cpp.o: market/CMakeFiles/market.dir/flags.make
 market/CMakeFiles/market.dir/supervisory_control.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/supervisory_control.cpp
 market/CMakeFiles/market.dir/supervisory_control.cpp.o: market/CMakeFiles/market.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object market/CMakeFiles/market.dir/supervisory_control.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/supervisory_control.cpp.o -MF CMakeFiles/market.dir/supervisory_control.cpp.o.d -o CMakeFiles/market.dir/supervisory_control.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/supervisory_control.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT market/CMakeFiles/market.dir/supervisory_control.cpp.o -MF CMakeFiles/market.dir/supervisory_control.cpp.o.d -o CMakeFiles/market.dir/supervisory_control.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/supervisory_control.cpp
 
 market/CMakeFiles/market.dir/supervisory_control.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/market.dir/supervisory_control.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/supervisory_control.cpp > CMakeFiles/market.dir/supervisory_control.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/supervisory_control.cpp > CMakeFiles/market.dir/supervisory_control.cpp.i
 
 market/CMakeFiles/market.dir/supervisory_control.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/market.dir/supervisory_control.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/supervisory_control.cpp -o CMakeFiles/market.dir/supervisory_control.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/market && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/market/supervisory_control.cpp -o CMakeFiles/market.dir/supervisory_control.cpp.s
 
 # Object files for target market
 market_OBJECTS = \
