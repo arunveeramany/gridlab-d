@@ -47,7 +47,7 @@ CLASS *recorder_class = nullptr;
 static OBJECT *last_recorder = nullptr;
 
 // Identify trailing .real / .imag (optionally extend to .mag / .ang later)
-enum COMPLEX_PART
+enum class COMPLEX_PART
 {
 	CP_NONE,
 	CP_REAL,
