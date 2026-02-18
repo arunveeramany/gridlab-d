@@ -31,7 +31,7 @@ EXPORT int gld_major = 5;
 EXPORT int gld_minor = 3;
 
 EXPORT int init_climate_object(OBJECT *obj);
-extern "C" CALLBACKS *callback; // = nullptr;
+//extern "C" CALLBACKS *callback; // = nullptr;
 
 EXPORT int create_climate(OBJECT **obj, OBJECT *parent)
 {

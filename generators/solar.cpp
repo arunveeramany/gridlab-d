@@ -19,7 +19,7 @@
 #include <climits>
 #include <iostream>
 
-extern "C" CALLBACKS *callback;
+//extern "C" CALLBACKS *callback;
 
 using namespace std;
 

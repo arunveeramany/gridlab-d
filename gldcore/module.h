@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <float.h>
 
+#include "globals.h"   // DELTAMODEFLAGS, STATUS, GLOBALVAR, etc.
 #include "object.h"
 #include "gui.h"
 #include "transform.h"

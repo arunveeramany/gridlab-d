@@ -120,7 +120,7 @@
 #include "house_e.h"
 #include "gld_complex.h"
 
-extern "C" CALLBACKS *callback;
+//extern "C" CALLBACKS *callback;
 
 #ifndef WIN32
 char *_strlwr(char *s)

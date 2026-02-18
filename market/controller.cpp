@@ -12,7 +12,7 @@
 CLASS* controller::oclass = nullptr;
 controller* controller::defaults = nullptr;
 
-extern "C" CALLBACKS *callback;
+//extern "C" CALLBACKS *callback;
 
 
 controller::controller(MODULE *module){

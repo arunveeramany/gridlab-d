@@ -75,7 +75,7 @@ void RUN_WH_FC (
 //////////////////////////////////////////////////////////////////////////
 CLASS* waterheater::oclass = nullptr;
 CLASS* waterheater::pclass = nullptr;
-extern "C" CALLBACKS *callback;
+//extern "C" CALLBACKS *callback;
 
 
 /**  Register the class and publish water heater object properties

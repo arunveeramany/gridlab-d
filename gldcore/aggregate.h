@@ -38,6 +38,19 @@ typedef struct s_aggregate {
 //#endif
 
 std::shared_ptr<struct s_aggregate> aggregate_mkgroup(char* aggregator, char* group_expression);
+
+
+// C API (C linkage) – return an opaque C pointer (valid in C and C++)
+//#ifdef __cplusplus
+//extern "C" {
+//#endif
+//	EXPORT AGGREGATION* aggregate_mkgroup(const char* spec, const char* group);
+//#ifdef __cplusplus
+//}
+//#endif
+
+
+
 double aggregate_value(std::shared_ptr<struct s_aggregate> aggregate);
 
 //#ifdef __cplusplus

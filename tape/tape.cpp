@@ -140,7 +140,7 @@ char *strtok_t(char *str, const char *delim, char **nextp)
 EXPORT int gld_major = 5;
 EXPORT int gld_minor = 3;
 
-extern CALLBACKS *callback; // = nullptr;
+//extern CALLBACKS *callback; // = nullptr;
 
 static TAPEFUNCS *funcs = nullptr;
 static char1024 tape_gnuplot_path;

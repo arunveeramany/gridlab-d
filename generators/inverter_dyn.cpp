@@ -13,7 +13,7 @@
 
 CLASS *inverter_dyn::oclass = nullptr;
 inverter_dyn *inverter_dyn::defaults = nullptr;
-extern "C" CALLBACKS *callback;
+//extern "C" CALLBACKS *callback;
 
 
 static PASSCONFIG clockpass = PC_BOTTOMUP;

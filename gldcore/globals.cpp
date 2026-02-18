@@ -36,7 +36,7 @@ extern "C"
 #if defined(_WIN32)
 	__declspec(dllexport)
 #endif
-	CALLBACKS *callback = nullptr;
+	GLDAPI_API CALLBACKS *callback = nullptr;
 #ifdef __cplusplus
 }
 #endif
