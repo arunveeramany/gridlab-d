@@ -39,7 +39,7 @@ EXPORT int64 meter_reset(OBJECT *obj)
 // class management data
 CLASS* meter::oclass = nullptr;
 CLASS* meter::pclass = nullptr;
-extern "C" CALLBACKS *callback;
+//extern "C" CALLBACKS *callback;
 
 
 // the constructor registers the class and properties and sets the defaults

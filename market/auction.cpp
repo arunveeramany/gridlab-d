@@ -23,7 +23,7 @@ TIMESTAMP auction::longest_statistic = 0;
 int auction::statistic_check = -1;
 uint32 auction::statistic_count = 0;
 
-extern "C" CALLBACKS *callback;
+//extern "C" CALLBACKS *callback;
 
 static PASSCONFIG passconfig = PC_PRETOPDOWN | PC_POSTTOPDOWN;
 static PASSCONFIG clockpass = PC_POSTTOPDOWN;

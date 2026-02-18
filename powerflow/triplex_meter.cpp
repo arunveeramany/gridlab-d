@@ -30,7 +30,7 @@
 // EXPORT int gld_major = 5;
 // EXPORT int gld_minor = 3;
 
-extern "C" CALLBACKS *callback;
+//extern "C" CALLBACKS *callback;
 
 
 // Similar to init_climate_object

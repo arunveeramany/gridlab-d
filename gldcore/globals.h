@@ -1,3 +1,4 @@
+
 /** $Id: globals.h 4738 2014-07-03 00:55:39Z dchassin $
 	Copyright (C) 2008 Battelle Memorial Institute
 	@file globals.h
@@ -15,13 +16,48 @@
 #include "validate.h"
 #include "sanitize.h"
 
+//#ifdef _MAIN_C
+//#define GLOBAL 
+//#define INIT(A) =A
+//#else
+//#define GLOBAL extern
+//#define INIT(A)
+//#endif
+
+
+
 #ifdef _MAIN_C
-#define GLOBAL 
-#define INIT(A) =A
+    // When compiling the defining TU (globals.cpp), export the data symbols
+    #define GLOBAL GLDAPI_API
+    #define INIT(A) = A
 #else
-#define GLOBAL extern
-#define INIT(A)
+    // For all consumers, import the data symbols
+    #define GLOBAL GLDAPI_API extern
+    #define INIT(A)
 #endif
+
+
+// Define GLDAPI_API if not already defined
+#ifndef GLDAPI_API
+    #ifdef _WIN32
+        #ifdef GLDAPI_EXPORTS
+            #define GLDAPI_API __declspec(dllexport)
+        #else
+            #define GLDAPI_API __declspec(dllimport)
+        #endif
+    #else
+        #define GLDAPI_API
+    #endif
+#endif
+
+
+#include <cctype>
+#include <cstring>
+#include <cstdint>
+typedef uint32_t uint32;
+
+//typedef unsigned int uint32; /* unsigned 32-bit integers */
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,8 +75,6 @@ extern "C" {
 #endif
 
 
-#include <cctype>
-#include <cstring>
 
 #ifdef _WIN32
 	// Windows-specific: Use strtok_s (secure version of strtok)

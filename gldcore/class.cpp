@@ -42,6 +42,7 @@
 #define DLSYM(H, S) dlsym(H, S)
 #endif
 static unsigned int class_count = 0;
+typedef unsigned int uint32; /* unsigned 32-bit integers */
 
 /* defined in property.c */
 extern struct s_property_specs property_type[_PT_LAST];

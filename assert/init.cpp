@@ -23,7 +23,7 @@ class int_assert;
 class double_assert;
 
 // 1. DEFINE the global callback pointer here and only here.
-extern CALLBACKS *callback; // = nullptr;
+//extern CALLBACKS *callback; // = nullptr;
 
 extern "C"
 {

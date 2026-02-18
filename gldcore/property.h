@@ -56,8 +56,13 @@ class charbuf;
 
 class emh {  //eigen matrix helper
 public:
+    //static bool is_element_valid(Eigen::MatrixXcd& mat, size_t r, size_t c) {
+    //    return r < mat.rows() && c < mat.cols();
+    //}
+
     static bool is_element_valid(Eigen::MatrixXcd& mat, size_t r, size_t c) {
-        return r < mat.rows() && c < mat.cols();
+         return static_cast<Eigen::Index>(r) < mat.rows()
+           && static_cast<Eigen::Index>(c) < mat.cols();
     }
 
     static bool is_element_nan(const Eigen::MatrixXcd& matrix, int n, int m) {

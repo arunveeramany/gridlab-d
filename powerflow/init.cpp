@@ -55,7 +55,7 @@ EXPORT int gld_major = 5;
 EXPORT int gld_minor = 3;
 
 // 1. DEFINE the global callback pointer here and only here.
-extern CALLBACKS *callback; // = nullptr;
+//extern CALLBACKS *callback; // = nullptr;
 
 template <typename T>
 void register_object(MODULE *module)

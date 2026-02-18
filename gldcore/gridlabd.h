@@ -197,7 +197,7 @@ constexpr OBJECT *object_header(T *data);
 extern "C"
 {
 #endif
-	extern CALLBACKS *callback;
+	GLDAPI_API extern CALLBACKS *callback;
 #ifdef __cplusplus
 }
 #endif

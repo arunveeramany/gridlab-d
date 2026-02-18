@@ -43,7 +43,7 @@
 CLASS *complex_assert::oclass = nullptr;
 // static complex_assert defaults_storage; // POD storage for defaults
 // complex_assert *complex_assert::defaults = &defaults_storage;
-extern "C" CALLBACKS *callback;
+//extern "C" CALLBACKS *callback;
 
 // Global (or static) map: did any switch change at this timestep?
 static std::unordered_map<TIMESTAMP, bool> ts_had_switch_change;
@@ -927,7 +927,7 @@ TIMESTAMP complex_assert::resched_safe(const char *reason)
     }
 
     // Continuous mode (ONCE_FALSE): strictly future monotonic scheduling
-    TIMESTAMP next = std::max(last_to + 1, now + 1);
+    TIMESTAMP next = std::max<TIMESTAMP>(last_to + 1, now + 1);
     last_to = next;
 
     char buf[64] = {0};

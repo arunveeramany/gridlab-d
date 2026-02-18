@@ -20,7 +20,7 @@ EXPORT_COMMIT(int_assert);
 
 CLASS *int_assert::oclass = nullptr;
 int_assert *int_assert::defaults = nullptr;
-extern "C" CALLBACKS *callback;
+//extern "C" CALLBACKS *callback;
 
 int_assert::int_assert(MODULE *module)
 {

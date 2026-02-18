@@ -10,6 +10,12 @@
 #ifndef _GUI_H
 #define _GUI_H
 
+// Forward declare pointer types to avoid heavyweight includes
+struct s_object_list;      typedef struct s_object_list OBJECT;
+struct s_property_map;     typedef struct s_property_map PROPERTY;
+struct s_unit;               typedef struct s_unit UNIT;
+
+
 typedef enum {
 	GUI_UNKNOWN=0,
 

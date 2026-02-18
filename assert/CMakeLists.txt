@@ -15,7 +15,15 @@ add_library(${GLD_MODULE_NAME}
 
 target_compile_options(${GLD_MODULE_NAME} PRIVATE ${GLD_COMPILE_OPTIONS})
 set_target_properties(${GLD_MODULE_NAME} PROPERTIES PREFIX "")
-target_include_directories(${GLD_MODULE_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/gldcore")
+
+#target_include_directories(${GLD_MODULE_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/gldcore")
+
+target_include_directories(${GLD_MODULE_NAME} PRIVATE
+    "${CMAKE_SOURCE_DIR}/gldcore"
+    "${CMAKE_CURRENT_BINARY_DIR}/headers"
+    "${CMAKE_BINARY_DIR}/headers"
+)
+
 
 # Link to the core library (not the executable) + OS libs
 target_link_libraries(${GLD_MODULE_NAME} PRIVATE gldapi ${OS_SPECIFIC_LIBRARIES})

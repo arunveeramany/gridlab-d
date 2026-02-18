@@ -6,7 +6,7 @@
 CLASS *group_recorder::oclass = nullptr;
 CLASS *group_recorder::pclass = nullptr;
 group_recorder *group_recorder::defaults = nullptr;
-extern "C" CALLBACKS *callback;
+//extern "C" CALLBACKS *callback;
 
 
 void new_group_recorder(MODULE *mod)

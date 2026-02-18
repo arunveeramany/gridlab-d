@@ -35,7 +35,7 @@ extern "C" {
 #include "output.h"
 }
 
-extern "C" CALLBACKS *callback;
+//extern "C" CALLBACKS *callback;
 
 
 void print_matrix(gld::complex mat[3][3])
