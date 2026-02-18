@@ -53,8 +53,14 @@ static_assert(true, "gld_assert.h successfully included.");
 
 EXPORT CLASS *init(CALLBACKS *fntable, MODULE *mod, int argc, char *argv[])
 {
-	callback = fntable;
+	// callback = fntable;
 	// std::cerr << "Received callback table in init_enum_assert at address: " << (void*)callback << std::endl;
+
+	if (set_callback(fntable) == nullptr)
+	{
+		errno = EINVAL;
+		return nullptr;
+	}
 
 	if (!callback)
 	{

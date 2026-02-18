@@ -13,12 +13,11 @@
 #include "weather.h"
 #include "csv_reader.h"
 
-
-
+extern CALLBACKS *callback;
 
 EXPORT CLASS *init(CALLBACKS *fntable, MODULE *module, int argc, char *argv[])
 {
-	if (set_callback(fntable)==nullptr)
+	if (set_callback(fntable) == nullptr)
 	{
 		errno = EINVAL;
 		return nullptr;
@@ -28,11 +27,9 @@ EXPORT CLASS *init(CALLBACKS *fntable, MODULE *module, int argc, char *argv[])
 	new weather(module);
 	new csv_reader(module);
 
-
 	/* always return the first class registered */
 	return climate::oclass;
 }
-
 
 CDECL int do_kill()
 {
@@ -40,7 +37,8 @@ CDECL int do_kill()
 	return 0;
 }
 
-EXPORT int check(){
+EXPORT int check()
+{
 	/* if any climate objects have bad filenames, they'll fail on init() */
 	return 0;
 }

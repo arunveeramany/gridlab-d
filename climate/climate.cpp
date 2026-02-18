@@ -694,7 +694,13 @@ EXPORT CLASS *init(CALLBACKS *fntable, MODULE *mod, int argc, char *argv[])
 {
 
 	// Save the callback table pointer
-	callback = fntable;
+	// callback = fntable;
+
+	if (set_callback(fntable) == nullptr)
+	{
+		errno = EINVAL;
+		return nullptr;
+	}
 
 	// Validate the callback structure before storing it
 	if (!callback)

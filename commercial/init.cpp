@@ -11,20 +11,22 @@
 #include "office.h"
 #include "multizone.h"
 
+extern CALLBACKS *callback;
+
 EXPORT CLASS *init(CALLBACKS *fntable, MODULE *module, int argc, char *argv[])
 {
-	if (set_callback(fntable)==nullptr)
+	if (set_callback(fntable) == nullptr)
 	{
 		errno = EINVAL;
 		return nullptr;
 	}
 
-	gl_global_create("commercial::warn_control",PT_bool,&office::warn_control,nullptr);
-	gl_global_create("commercial::warn_low_temp",PT_double,&office::warn_low_temp,nullptr);
-	gl_global_create("commercial::warn_high_temp",PT_double,&office::warn_high_temp,nullptr);
+	gl_global_create("commercial::warn_control", PT_bool, &office::warn_control, nullptr);
+	gl_global_create("commercial::warn_low_temp", PT_double, &office::warn_low_temp, nullptr);
+	gl_global_create("commercial::warn_high_temp", PT_double, &office::warn_high_temp, nullptr);
 
 	new office(module);
-	new multizone(module); 
+	new multizone(module);
 
 	/* always return the first class registered */
 	return office::oclass;
@@ -36,6 +38,7 @@ CDECL int do_kill()
 	return 0;
 }
 
-EXPORT int check(){
+EXPORT int check()
+{
 	return 0;
 }
