@@ -24,6 +24,13 @@
 #include "find.h"
 #include <cstring>
 
+#ifdef max
+#undef max
+#endif
+#ifdef min
+#undef min
+#endif
+
 // EXPORT int gld_major = 5;
 // EXPORT int gld_minor = 3;
 

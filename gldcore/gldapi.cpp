@@ -42,6 +42,20 @@ namespace fs = std::filesystem;
 #include <limits.h>
 #endif
 
+#ifdef _WIN32
+#include <windows.h>
+static void pause_at_exit(void)
+{
+    // Only pause when debugging to mimic "pause" behavior safely
+    // Remove IsDebuggerPresent() if you want to always pause in Debug.
+    if (IsDebuggerPresent())
+    {
+        fputs("Press Enter to continue . . .", stdout);
+        (void)getchar();
+    }
+}
+#endif
+
 std::vector<std::string> split_path_x(const std::string &path, char sep)
 {
     std::vector<std::string> tokens;

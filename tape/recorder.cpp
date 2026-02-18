@@ -47,7 +47,7 @@ CLASS *recorder_class = nullptr;
 static OBJECT *last_recorder = nullptr;
 
 // Identify trailing .real / .imag (optionally extend to .mag / .ang later)
-enum class COMPLEX_PART
+enum COMPLEX_PART
 {
 	CP_NONE,
 	CP_REAL,
@@ -57,27 +57,27 @@ enum class COMPLEX_PART
 static COMPLEX_PART detect_complex_part(const char *name, char *base_out, size_t base_out_sz)
 {
 	if (!name)
-		return COMPLEX_PART::CP_NONE;
+		return CP_NONE;
 	// Copy full name and find final dot segment
 	strncpy(base_out, name, base_out_sz - 1);
 	base_out[base_out_sz - 1] = '\0';
 
 	char *lastdot = strrchr(base_out, '.');
 	if (!lastdot)
-		return COMPLEX_PART::CP_NONE;
+		return CP_NONE;
 
 	if (strcmp(lastdot + 1, "real") == 0)
 	{
 		*lastdot = '\0';
-		return COMPLEX_PART::CP_REAL;
+		return CP_REAL;
 	}
 	if (strcmp(lastdot + 1, "imag") == 0)
 	{
 		*lastdot = '\0';
-		return COMPLEX_PART::CP_IMAG;
+		return CP_IMAG;
 	}
 
-	return COMPLEX_PART::CP_NONE;
+	return CP_NONE;
 }
 
 EXPORT int create_recorder(OBJECT **obj, OBJECT *parent)
@@ -951,7 +951,7 @@ int read_properties(struct recorder *my, OBJECT *obj, PROPERTY *prop, char *buff
 		char base_name[256];
 		COMPLEX_PART part = detect_complex_part(p->name, base_name, sizeof(base_name));
 
-		if (part == COMPLEX_PART::CP_NONE)
+		if (part == CP_NONE)
 		{
 			// Normal path: use the property's own addr/ptype
 			void *addr = get_addr(obj, p);
@@ -976,7 +976,7 @@ int read_properties(struct recorder *my, OBJECT *obj, PROPERTY *prop, char *buff
 			if (p_base->ptype != PT_complex)
 			{
 				gl_error("recorder:%d: property '%s' is not complex; cannot use '.%s'",
-						 obj->id, base_name, (part == COMPLEX_PART::CP_REAL ? "real" : "imag"));
+						 obj->id, base_name, (part == CP_REAL ? "real" : "imag"));
 				return 0;
 			}
 			// Get complex value address and compute subpart
@@ -989,7 +989,7 @@ int read_properties(struct recorder *my, OBJECT *obj, PROPERTY *prop, char *buff
 			}
 			// 'complex' is GridLAB-D's complex type; interpret memory directly
 			complex *cptr = static_cast<complex *>(caddr);
-			double dval = (part == COMPLEX_PART::CP_REAL) ? cptr->Re() : cptr->Im();
+			double dval = (part == CP_REAL) ? cptr->Re() : cptr->Im();
 
 			// Emit the double using a fake PROPERTY descriptor
 			PROPERTY fake{};
