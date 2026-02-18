@@ -42,9 +42,6 @@ namespace fs = std::filesystem;
 #include <limits.h>
 #endif
 
-
-
-
 #ifdef _WIN32
 #include <windows.h>
 static void pause_at_exit(void)
