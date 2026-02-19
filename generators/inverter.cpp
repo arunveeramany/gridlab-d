@@ -10147,7 +10147,7 @@ EXPORT int init_inverter(OBJECT *obj, OBJECT *parent)
 // EXPORT TIMESTAMP sync_inverter(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 //{
 
-extern "C" MODULE_API TIMESTAMP sync_inverter(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+static TIMESTAMP sync_inverter_impl(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 {
 	TIMESTAMP t2 = TS_NEVER;
 	inverter *my = /*OBJECTDATA(obj,inverter)*/ object_data<inverter>(obj);
@@ -10175,7 +10175,12 @@ extern "C" MODULE_API TIMESTAMP sync_inverter(OBJECT *obj, TIMESTAMP t1, PASSCON
 	return t2;
 }
 
-#ifdef __APPLE__
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_inverter(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+{
+    return sync_inverter_impl(obj, t1, pass);
+}
+#else
 extern "C" MODULE_API TIMESTAMP sync_inverter(void *object, ...)
 {
 	va_list args;
@@ -10203,7 +10208,7 @@ extern "C" MODULE_API TIMESTAMP sync_inverter(void *object, ...)
 		gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
 		return FAILED;
 	}
-	return sync_inverter(obj, t1, pass);
+	return sync_inverter_impl(obj, t1, pass);
 }
 #endif
 

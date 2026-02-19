@@ -1075,7 +1075,38 @@ EXPORT int init_sync_check(OBJECT *obj)
 // {
 
 
-extern "C" TIMESTAMP sync_sync_check(void *object, ...)
+
+static TIMESTAMP sync_sync_check_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+	try
+	{
+		sync_check *pObj = object_data<sync_check>(obj);
+		TIMESTAMP t1 = TS_NEVER;
+		switch (pass)
+		{
+		case PC_PRETOPDOWN:
+			return pObj->presync(t0);
+		case PC_BOTTOMUP:
+			return pObj->sync(t0);
+		case PC_POSTTOPDOWN:
+			t1 = pObj->postsync(t0);
+			obj->clock = t0;
+			return t1;
+		default:
+			throw "invalid pass request";
+		}
+	}
+	SYNC_CATCHALL(sync_check);
+}
+
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_sync_check(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_sync_check_impl(obj, t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_sync_check(void *object, ...)
 {
     va_list args;
     va_start(args, object);
@@ -1102,27 +1133,10 @@ extern "C" TIMESTAMP sync_sync_check(void *object, ...)
         return FAILED;
     }
 
-
-	try
-	{
-		sync_check *pObj = object_data<sync_check>(obj);
-		TIMESTAMP t1 = TS_NEVER;
-		switch (pass)
-		{
-		case PC_PRETOPDOWN:
-			return pObj->presync(t0);
-		case PC_BOTTOMUP:
-			return pObj->sync(t0);
-		case PC_POSTTOPDOWN:
-			t1 = pObj->postsync(t0);
-			obj->clock = t0;
-			return t1;
-		default:
-			throw "invalid pass request";
-		}
-	}
-	SYNC_CATCHALL(sync_check);
+    return sync_sync_check_impl(obj, t0, pass);
 }
+#endif
+
 
 EXPORT int isa_sync_check(OBJECT *obj, char *classname)
 {

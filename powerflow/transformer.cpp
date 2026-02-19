@@ -2148,7 +2148,7 @@ EXPORT int init_transformer(OBJECT *obj)
 // EXPORT TIMESTAMP sync_transformer(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 //{
 
-extern "C" MODULE_API TIMESTAMP sync_transformer(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+static TIMESTAMP sync_transformer_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
 	try
 	{
@@ -2171,7 +2171,12 @@ extern "C" MODULE_API TIMESTAMP sync_transformer(OBJECT *obj, TIMESTAMP t0, PASS
 	SYNC_CATCHALL(transformer);
 }
 
-#ifdef __APPLE__
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_transformer(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_transformer_impl(obj, t0, pass);
+}
+#else
 extern "C" MODULE_API TIMESTAMP sync_transformer(void *object, ...)
 {
 	va_list args;
@@ -2180,8 +2185,8 @@ extern "C" MODULE_API TIMESTAMP sync_transformer(void *object, ...)
 	PASSCONFIG pass = va_arg(args, PASSCONFIG);
 	va_end(args);
 
-	OBJECT *obj = (OBJECT *)object; // ← Move this outside try block
-	sync_transformer(obj, t0, pass);
+	OBJECT *obj = (OBJECT *)object;
+	return sync_transformer_impl(obj, t0, pass);
 }
 #endif
 

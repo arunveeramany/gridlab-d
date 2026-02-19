@@ -939,7 +939,35 @@ EXPORT int init_triplex_load(OBJECT *obj)
 // EXPORT TIMESTAMP sync_triplex_load(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 // {
 
-extern "C" TIMESTAMP sync_triplex_load(void *object, ...)
+static TIMESTAMP sync_triplex_load_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+	try {
+		triplex_load *pObj = object_data<triplex_load>(obj);
+		TIMESTAMP t1 = TS_NEVER;
+		switch (pass) {
+		case PC_PRETOPDOWN:
+			return pObj->presync(t0);
+		case PC_BOTTOMUP:
+			return pObj->sync(t0);
+		case PC_POSTTOPDOWN:
+			t1 = pObj->postsync(t0);
+			obj->clock = t0;
+			return t1;
+		default:
+			throw "invalid pass request";
+		}
+	}
+	SYNC_CATCHALL(triplex_load);
+}
+
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_triplex_load(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_triplex_load_impl(obj, t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_triplex_load(void *object, ...)
 {
 
 	// Add early validation of callback
@@ -959,27 +987,11 @@ extern "C" TIMESTAMP sync_triplex_load(void *object, ...)
     PASSCONFIG pass = va_arg(args, PASSCONFIG);
     va_end(args);
 
-    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
-
-
-	try {
-		triplex_load *pObj = object_data<triplex_load>(obj);
-		TIMESTAMP t1 = TS_NEVER;
-		switch (pass) {
-		case PC_PRETOPDOWN:
-			return pObj->presync(t0);
-		case PC_BOTTOMUP:
-			return pObj->sync(t0);
-		case PC_POSTTOPDOWN:
-			t1 = pObj->postsync(t0);
-			obj->clock = t0;
-			return t1;
-		default:
-			throw "invalid pass request";
-		}
-	}
-	SYNC_CATCHALL(triplex_load);
+    OBJECT *obj = (OBJECT*)object;
+    return sync_triplex_load_impl(obj, t0, pass);
 }
+#endif
+
 
 EXPORT int isa_triplex_load(OBJECT *obj, char *classname)
 {

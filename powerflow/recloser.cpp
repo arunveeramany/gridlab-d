@@ -185,7 +185,34 @@ EXPORT int init_recloser(OBJECT *obj)
 // {
 
 
-extern "C" TIMESTAMP sync_recloser(void *object, ...)
+static TIMESTAMP sync_recloser_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+	try {
+		recloser *pObj = object_data<recloser>(obj);
+		TIMESTAMP t1 = TS_NEVER;
+		switch (pass) {
+		case PC_PRETOPDOWN:
+			return pObj->presync(t0);
+		case PC_BOTTOMUP:
+			return pObj->sync(t0);
+		case PC_POSTTOPDOWN:
+			t1 = pObj->postsync(t0);
+			obj->clock = t0;
+			return t1;
+		default:
+			throw "invalid pass request";
+		}
+	}
+	SYNC_CATCHALL(recloser);
+}
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_recloser(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_recloser_impl(obj, t0,  pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_recloser(void *object, ...)
 {
     va_list args;
     va_start(args, object);
@@ -211,27 +238,9 @@ extern "C" TIMESTAMP sync_recloser(void *object, ...)
         gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
         return FAILED;
     }
-
-
-
-	try {
-		recloser *pObj = object_data<recloser>(obj);
-		TIMESTAMP t1 = TS_NEVER;
-		switch (pass) {
-		case PC_PRETOPDOWN:
-			return pObj->presync(t0);
-		case PC_BOTTOMUP:
-			return pObj->sync(t0);
-		case PC_POSTTOPDOWN:
-			t1 = pObj->postsync(t0);
-			obj->clock = t0;
-			return t1;
-		default:
-			throw "invalid pass request";
-		}
-	}
-	SYNC_CATCHALL(recloser);
+    return sync_recloser_impl(obj, t0,  pass);
 }
+#endif
 
 EXPORT int isa_recloser(OBJECT *obj, char *classname)
 {

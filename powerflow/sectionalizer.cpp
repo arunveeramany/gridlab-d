@@ -127,7 +127,34 @@ EXPORT int init_sectionalizer(OBJECT *obj)
 // EXPORT TIMESTAMP sync_sectionalizer(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 // {
 
-extern "C" TIMESTAMP sync_sectionalizer(void *object, ...)
+static TIMESTAMP sync_sectionalizer_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+	try {
+		sectionalizer *pObj = object_data<sectionalizer>(obj);
+		TIMESTAMP t1 = TS_NEVER;
+		switch (pass) {
+		case PC_PRETOPDOWN:
+			return pObj->presync(t0);
+		case PC_BOTTOMUP:
+			return pObj->sync(t0);
+		case PC_POSTTOPDOWN:
+			t1 = pObj->postsync(t0);
+			obj->clock = t0;
+			return t1;
+		default:
+			throw "invalid pass request";
+		}
+	}
+	SYNC_CATCHALL(sectionalizer);
+}
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_sectionalizer(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_sectionalizer_impl(obj, t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_sectionalizer(void *object, ...)
 {
     va_list args;
     va_start(args, object);
@@ -154,27 +181,11 @@ extern "C" TIMESTAMP sync_sectionalizer(void *object, ...)
         return FAILED;
     }
 
-
-
-
-	try {
-		sectionalizer *pObj = object_data<sectionalizer>(obj);
-		TIMESTAMP t1 = TS_NEVER;
-		switch (pass) {
-		case PC_PRETOPDOWN:
-			return pObj->presync(t0);
-		case PC_BOTTOMUP:
-			return pObj->sync(t0);
-		case PC_POSTTOPDOWN:
-			t1 = pObj->postsync(t0);
-			obj->clock = t0;
-			return t1;
-		default:
-			throw "invalid pass request";
-		}
-	}
-	SYNC_CATCHALL(sectionalizer);
+    return sync_sectionalizer_impl(obj, t0, pass);
 }
+#endif
+
+
 
 //Function to change sectionalizer states - just call underlying switch routine
 EXPORT double change_sectionalizer_state(OBJECT *thisobj, unsigned char phase_change, bool state)
