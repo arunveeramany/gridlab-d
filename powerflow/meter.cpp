@@ -1538,7 +1538,7 @@ EXPORT int init_meter(OBJECT *obj)
 // EXPORT TIMESTAMP sync_meter(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 //{
 
-extern "C" MODULE_API TIMESTAMP sync_meter(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+static TIMESTAMP sync_meter_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
 	try
 	{
@@ -1562,7 +1562,12 @@ extern "C" MODULE_API TIMESTAMP sync_meter(OBJECT *obj, TIMESTAMP t0, PASSCONFIG
 	SYNC_CATCHALL(meter);
 }
 
-#ifdef __APPLE__
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_meter(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+	return sync_meter_impl(obj,  t0, pass);
+}
+#else
 extern "C" MODULE_API TIMESTAMP sync_meter(void *object, ...)
 {
 	va_list args;
@@ -1591,7 +1596,7 @@ extern "C" MODULE_API TIMESTAMP sync_meter(void *object, ...)
 		return FAILED;
 	}
 
-	sync_meter(obj, t0, pass);
+	return sync_meter_impl(obj, t0, pass);
 }
 #endif
 

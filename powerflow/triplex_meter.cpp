@@ -49,7 +49,7 @@ EXPORT int init_triplex_meter_object(OBJECT *obj)
 
 // EXPORT TIMESTAMP sync_triplex_meter(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 
-extern "C" MODULE_API TIMESTAMP sync_triplex_meter(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+static TIMESTAMP sync_triplex_meter_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
 	try
 	{
@@ -73,7 +73,12 @@ extern "C" MODULE_API TIMESTAMP sync_triplex_meter(OBJECT *obj, TIMESTAMP t0, PA
 	SYNC_CATCHALL(triplex_meter);
 }
 
-#ifdef __APPLE__
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_triplex_meter(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+	return sync_triplex_meter_impl(obj, t0, pass);
+}
+#else
 extern "C" MODULE_API TIMESTAMP sync_triplex_meter(void *object, ...)
 {
 	// Add early validation of callback
@@ -96,7 +101,7 @@ extern "C" MODULE_API TIMESTAMP sync_triplex_meter(void *object, ...)
 	va_end(args);
 
 	OBJECT *obj = (OBJECT *)object;
-	return sync_triplex_meter(obj, t0, pass);
+	return sync_triplex_meter_impl(obj, t0, pass);
 }
 #endif
 

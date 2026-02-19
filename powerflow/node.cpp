@@ -3660,7 +3660,7 @@ EXPORT int init_node(OBJECT *obj)
 // EXPORT TIMESTAMP sync_node(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 // {
 
-extern "C" MODULE_API TIMESTAMP sync_node(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+static TIMESTAMP sync_node_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
 	try
 	{
@@ -3683,7 +3683,12 @@ extern "C" MODULE_API TIMESTAMP sync_node(OBJECT *obj, TIMESTAMP t0, PASSCONFIG 
 	SYNC_CATCHALL(node);
 }
 
-#ifdef __APPLE__
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_node(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+	return sync_node_impl(obj, t0, pass);
+}
+#else
 extern "C" MODULE_API TIMESTAMP sync_node(void *object, ...)
 {
 	va_list args;
@@ -3712,7 +3717,7 @@ extern "C" MODULE_API TIMESTAMP sync_node(void *object, ...)
 		return FAILED;
 	}
 
-	sync_node(obj, t0, pass);
+	return sync_node_impl(obj, t0, pass);
 }
 #endif
 

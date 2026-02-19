@@ -1055,29 +1055,10 @@ EXPORT int init_vfd(OBJECT *obj)
  */
 // EXPORT TIMESTAMP sync_vfd(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 // {
-extern "C" TIMESTAMP sync_vfd(void *object, ...)
+
+
+static TIMESTAMP sync_vfd_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
-
-    // Add early validation of callback
-    if (!callback) {
-        gl_error("sync_vfd: callback is null");
-        return TS_INVALID;
-    }
-
-    if (!callback->time.local_datetime) {
-        gl_error("sync_vfd: local_datetime function is null");
-        return TS_INVALID;
-    }
-
-    va_list args;
-    va_start(args, object);
-    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
-
-    OBJECT *obj = (OBJECT*)object; 
-
-
 	try
 	{
 		vfd *pObj = object_data<vfd>(obj);
@@ -1098,6 +1079,39 @@ extern "C" TIMESTAMP sync_vfd(void *object, ...)
 	}
 	SYNC_CATCHALL(vfd);
 }
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_vfd(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+	return sync_vfd_impl(obj, t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_vfd(void *object, ...)
+{
+
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_vfd: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_vfd: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object; 
+    return sync_vfd_impl(obj, t0, pass);
+
+}
+#endif
+
 
 EXPORT int isa_vfd(OBJECT *obj, char *classname)
 {

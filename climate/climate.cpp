@@ -68,7 +68,7 @@ EXPORT int create_climate(OBJECT **obj, OBJECT *parent)
 // EXPORT_SYNC(climate)
 // EXPORT_ISA(climate)
 
-extern "C" MODULE_API TIMESTAMP sync_climate(OBJECT *object, TIMESTAMP t0, PASSCONFIG pass)
+static TIMESTAMP sync_climate_impl(OBJECT *object, TIMESTAMP t0, PASSCONFIG pass)
 {
 	try
 	{
@@ -113,7 +113,13 @@ extern "C" MODULE_API TIMESTAMP sync_climate(OBJECT *object, TIMESTAMP t0, PASSC
 	}
 }
 
-#ifdef __APPLE__
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_climate(OBJECT *object, TIMESTAMP t0, PASSCONFIG pass)
+{
+	return sync_climate_impl(object, t0, pass);
+}
+#else
 extern "C" MODULE_API TIMESTAMP sync_climate(void *obj, ...)
 {
 	va_list args;
@@ -142,7 +148,7 @@ extern "C" MODULE_API TIMESTAMP sync_climate(void *obj, ...)
 		return FAILED;
 	}
 
-	return sync_climate(object, t0, pass);
+	return sync_climate_impl(object, t0, pass);
 }
 #endif
 

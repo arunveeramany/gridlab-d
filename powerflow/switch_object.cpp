@@ -2119,7 +2119,7 @@ EXPORT int init_switch(OBJECT *obj)
 // EXPORT TIMESTAMP sync_switch(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 //{
 
-extern "C" MODULE_API TIMESTAMP sync_switch(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+static TIMESTAMP sync_switch_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
 	try
 	{
@@ -2142,7 +2142,12 @@ extern "C" MODULE_API TIMESTAMP sync_switch(OBJECT *obj, TIMESTAMP t0, PASSCONFI
 	SYNC_CATCHALL(switch_object);
 }
 
-#ifdef _APPLE__
+#ifndef _APPLE__
+extern "C" MODULE_API TIMESTAMP sync_switch(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+	return  sync_switch_impl(obj, t0, pass);
+}
+#else
 extern "C" MODULE_API TIMESTAMP sync_switch(void *object, ...)
 {
 	va_list args;
@@ -2151,8 +2156,8 @@ extern "C" MODULE_API TIMESTAMP sync_switch(void *object, ...)
 	PASSCONFIG pass = va_arg(args, PASSCONFIG);
 	va_end(args);
 
-	OBJECT *obj = (OBJECT *)object; // ← Move this outside try block
-	sync_switch(obj, t0, pass);
+	OBJECT *obj = (OBJECT *)object;
+	sync_switch_impl(obj, t0, pass);
 }
 #endif
 
