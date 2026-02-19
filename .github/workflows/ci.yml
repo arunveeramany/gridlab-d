@@ -25,7 +25,6 @@ jobs:
 
     env:
       BUILD_TYPE: ${{ github.event.inputs.config || 'Release' }}   # define build type
-      helics-ref: v3.4.0                                           # or 'main' if you prefer latest
 
     steps:
       - name: Install Dependencies
@@ -33,37 +32,7 @@ jobs:
           sudo apt update
           sudo apt install -yq libboost-dev 
           sudo apt-get install -y libeigen3-dev
-
-      - name: Build HELICS Cache
-        id: cache-helics
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-helics
-        with:
-          path: ~/.cache/HELICS
-          key: ${{ matrix.os }}-${{ matrix.arch }}-build-${{ env.cache-name }}-${{ env.helics-ref }}
-          restore-keys: ${{ matrix.os }}-${{ matrix.arch }}-build-${{ env.cache-name }}-${{ env.helics-ref }}
-
-      - if: ${{ steps.cache-helics.outputs.cache-hit != 'true' }}
-        name: Checkout HELICS
-        uses: actions/checkout@v5
-        with:
-          repository: 'GMLC-TDC/HELICS'
-          ref: ${{ env.helics-ref }}
-          submodules: 'recursive'
-          fetch-depth: 0
-          path: helics-build
-
-      - if: ${{ steps.cache-helics.outputs.cache-hit != 'true' }}
-        name: Build HELICS
-        working-directory: ${{github.workspace}}/helics-build
-        run: |
-          threads=`nproc`
-          cmake -B ${{github.workspace}}/helics-build/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
-          -DCMAKE_INSTALL_PREFIX=~/.cache/HELICS -DHELICS_ZMQ_SUBPROJECT=ON
-          cmake --build ${{github.workspace}}/helics-build/build --parallel $threads
-          cmake --install ${{github.workspace}}/helics-build/build
-
+  
       - name: Checkout GridLAB-D
         uses: actions/checkout@v5
         with:
@@ -73,7 +42,7 @@ jobs:
         run: |
           threads=$(nproc)
           cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
-          -DCMAKE_INSTALL_PREFIX=~/.temp/GridLAB-D -DGLD_USE_HELICS=ON -DGLD_HELICS_DIR=~/.cache/HELICS \
+          -DCMAKE_INSTALL_PREFIX=~/.temp/GridLAB-D \
           -DGLD_CI_BUILD=ON
           cmake --build ${{github.workspace}}/build  --parallel $threads
 
