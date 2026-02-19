@@ -54,7 +54,21 @@ jobs:
         working-directory: ${{github.workspace}}
         run: |
           # Add installed GridLAB-D binaries to PATH
-          export PATH=$PATH:~/.temp/GridLAB-D/bin
+          export PREFIX="$HOME/.temp/GridLAB-D"
+          export PATH=$PATH:$PREFIX/bin
+          # Make sure runtime linker can locate shared libs
+          export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}:$PREFIX/lib:$PREFIX/lib/gridlabd"
+
+          # Optional: help GridLAB-D locate core/share paths
+          export GLPATH="$(pwd):${PREFIX}:${PREFIX}/bin:${PREFIX}/lib:${PREFIX}/share:${{github.workspace}}/gldcore"
+          # Sanity checks
+          echo "PATH=$PATH"
+          echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
+          echo "GLPATH=$GLPATH"
+          # Verify dependencies (helps debug rpath/loader issues)
+          which gridlabd || { echo "gridlabd not found in PATH"; exit 1; }
+          ldd "$(which gridlabd)" || true
+          
           # Run integration validation from repository root
           gridlabd -T 0 --validate
           # Future Catch2 unit tests (placeholder):
