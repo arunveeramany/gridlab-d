@@ -447,38 +447,6 @@ public:
         // return reinterpret_cast<const char *>(&(current_defaults->target)) - reinterpret_cast<const char *>(current_defaults);
     }
 
-    // Getter method to safely retrieve the string value of `target` as std::string
-    inline std::string get_target(void)
-    {
-        // auto &mtx = SharedMutexManager::get_mutex(my());
-        // std::shared_lock<std::shared_mutex> lock(mtx);
-        return std::string(target);
-    }
-
-    inline void set_target(const char *str)
-    {
-        printf("DEBUG: Setting target to: '%s'\n", str ? str : "NULL");
-        if (!str)
-        {
-            gl_error("Attempt to set target to null string");
-            return;
-        }
-        // auto &mtx = SharedMutexManager::get_mutex(my());
-        // std::unique_lock<std::shared_mutex> lock(mtx);
-
-        size_t len = strlen(str);
-        if (len >= sizeof(target))
-        {
-            gl_error("Target string too long: %zu >= %zu", len, sizeof(target));
-            return;
-        }
-
-        strncpy(target, str, sizeof(target) - 1);
-        target[sizeof(target) - 1] = '\0'; // Ensure null-termination
-
-        printf("DEBUG: Target set successfully to: '%s'\n", target);
-    }
-
     // Getter method to retrieve gld_property for `target`
     inline gld_property get_target_property(void)
     {
@@ -487,6 +455,46 @@ public:
             throw std::runtime_error("Invalid object context for retrieving gld_property.");
         }
         return gld_property(my(), std::string("target").c_str()); // Duplicate string literal `target`
+    }
+
+    // Getter method to safely retrieve the string value of `target` as std::string
+    inline std::string get_target(void)
+    {
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::shared_lock<std::shared_mutex> lock(mtx);
+        // return std::string(target);
+        return std::string(get_target_property().get_string());
+    }
+
+    inline void set_target(const char *str)
+    {
+        // printf("DEBUG: Setting target to: '%s'\n", str ? str : "NULL");
+        // if (!str)
+        // {
+        //     gl_error("Attempt to set target to null string");
+        //     return;
+        // }
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
+
+        // size_t len = strlen(str);
+        // if (len >= sizeof(target))
+        // {
+        //     gl_error("Target string too long: %zu >= %zu", len, sizeof(target));
+        //     return;
+        // }
+
+        // strncpy(target, str, sizeof(target) - 1);
+        // target[sizeof(target) - 1] = '\0'; // Ensure null-termination
+
+        // printf("DEBUG: Target set successfully to: '%s'\n", target);
+
+        if (!str)
+        {
+            gl_error("Attempt to set target to null string");
+            return;
+        }
+        get_target_property().from_string(const_cast<char *>(str));
     }
 
 public:

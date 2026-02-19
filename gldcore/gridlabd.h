@@ -110,8 +110,6 @@
 #endif
 #endif
 
-/* gridlabd_api.h (or inside gridlabd.h) */
-
 /* 1) Visibility: flips to dllexport for the library, dllimport for consumers on Windows.
 	  On GCC/Clang, gives default visibility when available, otherwise empty. */
 #if defined(_WIN32)
@@ -133,6 +131,16 @@
 #define GLDAPI_EXTERN extern "C"
 #else
 #define GLDAPI_EXTERN extern
+#endif
+
+#if defined(_WIN32)
+#define MODULE_API __declspec(dllexport) // always exporting from this module
+#else
+#if defined(__GNUC__) && (__GNUC__ >= 4)
+#define MODULE_API __attribute__((visibility("default")))
+#else
+#define MODULE_API
+#endif
 #endif
 
 #include <cstdarg>

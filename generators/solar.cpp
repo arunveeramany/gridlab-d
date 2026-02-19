@@ -19,7 +19,7 @@
 #include <climits>
 #include <iostream>
 
-//extern "C" CALLBACKS *callback;
+// extern "C" CALLBACKS *callback;
 
 using namespace std;
 
@@ -1687,19 +1687,11 @@ EXPORT int init_solar(OBJECT *obj, OBJECT *parent)
 	INIT_CATCHALL(solar);
 }
 
-//EXPORT TIMESTAMP sync_solar(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+// EXPORT TIMESTAMP sync_solar(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 //{
 
-extern "C" TIMESTAMP sync_solar(void *object, ...)
+extern "C" MODULE_API TIMESTAMP sync_solar(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 {
-	va_list args;
-	va_start(args, object);
-	TIMESTAMP t1 = va_arg(args, TIMESTAMP);
-	PASSCONFIG pass = va_arg(args, PASSCONFIG);
-	va_end(args);
-
-	OBJECT *obj = (OBJECT *)object;
-
 	TIMESTAMP t2 = TS_NEVER;
 	solar *my = /*OBJECTDATA(obj,<>)*/ object_data<solar>(obj);
 	try
@@ -1725,6 +1717,21 @@ extern "C" TIMESTAMP sync_solar(void *object, ...)
 	SYNC_CATCHALL(solar);
 	return t2;
 }
+
+#ifdef __APPLE__
+extern "C" MODULE_APITIMESTAMP sync_solar(void *object, ...)
+{
+	va_list args;
+	va_start(args, object);
+	TIMESTAMP t1 = va_arg(args, TIMESTAMP);
+	PASSCONFIG pass = va_arg(args, PASSCONFIG);
+	va_end(args);
+
+	OBJECT *obj = (OBJECT *)object;
+
+	return sync_solar(obj, t1, pass);
+}
+#endif
 
 // DELTAMODE Linkage
 EXPORT SIMULATIONMODE interupdate_solar(OBJECT *obj, unsigned int64 delta_time, unsigned long dt, unsigned int iteration_count_val)

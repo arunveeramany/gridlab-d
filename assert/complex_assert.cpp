@@ -43,7 +43,7 @@
 CLASS *complex_assert::oclass = nullptr;
 // static complex_assert defaults_storage; // POD storage for defaults
 // complex_assert *complex_assert::defaults = &defaults_storage;
-//extern "C" CALLBACKS *callback;
+// extern "C" CALLBACKS *callback;
 
 // Global (or static) map: did any switch change at this timestep?
 static std::unordered_map<TIMESTAMP, bool> ts_had_switch_change;
@@ -285,7 +285,7 @@ complex_assert::complex_assert(MODULE *module) : gld_object()
         once = ONCE_FALSE;
         once_value = 0;
         operation = FULL;
-        strcpy(target, "");
+        // strcpy(target, "");
         // printf("DEBUG: complex_assert constructor - target initialized to: '%s'\n", target);
         // printf("DEBUG: target buffer address: %p\n", &target);
 
@@ -313,8 +313,8 @@ int complex_assert::create(void)
     ts_out = 0;
 
     // Use strncpy for safety and ensure null termination.
-    strncpy(target, "", sizeof(target) - 1);
-    target[sizeof(target) - 1] = '\0';
+    // strncpy(target, "", sizeof(target) - 1);
+    // target[sizeof(target) - 1] = '\0';
 
     // printf("DEBUG: complex_assert::create() - target initialized to: '%s'\n", target);
 
