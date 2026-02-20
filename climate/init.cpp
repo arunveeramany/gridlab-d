@@ -13,7 +13,7 @@
 #include "weather.h"
 #include "csv_reader.h"
 
-extern CALLBACKS *callback;
+// extern CALLBACKS *callback;
 
 EXPORT CLASS *init(CALLBACKS *fntable, MODULE *module, int argc, char *argv[])
 {
