@@ -313,7 +313,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          BUILD_DIR="out/build/ci-macos"
+          BUILD_DIR=/Users/runner/work/gridlab-d/gridlab-d
           FILE="${BUILD_DIR}/validate.txt"
 
           if [[ -f "${FILE}" ]]; then
@@ -336,8 +336,18 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: validate-macos
-          path: out/build/ci-macos/validate.txt
+          path: /Users/runner/work/gridlab-d/gridlab-d/validate.txt
           if-no-files-found: ignore
+
+      
+      - name: Upload validate_errors.txt (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validate-errors-macos
+          path: /Users/runner/work/gridlab-d/gridlab-d/validate_errors.txt
+          if-no-files-found: ignore
+
 
       - name: (Optional) Run CTest
         shell: bash
