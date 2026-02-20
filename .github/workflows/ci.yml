@@ -308,6 +308,35 @@ jobs:
           otool -l "$PREFIX/bin/gridlabd" | grep -A 2 LC_RPATH
           otool -l "$PREFIX/lib/powerflow.dylib" | grep -A 2 LC_RPATH
 
+      - name: Debug the empty property error
+        shell: bash
+        run: |
+          PREFIX="$HOME/.temp/GridLAB-D"
+          BIN_DIR="$PREFIX/bin"
+          LIB_DIR="$PREFIX/lib"
+          
+          export DYLD_LIBRARY_PATH="${LIB_DIR}"
+          export GLPATH="${LIB_DIR}:${PREFIX}/share/gridlabd"
+          
+          echo "=== Test powerflow:load class ==="
+          "${BIN_DIR}/gridlabd" --modhelp powerflow:load 2>&1 || true
+          
+          echo "=== Check GLM file for empty properties ==="
+          # Look for lines like "property ;" or "= ;" patterns
+          grep -n '^\s*;' taxonomy_feeders/autotest/test_R5-25.00-1_fix.glm | head -20 || true
+          grep -n '^\s*$' taxonomy_feeders/autotest/test_R5-25.00-1_fix.glm | head -20 || true
+          grep -n '"";' taxonomy_feeders/autotest/test_R5-25.00-1_fix.glm | head -20 || true
+          
+          echo "=== Show load_1 object definition ==="
+          grep -B 2 -A 30 "object load" taxonomy_feeders/autotest/test_R5-25.00-1_fix.glm | head -50 || true
+
+      - name: Check file encoding
+        run: |
+          file taxonomy_feeders/autotest/test_R5-25.00-1_fix.glm
+          head -1 taxonomy_feeders/autotest/test_R5-25.00-1_fix.glm | xxd | head -5
+          # Check for Windows line endings
+          grep -c $'\r' taxonomy_feeders/autotest/test_R5-25.00-1_fix.glm || echo "No CR found"
+
       - name: Run gridlabd --validate (installed)
         shell: bash
         run: |

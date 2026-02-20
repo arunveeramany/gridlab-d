@@ -17,6 +17,17 @@ endif()
 project(GridLAB-D LANGUAGES C CXX)
 
 
+# Set rpath for installed binaries/libraries
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
+
+# For macOS specifically
+if(APPLE)
+    set(CMAKE_MACOSX_RPATH ON)
+    set(CMAKE_INSTALL_RPATH "@executable_path/../lib;@loader_path")
+    set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+    set(CMAKE_INSTALL_NAME_DIR "@rpath")
+endif()
 
 if(MSVC)
   add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
