@@ -76,85 +76,85 @@ commercial/CMakeFiles/commercial.dir/hvac.cpp.o: commercial/CMakeFiles/commercia
 commercial/CMakeFiles/commercial.dir/hvac.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/hvac.cpp
 commercial/CMakeFiles/commercial.dir/hvac.cpp.o: commercial/CMakeFiles/commercial.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object commercial/CMakeFiles/commercial.dir/hvac.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT commercial/CMakeFiles/commercial.dir/hvac.cpp.o -MF CMakeFiles/commercial.dir/hvac.cpp.o.d -o CMakeFiles/commercial.dir/hvac.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/hvac.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT commercial/CMakeFiles/commercial.dir/hvac.cpp.o -MF CMakeFiles/commercial.dir/hvac.cpp.o.d -o CMakeFiles/commercial.dir/hvac.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/hvac.cpp
 
 commercial/CMakeFiles/commercial.dir/hvac.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/commercial.dir/hvac.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/hvac.cpp > CMakeFiles/commercial.dir/hvac.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/hvac.cpp > CMakeFiles/commercial.dir/hvac.cpp.i
 
 commercial/CMakeFiles/commercial.dir/hvac.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/commercial.dir/hvac.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/hvac.cpp -o CMakeFiles/commercial.dir/hvac.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/hvac.cpp -o CMakeFiles/commercial.dir/hvac.cpp.s
 
 commercial/CMakeFiles/commercial.dir/init.cpp.o: commercial/CMakeFiles/commercial.dir/flags.make
 commercial/CMakeFiles/commercial.dir/init.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/init.cpp
 commercial/CMakeFiles/commercial.dir/init.cpp.o: commercial/CMakeFiles/commercial.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object commercial/CMakeFiles/commercial.dir/init.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT commercial/CMakeFiles/commercial.dir/init.cpp.o -MF CMakeFiles/commercial.dir/init.cpp.o.d -o CMakeFiles/commercial.dir/init.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/init.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT commercial/CMakeFiles/commercial.dir/init.cpp.o -MF CMakeFiles/commercial.dir/init.cpp.o.d -o CMakeFiles/commercial.dir/init.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/init.cpp
 
 commercial/CMakeFiles/commercial.dir/init.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/commercial.dir/init.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/init.cpp > CMakeFiles/commercial.dir/init.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/init.cpp > CMakeFiles/commercial.dir/init.cpp.i
 
 commercial/CMakeFiles/commercial.dir/init.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/commercial.dir/init.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/init.cpp -o CMakeFiles/commercial.dir/init.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/init.cpp -o CMakeFiles/commercial.dir/init.cpp.s
 
 commercial/CMakeFiles/commercial.dir/main.cpp.o: commercial/CMakeFiles/commercial.dir/flags.make
 commercial/CMakeFiles/commercial.dir/main.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/main.cpp
 commercial/CMakeFiles/commercial.dir/main.cpp.o: commercial/CMakeFiles/commercial.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object commercial/CMakeFiles/commercial.dir/main.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT commercial/CMakeFiles/commercial.dir/main.cpp.o -MF CMakeFiles/commercial.dir/main.cpp.o.d -o CMakeFiles/commercial.dir/main.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/main.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT commercial/CMakeFiles/commercial.dir/main.cpp.o -MF CMakeFiles/commercial.dir/main.cpp.o.d -o CMakeFiles/commercial.dir/main.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/main.cpp
 
 commercial/CMakeFiles/commercial.dir/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/commercial.dir/main.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/main.cpp > CMakeFiles/commercial.dir/main.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/main.cpp > CMakeFiles/commercial.dir/main.cpp.i
 
 commercial/CMakeFiles/commercial.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/commercial.dir/main.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/main.cpp -o CMakeFiles/commercial.dir/main.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/main.cpp -o CMakeFiles/commercial.dir/main.cpp.s
 
 commercial/CMakeFiles/commercial.dir/multizone.cpp.o: commercial/CMakeFiles/commercial.dir/flags.make
 commercial/CMakeFiles/commercial.dir/multizone.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/multizone.cpp
 commercial/CMakeFiles/commercial.dir/multizone.cpp.o: commercial/CMakeFiles/commercial.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object commercial/CMakeFiles/commercial.dir/multizone.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT commercial/CMakeFiles/commercial.dir/multizone.cpp.o -MF CMakeFiles/commercial.dir/multizone.cpp.o.d -o CMakeFiles/commercial.dir/multizone.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/multizone.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT commercial/CMakeFiles/commercial.dir/multizone.cpp.o -MF CMakeFiles/commercial.dir/multizone.cpp.o.d -o CMakeFiles/commercial.dir/multizone.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/multizone.cpp
 
 commercial/CMakeFiles/commercial.dir/multizone.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/commercial.dir/multizone.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/multizone.cpp > CMakeFiles/commercial.dir/multizone.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/multizone.cpp > CMakeFiles/commercial.dir/multizone.cpp.i
 
 commercial/CMakeFiles/commercial.dir/multizone.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/commercial.dir/multizone.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/multizone.cpp -o CMakeFiles/commercial.dir/multizone.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/multizone.cpp -o CMakeFiles/commercial.dir/multizone.cpp.s
 
 commercial/CMakeFiles/commercial.dir/office.cpp.o: commercial/CMakeFiles/commercial.dir/flags.make
 commercial/CMakeFiles/commercial.dir/office.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/office.cpp
 commercial/CMakeFiles/commercial.dir/office.cpp.o: commercial/CMakeFiles/commercial.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object commercial/CMakeFiles/commercial.dir/office.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT commercial/CMakeFiles/commercial.dir/office.cpp.o -MF CMakeFiles/commercial.dir/office.cpp.o.d -o CMakeFiles/commercial.dir/office.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/office.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT commercial/CMakeFiles/commercial.dir/office.cpp.o -MF CMakeFiles/commercial.dir/office.cpp.o.d -o CMakeFiles/commercial.dir/office.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/office.cpp
 
 commercial/CMakeFiles/commercial.dir/office.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/commercial.dir/office.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/office.cpp > CMakeFiles/commercial.dir/office.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/office.cpp > CMakeFiles/commercial.dir/office.cpp.i
 
 commercial/CMakeFiles/commercial.dir/office.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/commercial.dir/office.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/office.cpp -o CMakeFiles/commercial.dir/office.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/office.cpp -o CMakeFiles/commercial.dir/office.cpp.s
 
 commercial/CMakeFiles/commercial.dir/solvers.cpp.o: commercial/CMakeFiles/commercial.dir/flags.make
 commercial/CMakeFiles/commercial.dir/solvers.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/solvers.cpp
 commercial/CMakeFiles/commercial.dir/solvers.cpp.o: commercial/CMakeFiles/commercial.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object commercial/CMakeFiles/commercial.dir/solvers.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT commercial/CMakeFiles/commercial.dir/solvers.cpp.o -MF CMakeFiles/commercial.dir/solvers.cpp.o.d -o CMakeFiles/commercial.dir/solvers.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/solvers.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT commercial/CMakeFiles/commercial.dir/solvers.cpp.o -MF CMakeFiles/commercial.dir/solvers.cpp.o.d -o CMakeFiles/commercial.dir/solvers.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/solvers.cpp
 
 commercial/CMakeFiles/commercial.dir/solvers.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/commercial.dir/solvers.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/solvers.cpp > CMakeFiles/commercial.dir/solvers.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/solvers.cpp > CMakeFiles/commercial.dir/solvers.cpp.i
 
 commercial/CMakeFiles/commercial.dir/solvers.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/commercial.dir/solvers.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/solvers.cpp -o CMakeFiles/commercial.dir/solvers.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/commercial && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/commercial/solvers.cpp -o CMakeFiles/commercial.dir/solvers.cpp.s
 
 # Object files for target commercial
 commercial_OBJECTS = \

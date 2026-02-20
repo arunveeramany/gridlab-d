@@ -670,27 +670,30 @@ static int vsystem(const char *fmt, ...)
 	return rc;
 }
 
-
-
 #ifdef _WIN32
-int vsystem_posix_exec_argv_capture(const std::vector<std::string> &argv, 
-                                     const std::string &out_path, 
-                                     const std::string &err_path)
+int vsystem_posix_exec_argv_capture(const std::vector<std::string> &argv,
+									const std::string &out_path,
+									const std::string &err_path)
 {
-    // Build command line string for system()
-    std::string cmd;
-    for (const auto &arg : argv) {
-        if (!cmd.empty()) cmd += " ";
-        // Quote arguments containing spaces
-        if (arg.find(' ') != std::string::npos) {
-            cmd += "\"" + arg + "\"";
-        } else {
-            cmd += arg;
-        }
-    }
-    // Redirect output
-    cmd += " > \"" + out_path + "\" 2> \"" + err_path + "\"";
-    return system(cmd.c_str());
+	// Build command line string for system()
+	std::string cmd;
+	for (const auto &arg : argv)
+	{
+		if (!cmd.empty())
+			cmd += " ";
+		// Quote arguments containing spaces
+		if (arg.find(' ') != std::string::npos)
+		{
+			cmd += "\"" + arg + "\"";
+		}
+		else
+		{
+			cmd += arg;
+		}
+	}
+	// Redirect output
+	cmd += " > \"" + out_path + "\" 2> \"" + err_path + "\"";
+	return system(cmd.c_str());
 }
 #endif
 
@@ -1051,13 +1054,13 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 	// // We explicitly quote the executable path to handle spaces in paths correctly.
 
 	std::string command_line = std::format(
-	 	"\"{}\" -W {} {} {}.glm",
-	 	executable_to_run_path.string(), // Get string representation for formatting
-	 	dir,
-	 	validate_child_cmdargs,
-	 	name);
+		"\"{}\" -W {} {} {}.glm",
+		executable_to_run_path.string(), // Get string representation for formatting
+		dir,
+		validate_child_cmdargs,
+		name);
 
-	//std::string command_line = std::format("{}.glm", name);
+	// std::string command_line = std::format("{}.glm", name);
 
 	// 4. Execute the command using your custom vsystem wrapper.
 	// Assuming vsystem expects a C-style string (const char*).
@@ -1226,17 +1229,21 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 	}
 	else // signaled
 	{
-		code = WTERMSIG(code);
-		output_debug("signal %d received from %s", code, name);
+		// code = WTERMSIG(code);
+
+		const int sig = WTERMSIG(code);
+		const int gld_code = 128 + sig; // GridLAB-D convention for signals
+
+		output_debug("signal %d received from %s", sig, name);
 		if (is_opt) // no expected outcome
-			output_warning("optional test %s exception, code %d in %.1f seconds", name, code, t);
+			output_warning("optional test %s exception, code %d in %.1f seconds", name, sig, t);
 		else if (is_exc) // expected exception
-			output_warning("%s exception expected, code %d in %.1f seconds", name, code, t);
+			output_warning("%s exception expected, code %d in %.1f seconds", name, sig, t);
 		else if (is_err) // expected error - add this condition for macOS
-			output_verbose("%s error was expected (terminated by signal %d) in %.1f seconds", name, code, t);
+			output_verbose("%s error was expected (terminated by signal %d) in %.1f seconds", name, sig, t);
 		else
 		{
-			result.inc_exceptions(file, code, t);
+			result.inc_exceptions(file, gld_code, t);
 			problem = true;
 			// std::string last_error = get_all_error_lines(dir);
 			// log_test_error(file, 'X', last_error);

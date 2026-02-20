@@ -76,127 +76,127 @@ mysql/CMakeFiles/mysql.dir/collector.cpp.o: mysql/CMakeFiles/mysql.dir/flags.mak
 mysql/CMakeFiles/mysql.dir/collector.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/collector.cpp
 mysql/CMakeFiles/mysql.dir/collector.cpp.o: mysql/CMakeFiles/mysql.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object mysql/CMakeFiles/mysql.dir/collector.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT mysql/CMakeFiles/mysql.dir/collector.cpp.o -MF CMakeFiles/mysql.dir/collector.cpp.o.d -o CMakeFiles/mysql.dir/collector.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/collector.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT mysql/CMakeFiles/mysql.dir/collector.cpp.o -MF CMakeFiles/mysql.dir/collector.cpp.o.d -o CMakeFiles/mysql.dir/collector.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/collector.cpp
 
 mysql/CMakeFiles/mysql.dir/collector.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/mysql.dir/collector.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/collector.cpp > CMakeFiles/mysql.dir/collector.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/collector.cpp > CMakeFiles/mysql.dir/collector.cpp.i
 
 mysql/CMakeFiles/mysql.dir/collector.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/mysql.dir/collector.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/collector.cpp -o CMakeFiles/mysql.dir/collector.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/collector.cpp -o CMakeFiles/mysql.dir/collector.cpp.s
 
 mysql/CMakeFiles/mysql.dir/database.cpp.o: mysql/CMakeFiles/mysql.dir/flags.make
 mysql/CMakeFiles/mysql.dir/database.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/database.cpp
 mysql/CMakeFiles/mysql.dir/database.cpp.o: mysql/CMakeFiles/mysql.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object mysql/CMakeFiles/mysql.dir/database.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT mysql/CMakeFiles/mysql.dir/database.cpp.o -MF CMakeFiles/mysql.dir/database.cpp.o.d -o CMakeFiles/mysql.dir/database.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/database.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT mysql/CMakeFiles/mysql.dir/database.cpp.o -MF CMakeFiles/mysql.dir/database.cpp.o.d -o CMakeFiles/mysql.dir/database.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/database.cpp
 
 mysql/CMakeFiles/mysql.dir/database.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/mysql.dir/database.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/database.cpp > CMakeFiles/mysql.dir/database.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/database.cpp > CMakeFiles/mysql.dir/database.cpp.i
 
 mysql/CMakeFiles/mysql.dir/database.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/mysql.dir/database.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/database.cpp -o CMakeFiles/mysql.dir/database.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/database.cpp -o CMakeFiles/mysql.dir/database.cpp.s
 
 mysql/CMakeFiles/mysql.dir/init.cpp.o: mysql/CMakeFiles/mysql.dir/flags.make
 mysql/CMakeFiles/mysql.dir/init.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/init.cpp
 mysql/CMakeFiles/mysql.dir/init.cpp.o: mysql/CMakeFiles/mysql.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object mysql/CMakeFiles/mysql.dir/init.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT mysql/CMakeFiles/mysql.dir/init.cpp.o -MF CMakeFiles/mysql.dir/init.cpp.o.d -o CMakeFiles/mysql.dir/init.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/init.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT mysql/CMakeFiles/mysql.dir/init.cpp.o -MF CMakeFiles/mysql.dir/init.cpp.o.d -o CMakeFiles/mysql.dir/init.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/init.cpp
 
 mysql/CMakeFiles/mysql.dir/init.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/mysql.dir/init.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/init.cpp > CMakeFiles/mysql.dir/init.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/init.cpp > CMakeFiles/mysql.dir/init.cpp.i
 
 mysql/CMakeFiles/mysql.dir/init.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/mysql.dir/init.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/init.cpp -o CMakeFiles/mysql.dir/init.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/init.cpp -o CMakeFiles/mysql.dir/init.cpp.s
 
 mysql/CMakeFiles/mysql.dir/main.cpp.o: mysql/CMakeFiles/mysql.dir/flags.make
 mysql/CMakeFiles/mysql.dir/main.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/main.cpp
 mysql/CMakeFiles/mysql.dir/main.cpp.o: mysql/CMakeFiles/mysql.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object mysql/CMakeFiles/mysql.dir/main.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT mysql/CMakeFiles/mysql.dir/main.cpp.o -MF CMakeFiles/mysql.dir/main.cpp.o.d -o CMakeFiles/mysql.dir/main.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/main.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT mysql/CMakeFiles/mysql.dir/main.cpp.o -MF CMakeFiles/mysql.dir/main.cpp.o.d -o CMakeFiles/mysql.dir/main.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/main.cpp
 
 mysql/CMakeFiles/mysql.dir/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/mysql.dir/main.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/main.cpp > CMakeFiles/mysql.dir/main.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/main.cpp > CMakeFiles/mysql.dir/main.cpp.i
 
 mysql/CMakeFiles/mysql.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/mysql.dir/main.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/main.cpp -o CMakeFiles/mysql.dir/main.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/main.cpp -o CMakeFiles/mysql.dir/main.cpp.s
 
 mysql/CMakeFiles/mysql.dir/player.cpp.o: mysql/CMakeFiles/mysql.dir/flags.make
 mysql/CMakeFiles/mysql.dir/player.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/player.cpp
 mysql/CMakeFiles/mysql.dir/player.cpp.o: mysql/CMakeFiles/mysql.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object mysql/CMakeFiles/mysql.dir/player.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT mysql/CMakeFiles/mysql.dir/player.cpp.o -MF CMakeFiles/mysql.dir/player.cpp.o.d -o CMakeFiles/mysql.dir/player.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/player.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT mysql/CMakeFiles/mysql.dir/player.cpp.o -MF CMakeFiles/mysql.dir/player.cpp.o.d -o CMakeFiles/mysql.dir/player.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/player.cpp
 
 mysql/CMakeFiles/mysql.dir/player.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/mysql.dir/player.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/player.cpp > CMakeFiles/mysql.dir/player.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/player.cpp > CMakeFiles/mysql.dir/player.cpp.i
 
 mysql/CMakeFiles/mysql.dir/player.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/mysql.dir/player.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/player.cpp -o CMakeFiles/mysql.dir/player.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/player.cpp -o CMakeFiles/mysql.dir/player.cpp.s
 
 mysql/CMakeFiles/mysql.dir/recorder.cpp.o: mysql/CMakeFiles/mysql.dir/flags.make
 mysql/CMakeFiles/mysql.dir/recorder.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/recorder.cpp
 mysql/CMakeFiles/mysql.dir/recorder.cpp.o: mysql/CMakeFiles/mysql.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object mysql/CMakeFiles/mysql.dir/recorder.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT mysql/CMakeFiles/mysql.dir/recorder.cpp.o -MF CMakeFiles/mysql.dir/recorder.cpp.o.d -o CMakeFiles/mysql.dir/recorder.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/recorder.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT mysql/CMakeFiles/mysql.dir/recorder.cpp.o -MF CMakeFiles/mysql.dir/recorder.cpp.o.d -o CMakeFiles/mysql.dir/recorder.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/recorder.cpp
 
 mysql/CMakeFiles/mysql.dir/recorder.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/mysql.dir/recorder.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/recorder.cpp > CMakeFiles/mysql.dir/recorder.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/recorder.cpp > CMakeFiles/mysql.dir/recorder.cpp.i
 
 mysql/CMakeFiles/mysql.dir/recorder.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/mysql.dir/recorder.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/recorder.cpp -o CMakeFiles/mysql.dir/recorder.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/recorder.cpp -o CMakeFiles/mysql.dir/recorder.cpp.s
 
 mysql/CMakeFiles/mysql.dir/table_manager.cpp.o: mysql/CMakeFiles/mysql.dir/flags.make
 mysql/CMakeFiles/mysql.dir/table_manager.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/table_manager.cpp
 mysql/CMakeFiles/mysql.dir/table_manager.cpp.o: mysql/CMakeFiles/mysql.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object mysql/CMakeFiles/mysql.dir/table_manager.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT mysql/CMakeFiles/mysql.dir/table_manager.cpp.o -MF CMakeFiles/mysql.dir/table_manager.cpp.o.d -o CMakeFiles/mysql.dir/table_manager.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/table_manager.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT mysql/CMakeFiles/mysql.dir/table_manager.cpp.o -MF CMakeFiles/mysql.dir/table_manager.cpp.o.d -o CMakeFiles/mysql.dir/table_manager.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/table_manager.cpp
 
 mysql/CMakeFiles/mysql.dir/table_manager.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/mysql.dir/table_manager.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/table_manager.cpp > CMakeFiles/mysql.dir/table_manager.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/table_manager.cpp > CMakeFiles/mysql.dir/table_manager.cpp.i
 
 mysql/CMakeFiles/mysql.dir/table_manager.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/mysql.dir/table_manager.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/table_manager.cpp -o CMakeFiles/mysql.dir/table_manager.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/table_manager.cpp -o CMakeFiles/mysql.dir/table_manager.cpp.s
 
 mysql/CMakeFiles/mysql.dir/query_engine.cpp.o: mysql/CMakeFiles/mysql.dir/flags.make
 mysql/CMakeFiles/mysql.dir/query_engine.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/query_engine.cpp
 mysql/CMakeFiles/mysql.dir/query_engine.cpp.o: mysql/CMakeFiles/mysql.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object mysql/CMakeFiles/mysql.dir/query_engine.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT mysql/CMakeFiles/mysql.dir/query_engine.cpp.o -MF CMakeFiles/mysql.dir/query_engine.cpp.o.d -o CMakeFiles/mysql.dir/query_engine.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/query_engine.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT mysql/CMakeFiles/mysql.dir/query_engine.cpp.o -MF CMakeFiles/mysql.dir/query_engine.cpp.o.d -o CMakeFiles/mysql.dir/query_engine.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/query_engine.cpp
 
 mysql/CMakeFiles/mysql.dir/query_engine.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/mysql.dir/query_engine.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/query_engine.cpp > CMakeFiles/mysql.dir/query_engine.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/query_engine.cpp > CMakeFiles/mysql.dir/query_engine.cpp.i
 
 mysql/CMakeFiles/mysql.dir/query_engine.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/mysql.dir/query_engine.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/query_engine.cpp -o CMakeFiles/mysql.dir/query_engine.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/query_engine.cpp -o CMakeFiles/mysql.dir/query_engine.cpp.s
 
 mysql/CMakeFiles/mysql.dir/group_recorder.cpp.o: mysql/CMakeFiles/mysql.dir/flags.make
 mysql/CMakeFiles/mysql.dir/group_recorder.cpp.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/group_recorder.cpp
 mysql/CMakeFiles/mysql.dir/group_recorder.cpp.o: mysql/CMakeFiles/mysql.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object mysql/CMakeFiles/mysql.dir/group_recorder.cpp.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT mysql/CMakeFiles/mysql.dir/group_recorder.cpp.o -MF CMakeFiles/mysql.dir/group_recorder.cpp.o.d -o CMakeFiles/mysql.dir/group_recorder.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/group_recorder.cpp
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT mysql/CMakeFiles/mysql.dir/group_recorder.cpp.o -MF CMakeFiles/mysql.dir/group_recorder.cpp.o.d -o CMakeFiles/mysql.dir/group_recorder.cpp.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/group_recorder.cpp
 
 mysql/CMakeFiles/mysql.dir/group_recorder.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/mysql.dir/group_recorder.cpp.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/group_recorder.cpp > CMakeFiles/mysql.dir/group_recorder.cpp.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/group_recorder.cpp > CMakeFiles/mysql.dir/group_recorder.cpp.i
 
 mysql/CMakeFiles/mysql.dir/group_recorder.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/mysql.dir/group_recorder.cpp.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/group_recorder.cpp -o CMakeFiles/mysql.dir/group_recorder.cpp.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/mysql && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/mysql/group_recorder.cpp -o CMakeFiles/mysql.dir/group_recorder.cpp.s
 
 # Object files for target mysql
 mysql_OBJECTS = \

@@ -1050,7 +1050,6 @@ EXPORT int create_overhead_line(OBJECT **obj, OBJECT *parent)
 // EXPORT TIMESTAMP sync_overhead_line(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 //{
 
-
 static TIMESTAMP sync_overhead_line_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
 	try
@@ -1074,11 +1073,10 @@ static TIMESTAMP sync_overhead_line_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG p
 	SYNC_CATCHALL(overhead_line);
 }
 
-
 #ifndef __APPLE__
 extern "C" MODULE_API TIMESTAMP sync_overhead_line(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
-    return sync_overhead_line_impl(obj, t0, pass);
+	return sync_overhead_line_impl(obj, t0, pass);
 }
 #else
 extern "C" MODULE_API TIMESTAMP sync_overhead_line(void *object, ...)
@@ -1102,8 +1100,8 @@ extern "C" MODULE_API TIMESTAMP sync_overhead_line(void *object, ...)
 	PASSCONFIG pass = va_arg(args, PASSCONFIG);
 	va_end(args);
 
-	OBJECT *obj = (OBJECT *)object; 
-	return sync_overhead_line(obj, t0, pass);
+	OBJECT *obj = (OBJECT *)object;
+	return sync_overhead_line_impl(obj, t0, pass);
 }
 #endif
 

@@ -61,7 +61,7 @@ events:
       - "/opt/homebrew/share/cmake/Modules/CMakeDetermineSystem.cmake:212 (message)"
       - "CMakeLists.txt:16 (project)"
     message: |
-      The system is: Darwin - 25.2.0 - arm64
+      The system is: Darwin - 25.3.0 - arm64
   -
     kind: "find-v1"
     backtrace:

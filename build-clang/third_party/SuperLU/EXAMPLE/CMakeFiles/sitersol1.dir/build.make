@@ -76,29 +76,29 @@ third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol1.dir/sitersol1.c.o: third_party/
 third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol1.dir/sitersol1.c.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/sitersol1.c
 third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol1.dir/sitersol1.c.o: third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol1.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol1.dir/sitersol1.c.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/clang $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol1.dir/sitersol1.c.o -MF CMakeFiles/sitersol1.dir/sitersol1.c.o.d -o CMakeFiles/sitersol1.dir/sitersol1.c.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/sitersol1.c
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol1.dir/sitersol1.c.o -MF CMakeFiles/sitersol1.dir/sitersol1.c.o.d -o CMakeFiles/sitersol1.dir/sitersol1.c.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/sitersol1.c
 
 third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol1.dir/sitersol1.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/sitersol1.dir/sitersol1.c.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/clang $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/sitersol1.c > CMakeFiles/sitersol1.dir/sitersol1.c.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/sitersol1.c > CMakeFiles/sitersol1.dir/sitersol1.c.i
 
 third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol1.dir/sitersol1.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/sitersol1.dir/sitersol1.c.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/clang $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/sitersol1.c -o CMakeFiles/sitersol1.dir/sitersol1.c.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/sitersol1.c -o CMakeFiles/sitersol1.dir/sitersol1.c.s
 
 third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol1.dir/sfgmr.c.o: third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol1.dir/flags.make
 third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol1.dir/sfgmr.c.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/sfgmr.c
 third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol1.dir/sfgmr.c.o: third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol1.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol1.dir/sfgmr.c.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/clang $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol1.dir/sfgmr.c.o -MF CMakeFiles/sitersol1.dir/sfgmr.c.o.d -o CMakeFiles/sitersol1.dir/sfgmr.c.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/sfgmr.c
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol1.dir/sfgmr.c.o -MF CMakeFiles/sitersol1.dir/sfgmr.c.o.d -o CMakeFiles/sitersol1.dir/sfgmr.c.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/sfgmr.c
 
 third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol1.dir/sfgmr.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/sitersol1.dir/sfgmr.c.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/clang $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/sfgmr.c > CMakeFiles/sitersol1.dir/sfgmr.c.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/sfgmr.c > CMakeFiles/sitersol1.dir/sfgmr.c.i
 
 third_party/SuperLU/EXAMPLE/CMakeFiles/sitersol1.dir/sfgmr.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/sitersol1.dir/sfgmr.c.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/clang $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/sfgmr.c -o CMakeFiles/sitersol1.dir/sfgmr.c.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/sfgmr.c -o CMakeFiles/sitersol1.dir/sfgmr.c.s
 
 # Object files for target sitersol1
 sitersol1_OBJECTS = \

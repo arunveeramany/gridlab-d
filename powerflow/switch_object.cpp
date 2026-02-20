@@ -2142,10 +2142,10 @@ static TIMESTAMP sync_switch_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 	SYNC_CATCHALL(switch_object);
 }
 
-#ifndef _APPLE__
+#ifndef __APPLE__
 extern "C" MODULE_API TIMESTAMP sync_switch(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
-	return  sync_switch_impl(obj, t0, pass);
+	return sync_switch_impl(obj, t0, pass);
 }
 #else
 extern "C" MODULE_API TIMESTAMP sync_switch(void *object, ...)
@@ -2157,7 +2157,7 @@ extern "C" MODULE_API TIMESTAMP sync_switch(void *object, ...)
 	va_end(args);
 
 	OBJECT *obj = (OBJECT *)object;
-	sync_switch_impl(obj, t0, pass);
+	return sync_switch_impl(obj, t0, pass);
 }
 #endif
 

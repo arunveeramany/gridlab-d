@@ -76,29 +76,29 @@ third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol.dir/zitersol.c.o: third_party/Su
 third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol.dir/zitersol.c.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/zitersol.c
 third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol.dir/zitersol.c.o: third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol.dir/zitersol.c.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/clang $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol.dir/zitersol.c.o -MF CMakeFiles/zitersol.dir/zitersol.c.o.d -o CMakeFiles/zitersol.dir/zitersol.c.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/zitersol.c
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol.dir/zitersol.c.o -MF CMakeFiles/zitersol.dir/zitersol.c.o.d -o CMakeFiles/zitersol.dir/zitersol.c.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/zitersol.c
 
 third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol.dir/zitersol.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/zitersol.dir/zitersol.c.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/clang $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/zitersol.c > CMakeFiles/zitersol.dir/zitersol.c.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/zitersol.c > CMakeFiles/zitersol.dir/zitersol.c.i
 
 third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol.dir/zitersol.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/zitersol.dir/zitersol.c.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/clang $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/zitersol.c -o CMakeFiles/zitersol.dir/zitersol.c.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/zitersol.c -o CMakeFiles/zitersol.dir/zitersol.c.s
 
 third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol.dir/zfgmr.c.o: third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol.dir/flags.make
 third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol.dir/zfgmr.c.o: /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/zfgmr.c
 third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol.dir/zfgmr.c.o: third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol.dir/zfgmr.c.o"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/clang $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol.dir/zfgmr.c.o -MF CMakeFiles/zitersol.dir/zfgmr.c.o.d -o CMakeFiles/zitersol.dir/zfgmr.c.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/zfgmr.c
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol.dir/zfgmr.c.o -MF CMakeFiles/zitersol.dir/zfgmr.c.o.d -o CMakeFiles/zitersol.dir/zfgmr.c.o -c /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/zfgmr.c
 
 third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol.dir/zfgmr.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/zitersol.dir/zfgmr.c.i"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/clang $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/zfgmr.c > CMakeFiles/zitersol.dir/zfgmr.c.i
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/zfgmr.c > CMakeFiles/zitersol.dir/zfgmr.c.i
 
 third_party/SuperLU/EXAMPLE/CMakeFiles/zitersol.dir/zfgmr.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/zitersol.dir/zfgmr.c.s"
-	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/clang $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/zfgmr.c -o CMakeFiles/zitersol.dir/zfgmr.c.s
+	cd /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/build-clang/third_party/SuperLU/EXAMPLE && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/third_party/SuperLU/EXAMPLE/zfgmr.c -o CMakeFiles/zitersol.dir/zfgmr.c.s
 
 # Object files for target zitersol
 zitersol_OBJECTS = \
