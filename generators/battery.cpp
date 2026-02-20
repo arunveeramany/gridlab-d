@@ -2612,8 +2612,41 @@ EXPORT int init_battery(OBJECT *obj, OBJECT *parent)
 //EXPORT TIMESTAMP sync_battery(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 //{
 
+static TIMESTAMP sync_battery_impl(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+{
+	TIMESTAMP t2 = TS_NEVER;
+	battery *my = /*OBJECTDATA(obj, battery)*/ object_data<battery>(obj);
+	try
+	{
+		switch (pass)
+		{
+		case PC_PRETOPDOWN:
+			t2 = my->presync(obj->clock, t1);
+			break;
+		case PC_BOTTOMUP:
+			t2 = my->sync(obj->clock, t1);
+			break;
+		case PC_POSTTOPDOWN:
+			t2 = my->postsync(obj->clock, t1);
+			break;
+		default:
+			GL_THROW("invalid pass request (%d)", pass);
+			break;
+		}
+		if (pass == clockpass)
+			obj->clock = t1;
+	}
+	SYNC_CATCHALL(battery);
+	return t2;
+}
 
-extern "C" TIMESTAMP sync_battery(void *object, ...)
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_battery(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+{
+    return  sync_battery_impl(obj, t1, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_battery(void *object, ...)
 {
     va_list args;
     va_start(args, object);
@@ -2640,31 +2673,11 @@ extern "C" TIMESTAMP sync_battery(void *object, ...)
         return FAILED;
     }
 
-	TIMESTAMP t2 = TS_NEVER;
-	battery *my = /*OBJECTDATA(obj, battery)*/ object_data<battery>(obj);
-	try
-	{
-		switch (pass)
-		{
-		case PC_PRETOPDOWN:
-			t2 = my->presync(obj->clock, t1);
-			break;
-		case PC_BOTTOMUP:
-			t2 = my->sync(obj->clock, t1);
-			break;
-		case PC_POSTTOPDOWN:
-			t2 = my->postsync(obj->clock, t1);
-			break;
-		default:
-			GL_THROW("invalid pass request (%d)", pass);
-			break;
-		}
-		if (pass == clockpass)
-			obj->clock = t1;
-	}
-	SYNC_CATCHALL(battery);
-	return t2;
+    return  sync_battery_impl(obj, t1, pass);
 }
+#endif
+
+
 
 EXPORT STATUS preupdate_battery(OBJECT *obj, TIMESTAMP t0, unsigned int64 delta_time)
 {

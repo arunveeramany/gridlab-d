@@ -5196,33 +5196,9 @@ EXPORT int init_diesel_dg(OBJECT *obj, OBJECT *parent)
 
 //EXPORT TIMESTAMP sync_diesel_dg(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 //{
-extern "C" TIMESTAMP sync_diesel_dg(void *object, ...)
+
+static TIMESTAMP sync_diesel_dg_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
-// Add early validation of callback
-    if (!callback) {
-        gl_error("sync_player: callback is null");
-        return TS_INVALID;
-    }
-
-    // Add structure validation
-    // std::cerr << "Callback structure size check:" << std::endl;
-    // std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
-    // std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
-    // std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
-    
-    if (!callback->time.local_datetime) {
-        gl_error("sync_player: local_datetime function is null");
-        return TS_INVALID;
-    }
-
-    va_list args;
-    va_start(args, object);
-    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
-
-    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
-
 	TIMESTAMP t1 = TS_INVALID;
 	diesel_dg *my = object_data<diesel_dg>(obj);
 	try
@@ -5248,6 +5224,43 @@ extern "C" TIMESTAMP sync_diesel_dg(void *object, ...)
 	SYNC_CATCHALL(diesel_dg);
 	return t1;
 }
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_diesel_dg(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_diesel_dg_impl(obj,  t0,  pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_diesel_dg(void *object, ...)
+{
+// Add early validation of callback
+    if (!callback) {
+        gl_error("sync_player: callback is null");
+        return TS_INVALID;
+    }
+
+    // Add structure validation
+    // std::cerr << "Callback structure size check:" << std::endl;
+    // std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
+    // std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
+    // std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
+    
+    if (!callback->time.local_datetime) {
+        gl_error("sync_player: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object;  
+    return sync_diesel_dg_impl(obj,  t0,  pass);
+}
+#endif
+
 
 // EXPORT for object-level call (as opposed to module-level)
 /*

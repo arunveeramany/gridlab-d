@@ -280,29 +280,8 @@ EXPORT int init_rectifier(OBJECT *obj, OBJECT *parent)
 // EXPORT TIMESTAMP sync_rectifier(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 // {
 
-extern "C" TIMESTAMP sync_rectifier(void *object, ...)
+static TIMESTAMP sync_rectifier_impl(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 {
-
-    // Add early validation of callback
-    if (!callback) {
-        gl_error("sync_rectifier: callback is null");
-        return TS_INVALID;
-    }
-
-    if (!callback->time.local_datetime) {
-        gl_error("sync_rectifier: local_datetime function is null");
-        return TS_INVALID;
-    }
-
-    va_list args;
-    va_start(args, object);
-    TIMESTAMP t1 = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
-
-    OBJECT *obj = (OBJECT*)object; 
-
-
 	TIMESTAMP t2 = TS_NEVER;
 	rectifier *my = /*OBJECTDATA(obj,<>)*/ object_data<rectifier>(obj);
 	try
@@ -327,3 +306,35 @@ extern "C" TIMESTAMP sync_rectifier(void *object, ...)
 	SYNC_CATCHALL(rectifier);
 	return t2;
 }
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_rectifier(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+{
+    return sync_rectifier_impl(obj,  t1, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_rectifier(void *object, ...)
+{
+
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_rectifier: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_rectifier: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t1 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object; 
+    return sync_rectifier_impl(obj,  t1, pass);
+}
+#endif
+
