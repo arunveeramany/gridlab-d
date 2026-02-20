@@ -595,25 +595,25 @@ int node::init(OBJECT *parent)
 		}
 
 		// Check for parents to see if they are a parent/childed load
-		if (obj->parent != nullptr)									// Has a parent, let's see if it is a node and link it up
-		{		
+		if (obj->parent != nullptr) // Has a parent, let's see if it is a node and link it up
+		{
 			// if (parent != nullptr) {
-				// gl_debug("node::init for '%s': Parent is '%s' (class: %s). Checking isa('node')... Result: %d", 
-				// 		get_name(), 
-				// 		parent->name, 
-				// 		parent->oclass->name,
-				// 		gl_object_isa(parent, "node"));
+			// gl_debug("node::init for '%s': Parent is '%s' (class: %s). Checking isa('node')... Result: %d",
+			// 		get_name(),
+			// 		parent->name,
+			// 		parent->oclass->name,
+			// 		gl_object_isa(parent, "node"));
 			// }
-													//(this will break anything intentionally done this way - e.g. switch between two nodes)
+			//(this will break anything intentionally done this way - e.g. switch between two nodes)
 			// if (!(gl_object_isa(obj->parent, "node", "powerflow"))) // All others alias up to isa:node eventually
 			// in response to: ERROR    [INIT] : init_load(obj=21;measure_freq_load_parent): unhandled exception - NR: Parent is not a node-based object!
 			// if ( !(gl_object_isa(obj->parent, "node", "powerflow") || gl_object_isa(obj->parent, "meter", "powerflow")) )
-			if ( !(strcmp(obj->parent->oclass->name, "node") == 0 ||
-				strcmp(obj->parent->oclass->name, "meter") == 0 ||
-				strcmp(obj->parent->oclass->name, "load") == 0 ||
-				strcmp(obj->parent->oclass->name, "triplex_node") == 0 ||
-				strcmp(obj->parent->oclass->name, "triplex_meter") == 0 ||
-				strcmp(obj->parent->oclass->name, "triplex_load") == 0) )
+			if (!(strcmp(obj->parent->oclass->name, "node") == 0 ||
+				  strcmp(obj->parent->oclass->name, "meter") == 0 ||
+				  strcmp(obj->parent->oclass->name, "load") == 0 ||
+				  strcmp(obj->parent->oclass->name, "triplex_node") == 0 ||
+				  strcmp(obj->parent->oclass->name, "triplex_meter") == 0 ||
+				  strcmp(obj->parent->oclass->name, "triplex_load") == 0))
 				GL_THROW("NR: Parent is not a node-based object!");
 			/*  TROUBLESHOOT
 			A Newton-Raphson parent-child connection was attempted on a non-node.  The parent object must be a node, load, or meter object in the
@@ -3580,7 +3580,8 @@ EXPORT int create_node(OBJECT **obj, OBJECT *parent)
 		if (*obj != nullptr)
 		{
 			node *my = object_data<node>(*obj);
-			if (!my) {
+			if (!my)
+			{
 				gl_error("create_node: obj->data is null for class 'node'");
 				return 0;
 			}
@@ -3658,33 +3659,9 @@ EXPORT int init_node(OBJECT *obj)
  */
 // EXPORT TIMESTAMP sync_node(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 // {
-extern "C" TIMESTAMP sync_node(void *object, ...)
+
+static TIMESTAMP sync_node_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
-    va_list args;
-    va_start(args, object);
-    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
-
-    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
-    
-	if (!callback) {
-        gl_error("callback is null in sync_node");
-        return 0;  // Fail module load
-    }
-
-	    // Add structure validation
-    // std::cerr << "Callback structure size check:" << std::endl;
-    // std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
-    // std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
-    // std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
-    
-
-	if (!callback->time.local_datetime) {
-        gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
-        return FAILED;
-    }
-
 	try
 	{
 		node *pObj = object_data<node>(obj);
@@ -3705,6 +3682,44 @@ extern "C" TIMESTAMP sync_node(void *object, ...)
 	}
 	SYNC_CATCHALL(node);
 }
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_node(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+	return sync_node_impl(obj, t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_node(void *object, ...)
+{
+	va_list args;
+	va_start(args, object);
+	TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+	PASSCONFIG pass = va_arg(args, PASSCONFIG);
+	va_end(args);
+
+	OBJECT *obj = (OBJECT *)object; // ← Move this outside try block
+
+	if (!callback)
+	{
+		gl_error("callback is null in sync_node");
+		return 0; // Fail module load
+	}
+
+	// Add structure validation
+	// std::cerr << "Callback structure size check:" << std::endl;
+	// std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
+	// std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
+	// std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
+
+	if (!callback->time.local_datetime)
+	{
+		gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
+		return FAILED;
+	}
+
+	return sync_node_impl(obj, t0, pass);
+}
+#endif
 
 /**
  * Function to search for a master swing node, one swing to rule them all

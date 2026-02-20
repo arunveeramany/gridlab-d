@@ -100,10 +100,19 @@ EXPORT int create_triplex_line_configuration(OBJECT **obj, OBJECT *parent)
 	}
 	CREATE_CATCHALL(triplex_line_configuration);
 }
-EXPORT TIMESTAMP sync_triplex_line_configuration(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_triplex_line_configuration(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 {
 	return TS_NEVER;
 }
+#else
+extern "C" MODULE_API TIMESTAMP sync_triplex_line_configuration(void *obj, ...)
+{
+	return TS_NEVER;
+}
+#endif
+
 
 EXPORT int isa_triplex_line_configuration(OBJECT *obj, char *classname)
 {

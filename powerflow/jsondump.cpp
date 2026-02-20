@@ -4085,7 +4085,28 @@ EXPORT int init_jsondump(OBJECT *obj)
 // EXPORT TIMESTAMP sync_jsondump(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 // {
 
-extern "C" TIMESTAMP sync_jsondump(void *object, ...)
+
+static TIMESTAMP sync_jsondump_impl(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+{
+
+	try
+	{
+		jsondump *my = /*OBJECTDATA(obj,<>)*/ object_data<jsondump>(obj);
+		TIMESTAMP rv;
+		obj->clock = t1;
+		rv = my->runtime > t1 ? my->runtime : TS_NEVER;
+		return rv;
+	}
+	SYNC_CATCHALL(jsondump);
+}
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_jsondump(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+{
+    return sync_jsondump_impl(obj, t1,  pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_jsondump(void *object, ...)
 {
 
     // Add early validation of callback
@@ -4106,18 +4127,10 @@ extern "C" TIMESTAMP sync_jsondump(void *object, ...)
     va_end(args);
 
     OBJECT *obj = (OBJECT*)object; 
-
-
-	try
-	{
-		jsondump *my = /*OBJECTDATA(obj,<>)*/ object_data<jsondump>(obj);
-		TIMESTAMP rv;
-		obj->clock = t1;
-		rv = my->runtime > t1 ? my->runtime : TS_NEVER;
-		return rv;
-	}
-	SYNC_CATCHALL(jsondump);
+    return sync_jsondump_impl(obj, t1,  pass);
 }
+#endif
+
 
 EXPORT TIMESTAMP commit_jsondump(OBJECT *obj, TIMESTAMP t1, TIMESTAMP t2)
 {

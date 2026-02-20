@@ -1609,16 +1609,9 @@ EXPORT int init_regulator(OBJECT *obj)
 */
 //EXPORT TIMESTAMP sync_regulator(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 //{
-extern "C" TIMESTAMP sync_regulator(void *object, ...)
+
+static TIMESTAMP sync_regulator_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
-    va_list args;
-    va_start(args, object);
-    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
-
-    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
-
 	try {
 		regulator *pObj = object_data<regulator>(obj);
 		TIMESTAMP t1 = TS_NEVER;
@@ -1637,6 +1630,26 @@ extern "C" TIMESTAMP sync_regulator(void *object, ...)
 	} 
 	SYNC_CATCHALL(regulator);
 }
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_regulator(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_regulator_impl(obj, t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_regulator(void *object, ...)
+{
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object;
+    return sync_regulator_impl(obj,  t0, pass);
+}
+#endif
+
 
 EXPORT int isa_regulator(OBJECT *obj, char *classname)
 {

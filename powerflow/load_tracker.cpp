@@ -319,7 +319,38 @@ EXPORT int init_load_tracker(OBJECT *obj)
 
 //EXPORT TIMESTAMP sync_load_tracker(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 //{
-extern "C" TIMESTAMP sync_load_tracker(void *object, ...)
+
+
+static TIMESTAMP sync_load_tracker_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+	load_tracker *pObj = object_data<load_tracker>(obj);
+	try {
+		TIMESTAMP t1;
+		switch (pass) {
+		case PC_PRETOPDOWN:
+			return pObj->presync(t0);
+		case PC_BOTTOMUP:
+			return pObj->sync(t0);
+		case PC_POSTTOPDOWN:
+			t1 = pObj->postsync(obj->clock,t0);
+			obj->clock = t0;
+			return t1;
+		default:
+			throw "invalid pass request";
+		}
+		throw "invalid pass request";
+	}
+	SYNC_CATCHALL(load_tracker);
+}
+
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_load_tracker(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+     return sync_load_tracker_impl(obj, t0,  pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_load_tracker(void *object, ...)
 {
 
 	// Add early validation of callback
@@ -340,24 +371,6 @@ extern "C" TIMESTAMP sync_load_tracker(void *object, ...)
     va_end(args);
 
     OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
-
-
-	load_tracker *pObj = object_data<load_tracker>(obj);
-	try {
-		TIMESTAMP t1;
-		switch (pass) {
-		case PC_PRETOPDOWN:
-			return pObj->presync(t0);
-		case PC_BOTTOMUP:
-			return pObj->sync(t0);
-		case PC_POSTTOPDOWN:
-			t1 = pObj->postsync(obj->clock,t0);
-			obj->clock = t0;
-			return t1;
-		default:
-			throw "invalid pass request";
-		}
-		throw "invalid pass request";
-	}
-	SYNC_CATCHALL(load_tracker);
+    return sync_load_tracker_impl(obj, t0,  pass);
 }
+#endif

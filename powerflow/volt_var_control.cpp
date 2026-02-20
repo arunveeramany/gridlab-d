@@ -2835,28 +2835,11 @@ EXPORT int init_volt_var_control(OBJECT *obj)
  */
 // EXPORT TIMESTAMP sync_volt_var_control(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 // {
-extern "C" TIMESTAMP sync_volt_var_control(void *object, ...)
+
+
+
+static TIMESTAMP sync_volt_var_control_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
-
-    // Add early validation of callback
-    if (!callback) {
-        gl_error("sync_volt_var_control: callback is null");
-        return TS_INVALID;
-    }
-
-    if (!callback->time.local_datetime) {
-        gl_error("sync_volt_var_control: local_datetime function is null");
-        return TS_INVALID;
-    }
-
-    va_list args;
-    va_start(args, object);
-    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
-
-    OBJECT *obj = (OBJECT*)object; 
-
 	try
 	{
 		volt_var_control *pObj = object_data<volt_var_control>(obj);
@@ -2877,6 +2860,40 @@ extern "C" TIMESTAMP sync_volt_var_control(void *object, ...)
 	}
 	SYNC_CATCHALL(volt_var_control);
 }
+
+
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_volt_var_control(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+	return sync_volt_var_control_impl(obj, t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_volt_var_control(void *object, ...)
+{
+
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_volt_var_control: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_volt_var_control: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object; 
+    return sync_volt_var_control_impl(obj, t0, pass);
+}
+#endif
+
 
 EXPORT int isa_volt_var_control(OBJECT *obj, char *classname)
 {

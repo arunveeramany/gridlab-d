@@ -477,30 +477,8 @@ EXPORT int init_energy_storage(OBJECT *obj, OBJECT *parent)
 // EXPORT TIMESTAMP sync_energy_storage(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 // {
 
-extern "C" TIMESTAMP sync_energy_storage(void *object, ...)
+static TIMESTAMP sync_energy_storage_impl(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 {
-
-    // Add early validation of callback
-    if (!callback) {
-        gl_error("sync_energy_storage: callback is null");
-        return TS_INVALID;
-    }
-
-    if (!callback->time.local_datetime) {
-        gl_error("sync_energy_storage: local_datetime function is null");
-        return TS_INVALID;
-    }
-
-    va_list args;
-    va_start(args, object);
-    TIMESTAMP t1 = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
-
-    OBJECT *obj = (OBJECT*)object; 
-
-
-
 	TIMESTAMP t2 = TS_NEVER;
 	energy_storage *my = /*OBJECTDATA(obj, energy_storage)*/ object_data<energy_storage>(obj);
 	try
@@ -524,6 +502,39 @@ extern "C" TIMESTAMP sync_energy_storage(void *object, ...)
 	SYNC_CATCHALL(energy_storage);
 	return t2;
 }
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_energy_storage(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+{
+    return sync_energy_storage_impl(obj,  t1,  pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_energy_storage(void *object, ...)
+{
+
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_energy_storage: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_energy_storage: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t1 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object; 
+    return sync_energy_storage_impl(obj,  t1,  pass);
+}
+#endif
+
+
 
 //DELTAMODE Linkage
 EXPORT SIMULATIONMODE interupdate_energy_storage(OBJECT *obj, unsigned int64 delta_time, unsigned long dt, unsigned int iteration_count_val)

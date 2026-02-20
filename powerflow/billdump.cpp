@@ -282,7 +282,27 @@ EXPORT int init_billdump(OBJECT *obj)
 // EXPORT TIMESTAMP sync_billdump(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 // {
 
-extern "C" TIMESTAMP sync_billdump(void *object, ...)
+static TIMESTAMP sync_billdump_impl(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+{
+	try
+	{
+		billdump *my = /*OBJECTDATA(obj,<>)*/ object_data<billdump>(obj);
+		TIMESTAMP rv;
+		obj->clock = t1;
+		rv = my->runtime > t1 ? my->runtime : TS_NEVER;
+		return rv;
+	}
+	SYNC_CATCHALL(billdump);
+}
+
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_billdump(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+{
+    return sync_billdump_impl(obj, t1, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_billdump(void *object, ...)
 {
 
     // Add early validation of callback
@@ -303,19 +323,9 @@ extern "C" TIMESTAMP sync_billdump(void *object, ...)
     va_end(args);
 
     OBJECT *obj = (OBJECT*)object; 
-
-
-
-	try
-	{
-		billdump *my = /*OBJECTDATA(obj,<>)*/ object_data<billdump>(obj);
-		TIMESTAMP rv;
-		obj->clock = t1;
-		rv = my->runtime > t1 ? my->runtime : TS_NEVER;
-		return rv;
-	}
-	SYNC_CATCHALL(billdump);
+    return sync_billdump_impl(obj, t1, pass); 
 }
+#endif
 
 EXPORT TIMESTAMP commit_billdump(OBJECT *obj, TIMESTAMP t1, TIMESTAMP t2)
 {

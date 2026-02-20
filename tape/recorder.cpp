@@ -21,7 +21,7 @@
 #include <iomanip>
 #include <cstring> // <-- add for strtok_s, memcpy, etc.
 #include <sstream>
-#include <cstring>  // strncpy, strrchr, strcmp
+#include <cstring> // strncpy, strrchr, strcmp
 
 #include "gridlabd.h"
 #include "object.h"
@@ -46,7 +46,6 @@
 
 CLASS *recorder_class = nullptr;
 static OBJECT *last_recorder = nullptr;
-
 
 // Identify trailing .real / .imag (optionally extend to .mag / .ang later)
 enum COMPLEX_PART
@@ -1008,37 +1007,9 @@ int read_properties(struct recorder *my, OBJECT *obj, PROPERTY *prop, char *buff
 }
 
 // EXPORT TIMESTAMP sync_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
-extern "C" TIMESTAMP sync_recorder(void *object, ...)
+
+static TIMESTAMP sync_recorder_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
-	va_list args;
-	va_start(args, object);
-	TIMESTAMP t0 = va_arg(args, TIMESTAMP);
-	PASSCONFIG pass = va_arg(args, PASSCONFIG);
-	va_end(args);
-
-	OBJECT *obj = (OBJECT *)object; // ← Move this outside try block
-
-	gl_debug("sync_recorder called: obj=%s, t0=%lld, pass=%d, interval=%lld",
-			 obj->name, t0, pass, object_data<struct recorder>(obj)->interval);
-
-	if (!callback)
-	{
-		gl_error("callback is null in sync_recorder");
-		return TS_INVALID; // Fail module load
-	}
-
-	// Add structure validation
-	// std::cerr << "Callback structure size check:" << std::endl;
-	// std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
-	// std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
-	// std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
-
-	if (!callback->time.local_datetime)
-	{
-		gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
-		return TS_INVALID;
-	}
-
 	TIMESTAMP return_value;
 	struct recorder *my = object_data<struct recorder>(obj);
 
@@ -1226,6 +1197,47 @@ extern "C" TIMESTAMP sync_recorder(void *object, ...)
 	gl_debug("About to call sync_recorder_error for %s", obj->name);
 	return sync_recorder_error(&obj, &my, buffer);
 }
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_recorder_impl(obj, t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_recorder(void *object, ...)
+{
+	va_list args;
+	va_start(args, object);
+	TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+	PASSCONFIG pass = va_arg(args, PASSCONFIG);
+	va_end(args);
+
+	OBJECT *obj = (OBJECT *)object; // ← Move this outside try block
+
+	gl_debug("sync_recorder called: obj=%s, t0=%lld, pass=%d, interval=%lld",
+			 obj->name, t0, pass, object_data<struct recorder>(obj)->interval);
+
+	if (!callback)
+	{
+		gl_error("callback is null in sync_recorder");
+		return TS_INVALID; // Fail module load
+	}
+
+	// Add structure validation
+	// std::cerr << "Callback structure size check:" << std::endl;
+	// std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
+	// std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
+	// std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
+
+	if (!callback->time.local_datetime)
+	{
+		gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
+		return TS_INVALID;
+	}
+
+	return sync_recorder_impl(obj, t0, pass);
+}
+#endif
 
 TIMESTAMP sync_recorder_error(OBJECT **obj, struct recorder **my, char2048 buffer)
 {

@@ -2279,28 +2279,9 @@ EXPORT int init_windturb_dg(OBJECT *obj, OBJECT *parent)
 // EXPORT TIMESTAMP sync_windturb_dg(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 // {
 
-extern "C" TIMESTAMP sync_windturb_dg(void *object, ...)
+
+static TIMESTAMP sync_windturb_dg_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
-
-    // Add early validation of callback
-    if (!callback) {
-        gl_error("sync_windturb_dg: callback is null");
-        return TS_INVALID;
-    }
-
-    if (!callback->time.local_datetime) {
-        gl_error("sync_windturb_dg: local_datetime function is null");
-        return TS_INVALID;
-    }
-
-    va_list args;
-    va_start(args, object);
-    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
-
-    OBJECT *obj = (OBJECT*)object; 
-
 
 	TIMESTAMP t1 = TS_NEVER;
 	windturb_dg *my = /*OBJECTDATA(obj,<>)*/ object_data<windturb_dg>(obj);
@@ -2325,6 +2306,38 @@ extern "C" TIMESTAMP sync_windturb_dg(void *object, ...)
 	SYNC_CATCHALL(windturb_dg);
 	return t1;
 }
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_windturb_dg(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_windturb_dg_impl(obj, t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_windturb_dg(void *object, ...)
+{
+
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_windturb_dg: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_windturb_dg: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object; 
+    return sync_windturb_dg_impl(obj, t0, pass);
+}
+#endif
+
 
 // Current injection exposed function
 EXPORT STATUS windturb_dg_NR_current_injection_update(OBJECT *obj, int64 iteration_count, bool *converged_failure)

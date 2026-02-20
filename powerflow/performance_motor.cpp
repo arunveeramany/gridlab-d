@@ -476,29 +476,10 @@ EXPORT int init_performance_motor(OBJECT *obj)
 */
 // EXPORT TIMESTAMP sync_performance_motor(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 // {
-extern "C" TIMESTAMP sync_performance_motor(void *object, ...)
+
+
+static TIMESTAMP sync_performance_motor_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
-
-    // Add early validation of callback
-    if (!callback) {
-        gl_error("sync_performance_motor: callback is null");
-        return TS_INVALID;
-    }
-
-    if (!callback->time.local_datetime) {
-        gl_error("sync_performance_motor: local_datetime function is null");
-        return TS_INVALID;
-    }
-
-    va_list args;
-    va_start(args, object);
-    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
-
-    OBJECT *obj = (OBJECT*)object; 
-
-
 
 	TIMESTAMP t1 = TS_INVALID;
 	performance_motor *my = object_data<performance_motor>(obj);
@@ -524,6 +505,38 @@ extern "C" TIMESTAMP sync_performance_motor(void *object, ...)
 	SYNC_CATCHALL(performance_motor);
 	return t1;
 }
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_performance_motor(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_performance_motor_impl(obj,  t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_performance_motor(void *object, ...)
+{
+
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_performance_motor: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_performance_motor: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object; 
+    return sync_performance_motor_impl(obj,  t0, pass);
+}
+#endif
+
 
 /**
 * Allows the core to discover whether obj is a subtype of this class.

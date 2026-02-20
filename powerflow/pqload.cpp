@@ -439,29 +439,10 @@ EXPORT int init_pqload(OBJECT *obj)
  */
 // EXPORT TIMESTAMP sync_pqload(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 // {
-extern "C" TIMESTAMP sync_pqload(void *object, ...)
+
+
+static TIMESTAMP sync_pqload_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
-
-    // Add early validation of callback
-    if (!callback) {
-        gl_error("sync_pqload: callback is null");
-        return TS_INVALID;
-    }
-
-    if (!callback->time.local_datetime) {
-        gl_error("sync_pqload: local_datetime function is null");
-        return TS_INVALID;
-    }
-
-    va_list args;
-    va_start(args, object);
-    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
-
-    OBJECT *obj = (OBJECT*)object; 
-
-
 	try
 	{
 		pqload *pObj = object_data<pqload>(obj);
@@ -482,6 +463,39 @@ extern "C" TIMESTAMP sync_pqload(void *object, ...)
 	}
 	SYNC_CATCHALL(pqload);
 }
+
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_pqload(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_pqload_impl(obj, t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_pqload(void *object, ...)
+{
+
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_pqload: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_pqload: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object;
+    return sync_pqload_impl(obj, t0, pass);
+}
+#endif
+
 
 EXPORT int isa_pqload(OBJECT *obj, char *classname)
 {

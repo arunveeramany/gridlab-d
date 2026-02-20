@@ -846,28 +846,9 @@ EXPORT int init_controller_dg(OBJECT *obj, OBJECT *parent)
 // EXPORT TIMESTAMP sync_controller_dg(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 // {
 
-extern "C" TIMESTAMP sync_controller_dg(void *object, ...)
+
+static TIMESTAMP sync_controller_dg_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
-
-    // Add early validation of callback
-    if (!callback) {
-        gl_error("sync_controller_dg: callback is null");
-        return TS_INVALID;
-    }
-
-    if (!callback->time.local_datetime) {
-        gl_error("sync_controller_dg: local_datetime function is null");
-        return TS_INVALID;
-    }
-
-    va_list args;
-    va_start(args, object);
-    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
-
-    OBJECT *obj = (OBJECT*)object; 
-
 	TIMESTAMP t1 = TS_INVALID;
 	controller_dg *my = /*OBJECTDATA(obj,controller_dg)*/ object_data<controller_dg>(obj);
 	try
@@ -892,6 +873,37 @@ extern "C" TIMESTAMP sync_controller_dg(void *object, ...)
 	SYNC_CATCHALL(controller_dg);
 	return t1;
 }
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_controller_dg(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+     return sync_controller_dg_impl(obj,  t0,  pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_controller_dg(void *object, ...)
+{
+
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_controller_dg: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_controller_dg: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object; 
+    return sync_controller_dg_impl(obj,  t0,  pass);
+}
+#endif
 
 EXPORT SIMULATIONMODE interupdate_controller_dg(OBJECT *obj, unsigned int64 delta_time, unsigned long dt, unsigned int iteration_count_val)
 {

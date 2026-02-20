@@ -670,6 +670,30 @@ static int vsystem(const char *fmt, ...)
 	return rc;
 }
 
+
+
+#ifdef _WIN32
+int vsystem_posix_exec_argv_capture(const std::vector<std::string> &argv, 
+                                     const std::string &out_path, 
+                                     const std::string &err_path)
+{
+    // Build command line string for system()
+    std::string cmd;
+    for (const auto &arg : argv) {
+        if (!cmd.empty()) cmd += " ";
+        // Quote arguments containing spaces
+        if (arg.find(' ') != std::string::npos) {
+            cmd += "\"" + arg + "\"";
+        } else {
+            cmd += arg;
+        }
+    }
+    // Redirect output
+    cmd += " > \"" + out_path + "\" 2> \"" + err_path + "\"";
+    return system(cmd.c_str());
+}
+#endif
+
 // replace vsystem_posix() with an argv-based exec
 #ifndef _WIN32
 #include <sys/wait.h>
@@ -1026,14 +1050,14 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 	// This is type-safe and handles memory automatically.
 	// // We explicitly quote the executable path to handle spaces in paths correctly.
 
-	// std::string command_line = std::format(
-	// 	"\"{}\" -W {} {} {}.glm",
-	// 	executable_to_run_path.string(), // Get string representation for formatting
-	// 	dir,
-	// 	validate_child_cmdargs,
-	// 	name);
+	std::string command_line = std::format(
+	 	"\"{}\" -W {} {} {}.glm",
+	 	executable_to_run_path.string(), // Get string representation for formatting
+	 	dir,
+	 	validate_child_cmdargs,
+	 	name);
 
-	std::string command_line = std::format("{}.glm", name);
+	//std::string command_line = std::format("{}.glm", name);
 
 	// 4. Execute the command using your custom vsystem wrapper.
 	// Assuming vsystem expects a C-style string (const char*).

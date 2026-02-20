@@ -9,7 +9,8 @@
 #include "tape.h"
 
 // A node in a linked list for storing multiple property targets
-struct s_rec_property_list {
+struct s_rec_property_list
+{
     OBJECT *target_obj;
     PROPERTY *target_prop;
     struct s_rec_property_list *next;
@@ -60,7 +61,6 @@ public:
 
     OBJECT *target_obj;
 
-
 public: // Does this need to be Private?
     RECORDER_MAP *rmap;
     TAPEOPS *ops;
@@ -84,13 +84,11 @@ public: // Does this need to be Private?
     } last;
     int32 samples;
     PROPERTY *target;
-
-
 };
 
 extern int read_properties(struct recorder *my, OBJECT *obj, PROPERTY *prop, char *buffer, int size);
-//EXPORT TIMESTAMP sync_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass);
-extern "C" TIMESTAMP sync_recorder(void *object, ...);
+// EXPORT TIMESTAMP sync_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass);
+//  extern "C" TIMESTAMP sync_recorder(void *object, ...);
 
 EXPORT TIMESTAMP sync_recorder_error(OBJECT **obj, struct recorder **my, char2048 buffer);
 

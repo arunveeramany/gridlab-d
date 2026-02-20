@@ -2411,7 +2411,39 @@ EXPORT int init_fault_check(OBJECT *obj, OBJECT *parent)
 // EXPORT TIMESTAMP sync_fault_check(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 // {
 
-extern "C" TIMESTAMP sync_fault_check(void *object, ...)
+
+static TIMESTAMP sync_fault_check_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+
+	try
+	{
+		fault_check *pObj = /*OBJECTDATA(obj,<>)*/ object_data<fault_check>(obj);
+		TIMESTAMP t1 = TS_NEVER;
+		switch (pass)
+		{
+		case PC_PRETOPDOWN:
+			return pObj->presync(t0);
+		case PC_BOTTOMUP:
+			return pObj->sync(t0);
+		case PC_POSTTOPDOWN:
+			t1 = pObj->postsync(t0);
+			obj->clock = t0;
+			return t1;
+		default:
+			throw "invalid pass request";
+		}
+	}
+	SYNC_CATCHALL(fault_check);
+}
+
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_fault_check(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_fault_check_impl(obj,  t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_fault_check(void *object, ...)
 {
 	va_list args;
 	va_start(args, object);
@@ -2438,27 +2470,10 @@ extern "C" TIMESTAMP sync_fault_check(void *object, ...)
 		gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
 		return FAILED;
 	}
-
-	try
-	{
-		fault_check *pObj = /*OBJECTDATA(obj,<>)*/ object_data<fault_check>(obj);
-		TIMESTAMP t1 = TS_NEVER;
-		switch (pass)
-		{
-		case PC_PRETOPDOWN:
-			return pObj->presync(t0);
-		case PC_BOTTOMUP:
-			return pObj->sync(t0);
-		case PC_POSTTOPDOWN:
-			t1 = pObj->postsync(t0);
-			obj->clock = t0;
-			return t1;
-		default:
-			throw "invalid pass request";
-		}
-	}
-	SYNC_CATCHALL(fault_check);
+        return sync_fault_check_impl(obj,  t0, pass);
 }
+#endif
+
 
 EXPORT int isa_fault_check(OBJECT *obj, char *classname)
 {

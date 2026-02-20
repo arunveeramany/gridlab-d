@@ -31,7 +31,7 @@ EXPORT int gld_major = 5;
 EXPORT int gld_minor = 3;
 
 EXPORT int init_climate_object(OBJECT *obj);
-//extern "C" CALLBACKS *callback; // = nullptr;
+// extern "C" CALLBACKS *callback; // = nullptr;
 
 EXPORT int create_climate(OBJECT **obj, OBJECT *parent)
 {
@@ -68,34 +68,8 @@ EXPORT int create_climate(OBJECT **obj, OBJECT *parent)
 // EXPORT_SYNC(climate)
 // EXPORT_ISA(climate)
 
-extern "C" TIMESTAMP sync_climate(void *obj, ...)
+static TIMESTAMP sync_climate_impl(OBJECT *object, TIMESTAMP t0, PASSCONFIG pass)
 {
-	va_list args;
-	va_start(args, obj);
-	TIMESTAMP t0 = va_arg(args, TIMESTAMP);
-	PASSCONFIG pass = va_arg(args, PASSCONFIG);
-	va_end(args);
-
-	OBJECT *object = (OBJECT *)obj; // ← Move this outside try block
-
-	if (!callback)
-	{
-		gl_error("callback is null in init_climate");
-		return 0; // Fail module load
-	}
-
-	// Add structure validation
-	// std::cerr << "Callback structure size check:" << std::endl;
-	// std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
-	// std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
-	// std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
-
-	if (!callback->time.local_datetime)
-	{
-		gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
-		return FAILED;
-	}
-
 	try
 	{
 		TIMESTAMP t1 = ((long long)((((2147483647 * 2U + 1U)) - 1) >> 1));
@@ -138,6 +112,45 @@ extern "C" TIMESTAMP sync_climate(void *obj, ...)
 		return ((long long)-1);
 	}
 }
+
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_climate(OBJECT *object, TIMESTAMP t0, PASSCONFIG pass)
+{
+	return sync_climate_impl(object, t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_climate(void *obj, ...)
+{
+	va_list args;
+	va_start(args, obj);
+	TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+	PASSCONFIG pass = va_arg(args, PASSCONFIG);
+	va_end(args);
+
+	OBJECT *object = (OBJECT *)obj; // ← Move this outside try block
+
+	if (!callback)
+	{
+		gl_error("callback is null in init_climate");
+		return 0; // Fail module load
+	}
+
+	// Add structure validation
+	// std::cerr << "Callback structure size check:" << std::endl;
+	// std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
+	// std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
+	// std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
+
+	if (!callback->time.local_datetime)
+	{
+		gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
+		return FAILED;
+	}
+
+	return sync_climate_impl(object, t0, pass);
+}
+#endif
 
 #define RAD(x) (x * PI) / 180
 

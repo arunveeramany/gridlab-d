@@ -359,16 +359,8 @@ EXPORT int init_triplex_node(OBJECT *obj)
 // {
 
 
-extern "C" TIMESTAMP sync_triplex_node(void *object, ...)
+static TIMESTAMP sync_triplex_node_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
-    va_list args;
-    va_start(args, object);
-    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
-
-    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
-    
 	if (!callback) {
         gl_error("callback is null in sync_triplex_node");
         return 0;  // Fail module load
@@ -405,6 +397,27 @@ extern "C" TIMESTAMP sync_triplex_node(void *object, ...)
 	} 
 	SYNC_CATCHALL(triplex_node);
 }
+
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_triplex_node(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_triplex_node_impl(obj, t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_triplex_node(void *object, ...)
+{
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
+    return sync_triplex_node_impl(obj, t0, pass);
+}
+#endif
+
 
 EXPORT int isa_triplex_node(OBJECT *obj, char *classname)
 {

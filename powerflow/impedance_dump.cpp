@@ -2455,7 +2455,28 @@ EXPORT int init_impedance_dump(OBJECT *obj)
 
 // EXPORT TIMESTAMP sync_impedance_dump(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 // {
-extern "C" TIMESTAMP sync_impedance_dump(void *object, ...)
+
+static TIMESTAMP sync_impedance_dump_impl(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+{
+
+	try
+	{
+		impedance_dump *my = /*OBJECTDATA(obj,<>)*/ object_data<impedance_dump>(obj);
+		TIMESTAMP rv;
+		obj->clock = t1;
+		rv = my->runtime > t1 ? my->runtime : TS_NEVER;
+		return rv;
+	}
+	SYNC_CATCHALL(impedance_dump);
+}
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_impedance_dump(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+{
+     return sync_impedance_dump_impl(obj, t1, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_impedance_dump(void *object, ...)
 {
 
     // Add early validation of callback
@@ -2475,20 +2496,12 @@ extern "C" TIMESTAMP sync_impedance_dump(void *object, ...)
     PASSCONFIG pass = va_arg(args, PASSCONFIG);
     va_end(args);
 
-    OBJECT *obj = (OBJECT*)object; 
+    OBJECT *obj = (OBJECT*)object;
+    return sync_impedance_dump_impl(obj, t1, pass);
 
-
-
-	try
-	{
-		impedance_dump *my = /*OBJECTDATA(obj,<>)*/ object_data<impedance_dump>(obj);
-		TIMESTAMP rv;
-		obj->clock = t1;
-		rv = my->runtime > t1 ? my->runtime : TS_NEVER;
-		return rv;
-	}
-	SYNC_CATCHALL(impedance_dump);
 }
+#endif
+
 
 EXPORT TIMESTAMP commit_impedance_dump(OBJECT *obj, TIMESTAMP t1, TIMESTAMP t2){
 	try {
