@@ -270,14 +270,20 @@ jobs:
         run: |
           cmake --build out/build/ci-macos -- -v
 
-      - name: Run gridlabd --validate
+      - name: Install (Release)
+        shell: bash
+        run: |
+          cmake --install out/build/ci-macos --prefix "$HOME/.temp/GridLAB-D" --verbose
+
+      - name: Run gridlabd --validate (installed)
         shell: bash
         run: |
           set -euxo pipefail
-          BUILD_DIR="$(pwd)/out/build/ci-macos"
-          BIN_DIR="$BUILD_DIR/bin"
-          SHARE_DIR="$BUILD_DIR/share"
-          LIB_DIR="$BUILD_DIR/lib"
+          PREFIX="$HOME/.temp/GridLAB-D"
+          BUILD_DIR="$PREFIX"
+          BIN_DIR="$PREFIX/bin"
+          LIB_DIR="$PREFIX/lib"
+          SHARE_DIR="$PREFIX/share"
           GLDCORE_DIR="$(pwd)/gldcore"
 
           if [ ! -x "$BIN_DIR/gridlabd" ] && [ ! -f "$BIN_DIR/gridlabd" ]; then
@@ -286,11 +292,21 @@ jobs:
             exit 1
           fi
 
-          # macOS uses ':' as path separator
-          export GLPATH="$(pwd):${BUILD_DIR}:${BIN_DIR}:${LIB_DIR}:${SHARE_DIR}:${GLDCORE_DIR}"
+          # macOS runtime loader path
+          export DYLD_LIBRARY_PATH="${LIB_DIR}:${LIB_DIR}/gridlabd:${DYLD_LIBRARY_PATH:-}"
+
+          # GridLAB-D search path for modules/shares
+          export GLPATH="$(pwd):${PREFIX}:${BIN_DIR}:${LIB_DIR}:${SHARE_DIR}:${GLDCORE_DIR}"
+
           export PATH="${PATH}:${BIN_DIR}"
 
-          "$BIN_DIR/gridlabd" --validate
+          # Show versions & paths for debugging
+          "${BIN_DIR}/gridlabd" --version
+          echo "DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}"
+          echo "GLPATH=${GLPATH}"
+
+          # Surface messages to console (override validate default redirection)
+          "${BIN_DIR}/gridlabd" --redirect none --validate
 
       - name: Show validate.txt (always)
         if: always()
