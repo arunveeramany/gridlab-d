@@ -274,6 +274,12 @@ jobs:
         shell: bash
         run: |
           cmake --install out/build/ci-macos --prefix "$HOME/.temp/GridLAB-D" --verbose
+      
+      - name: List loaded modules
+        shell: bash
+        run: |
+          /Users/runner/.temp/GridLAB-D/bin/gridlabd --modhelp
+
 
       - name: Run gridlabd --validate (installed)
         shell: bash
@@ -294,6 +300,7 @@ jobs:
 
           # macOS runtime loader path
           export DYLD_LIBRARY_PATH="${LIB_DIR}:${LIB_DIR}/gridlabd:${DYLD_LIBRARY_PATH:-}"
+          export DYLD_FALLBACK_LIBRARY_PATH="$LIB_DIR:$LIB_DIR/gridlabd"
 
           # GridLAB-D search path for modules/shares
           export GLPATH="$(pwd):${PREFIX}:${BIN_DIR}:${LIB_DIR}:${SHARE_DIR}:${GLDCORE_DIR}"
