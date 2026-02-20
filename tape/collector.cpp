@@ -270,7 +270,7 @@ int read_aggregates(std::vector<std::shared_ptr<struct s_aggregate>> &aggregates
 // TIMESTAMP sync_collector(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 //{
 
-extern "C" MODULE_API TIMESTAMP sync_collector(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+static TIMESTAMP sync_collector_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
 	struct collector *my = object_data<struct collector>(obj);
 	// null check
@@ -386,7 +386,12 @@ extern "C" MODULE_API TIMESTAMP sync_collector(OBJECT *obj, TIMESTAMP t0, PASSCO
 	return sync_collector_error(&obj, &my, buffer);
 }
 
-#ifdef __APPLE__
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_collector(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+       return sync_collector_impl(obj, t0, pass);
+}
+#else
 extern "C" MODULE_API TIMESTAMP sync_collector(void *object, ...)
 {
 	va_list args;
@@ -396,7 +401,7 @@ extern "C" MODULE_API TIMESTAMP sync_collector(void *object, ...)
 	va_end(args);
 
 	OBJECT *obj = (OBJECT *)object; // ← Move this outside try block
-	return sync_collector(obj, t0, pass);
+	return sync_collector_impl(obj, t0, pass);
 }
 #endif
 
