@@ -1008,7 +1008,7 @@ int read_properties(struct recorder *my, OBJECT *obj, PROPERTY *prop, char *buff
 
 // EXPORT TIMESTAMP sync_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 
-extern "C" MODULE_API TIMESTAMP sync_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+static TIMESTAMP sync_recorder_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
 	TIMESTAMP return_value;
 	struct recorder *my = object_data<struct recorder>(obj);
@@ -1198,7 +1198,12 @@ extern "C" MODULE_API TIMESTAMP sync_recorder(OBJECT *obj, TIMESTAMP t0, PASSCON
 	return sync_recorder_error(&obj, &my, buffer);
 }
 
-#ifdef __APPLE__
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_recorder_impl(obj, t0, pass);
+}
+#else
 extern "C" MODULE_API TIMESTAMP sync_recorder(void *object, ...)
 {
 	va_list args;
@@ -1230,7 +1235,7 @@ extern "C" MODULE_API TIMESTAMP sync_recorder(void *object, ...)
 		return TS_INVALID;
 	}
 
-	return sync_recorder(obj, t0, pass);
+	return sync_recorder_impl(obj, t0, pass);
 }
 #endif
 

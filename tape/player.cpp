@@ -723,7 +723,7 @@ TIMESTAMP player_read(OBJECT *obj)
 // EXPORT TIMESTAMP sync_player(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 //{
 
-extern "C" MODULE_API TIMESTAMP sync_player(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+static TIMESTAMP sync_player_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
     int return_val;
     class player *my = object_data<player>(obj);
@@ -960,7 +960,12 @@ extern "C" MODULE_API TIMESTAMP sync_player(OBJECT *obj, TIMESTAMP t0, PASSCONFI
     return t1;
 }
 
-#ifdef __APPLE__
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_player(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_player_impl(obj, t0, pass);
+}
+#else
 extern "C" MODULE_API TIMESTAMP sync_player(void *object, ...)
 {
     // Add early validation of callback
@@ -989,7 +994,7 @@ extern "C" MODULE_API TIMESTAMP sync_player(void *object, ...)
     va_end(args);
 
     OBJECT *obj = (OBJECT *)object; // ← Move this outside try block
-    return sync_player(obj, t0, pass);
+    return sync_player_impl(obj, t0, pass);
 }
 #endif
 
