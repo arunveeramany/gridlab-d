@@ -338,7 +338,37 @@ EXPORT int init_powerflow_object(OBJECT *obj)
 // EXPORT TIMESTAMP sync_powerflow_object(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 // {
 
-extern "C" TIMESTAMP sync_powerflow_object(void *object, ...)
+
+static TIMESTAMP sync_powerflow_object_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+
+	powerflow_object *pObj = object_data<powerflow_object>(obj);
+	try {
+		TIMESTAMP t1 = TS_NEVER;
+		switch (pass) {
+		case PC_PRETOPDOWN:
+			return pObj->presync(t0);
+		case PC_BOTTOMUP:
+			return pObj->sync(t0);
+		case PC_POSTTOPDOWN:
+			t1 = pObj->postsync(t0);
+			obj->clock = t0;
+			return t1;
+		default:
+			throw "invalid pass request";
+		}
+	} 
+	SYNC_CATCHALL(powerflow_object);
+}
+
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_powerflow_object(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_powerflow_object_impl(obj, t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_powerflow_object(void *object, ...)
 {
 
     // Add early validation of callback
@@ -359,27 +389,9 @@ extern "C" TIMESTAMP sync_powerflow_object(void *object, ...)
     va_end(args);
 
     OBJECT *obj = (OBJECT*)object; 
-
-
-
-	powerflow_object *pObj = object_data<powerflow_object>(obj);
-	try {
-		TIMESTAMP t1 = TS_NEVER;
-		switch (pass) {
-		case PC_PRETOPDOWN:
-			return pObj->presync(t0);
-		case PC_BOTTOMUP:
-			return pObj->sync(t0);
-		case PC_POSTTOPDOWN:
-			t1 = pObj->postsync(t0);
-			obj->clock = t0;
-			return t1;
-		default:
-			throw "invalid pass request";
-		}
-	} 
-	SYNC_CATCHALL(powerflow_object);
+    return sync_powerflow_object_impl(obj, t0, pass);
 }
+#endif
 
 EXPORT int isa_powerflow_object(OBJECT *obj, char *classname)
 {

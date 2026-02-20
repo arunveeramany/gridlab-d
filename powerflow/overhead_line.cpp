@@ -1050,34 +1050,8 @@ EXPORT int create_overhead_line(OBJECT **obj, OBJECT *parent)
 // EXPORT TIMESTAMP sync_overhead_line(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 //{
 
-#ifdef __APPLE__
-extern "C" MODULE_API TIMESTAMP sync_overhead_line(void *object, ...)
-{
-	// Add early validation of callback
-	if (!callback)
-	{
-		gl_error("sync_overhead_line: callback is null");
-		return TS_INVALID;
-	}
 
-	if (!callback->time.local_datetime)
-	{
-		gl_error("sync_overhead_line: local_datetime function is null");
-		return TS_INVALID;
-	}
-
-	va_list args;
-	va_start(args, object);
-	TIMESTAMP t0 = va_arg(args, TIMESTAMP);
-	PASSCONFIG pass = va_arg(args, PASSCONFIG);
-	va_end(args);
-
-	OBJECT *obj = (OBJECT *)object; // ← Move this outside try block
-	sync_overhead_line(obj, t0, pass);
-}
-#endif
-
-extern "C" MODULE_API TIMESTAMP sync_overhead_line(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+static TIMESTAMP sync_overhead_line_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
 	try
 	{
@@ -1099,6 +1073,39 @@ extern "C" MODULE_API TIMESTAMP sync_overhead_line(OBJECT *obj, TIMESTAMP t0, PA
 	}
 	SYNC_CATCHALL(overhead_line);
 }
+
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_overhead_line(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_overhead_line_impl(obj, t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_overhead_line(void *object, ...)
+{
+	// Add early validation of callback
+	if (!callback)
+	{
+		gl_error("sync_overhead_line: callback is null");
+		return TS_INVALID;
+	}
+
+	if (!callback->time.local_datetime)
+	{
+		gl_error("sync_overhead_line: local_datetime function is null");
+		return TS_INVALID;
+	}
+
+	va_list args;
+	va_start(args, object);
+	TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+	PASSCONFIG pass = va_arg(args, PASSCONFIG);
+	va_end(args);
+
+	OBJECT *obj = (OBJECT *)object; 
+	return sync_overhead_line(obj, t0, pass);
+}
+#endif
 
 EXPORT int init_overhead_line(OBJECT *obj)
 {

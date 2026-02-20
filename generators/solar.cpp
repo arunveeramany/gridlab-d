@@ -1690,7 +1690,7 @@ EXPORT int init_solar(OBJECT *obj, OBJECT *parent)
 // EXPORT TIMESTAMP sync_solar(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 //{
 
-extern "C" MODULE_API TIMESTAMP sync_solar(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+static TIMESTAMP sync_solar_impl(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 {
 	TIMESTAMP t2 = TS_NEVER;
 	solar *my = /*OBJECTDATA(obj,<>)*/ object_data<solar>(obj);
@@ -1718,8 +1718,13 @@ extern "C" MODULE_API TIMESTAMP sync_solar(OBJECT *obj, TIMESTAMP t1, PASSCONFIG
 	return t2;
 }
 
-#ifdef __APPLE__
-extern "C" MODULE_APITIMESTAMP sync_solar(void *object, ...)
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_solar(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+{
+    return sync_solar_impl(obj, t1, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_solar(void *object, ...)
 {
 	va_list args;
 	va_start(args, object);
@@ -1729,7 +1734,7 @@ extern "C" MODULE_APITIMESTAMP sync_solar(void *object, ...)
 
 	OBJECT *obj = (OBJECT *)object;
 
-	return sync_solar(obj, t1, pass);
+	return sync_solar_impl(obj, t1, pass);
 }
 #endif
 

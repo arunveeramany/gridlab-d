@@ -113,7 +113,22 @@ EXPORT int init_powerflow_library(OBJECT *obj)
 // EXPORT TIMESTAMP sync_powerflow_library(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 // {
 
-extern "C" TIMESTAMP sync_powerflow_library(void *object, ...)
+
+static TIMESTAMP sync_powerflow_library_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+
+	powerflow_library *pObj = object_data<powerflow_library>(obj);
+	gl_error("%s (powerflow_library:%d): sync should never be called", pObj->get_name(), pObj->get_id());
+	return TS_INVALID;
+}
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_powerflow_library(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_powerflow_library_impl(obj, t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_powerflow_library(void *object, ...)
 {
 
     // Add early validation of callback
@@ -133,14 +148,11 @@ extern "C" TIMESTAMP sync_powerflow_library(void *object, ...)
     PASSCONFIG pass = va_arg(args, PASSCONFIG);
     va_end(args);
 
-    OBJECT *obj = (OBJECT*)object; 
-
-
-
-	powerflow_library *pObj = object_data<powerflow_library>(obj);
-	gl_error("%s (powerflow_library:%d): sync should never be called", pObj->get_name(), pObj->get_id());
-	return TS_INVALID;
+    OBJECT *obj = (OBJECT*)object;
+    return sync_powerflow_library_impl(obj, t0, pass);
 }
+#endif
+
 
 EXPORT int isa_powerflow_library(OBJECT *obj, char *classname)
 {

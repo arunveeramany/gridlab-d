@@ -3617,7 +3617,7 @@ EXPORT int init_load(OBJECT *obj)
 // EXPORT TIMESTAMP sync_load(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 //{
 
-extern "C" MODULE_API TIMESTAMP sync_load(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+extern "C" MODULE_API TIMESTAMP sync_load_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
 	try
 	{
@@ -3640,7 +3640,12 @@ extern "C" MODULE_API TIMESTAMP sync_load(OBJECT *obj, TIMESTAMP t0, PASSCONFIG 
 	SYNC_CATCHALL(load);
 }
 
-#ifdef __APPLE__
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_load(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_load_impl(obj,  t0, pass);
+}
+#else
 extern "C" MODULE_API TIMESTAMP sync_load(void *object, ...)
 {
 
@@ -3664,7 +3669,7 @@ extern "C" MODULE_API TIMESTAMP sync_load(void *object, ...)
 	va_end(args);
 
 	OBJECT *obj = (OBJECT *)object; // ← Move this outside try block
-	return sync_load(obj, t0, pass);
+	return sync_load_impl(obj, t0, pass);
 }
 #endif
 

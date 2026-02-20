@@ -105,10 +105,19 @@ EXPORT int create_line_spacing(OBJECT **obj, OBJECT *parent)
 
 // EXPORT TIMESTAMP sync_line_spacing(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 // {
-extern "C" TIMESTAMP sync_line_spacing(void *object, ...)
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_line_spacing(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 {
-	return TS_NEVER;
+     return TS_NEVER;
 }
+#else
+extern "C" MODULE_API TIMESTAMP sync_line_spacing(void *object, ...)
+{
+    return TS_NEVER;
+}
+#endif
+
 
 EXPORT int isa_line_spacing(OBJECT *obj, char *classname)
 {

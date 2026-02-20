@@ -1345,7 +1345,35 @@ EXPORT TIMESTAMP commit_fuse(OBJECT *obj, TIMESTAMP t1, TIMESTAMP t2)
 // {
 
 
-extern "C" TIMESTAMP sync_fuse(void *object, ...)
+static TIMESTAMP sync_fuse_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+	try {
+		fuse *pObj = /*OBJECTDATA(obj,<>)*/ object_data<fuse>(obj);
+		TIMESTAMP t1 = TS_NEVER;
+		switch (pass) {
+		case PC_PRETOPDOWN:
+			return pObj->presync(t0);
+		case PC_BOTTOMUP:
+			return pObj->sync(t0);
+		case PC_POSTTOPDOWN:
+			t1 = pObj->postsync(t0);
+			obj->clock = t0;
+			return t1;
+		default:
+			throw "invalid pass request";
+		}
+	}
+	SYNC_CATCHALL(fuse);
+}
+
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_fuse(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_fuse_impl(obj, t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_fuse(void *object, ...)
 {
     va_list args;
     va_start(args, object);
@@ -1371,27 +1399,9 @@ extern "C" TIMESTAMP sync_fuse(void *object, ...)
         gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
         return FAILED;
     }
-
-
-
-	try {
-		fuse *pObj = /*OBJECTDATA(obj,<>)*/ object_data<fuse>(obj);
-		TIMESTAMP t1 = TS_NEVER;
-		switch (pass) {
-		case PC_PRETOPDOWN:
-			return pObj->presync(t0);
-		case PC_BOTTOMUP:
-			return pObj->sync(t0);
-		case PC_POSTTOPDOWN:
-			t1 = pObj->postsync(t0);
-			obj->clock = t0;
-			return t1;
-		default:
-			throw "invalid pass request";
-		}
-	}
-	SYNC_CATCHALL(fuse);
+    return sync_fuse_impl(obj, t0, pass);
 }
+#endif
 
 /**
 * Allows the core to discover whether obj is a subtype of this class.

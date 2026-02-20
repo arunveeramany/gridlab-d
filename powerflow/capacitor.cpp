@@ -2100,7 +2100,36 @@ EXPORT int init_capacitor(OBJECT *obj)
 // {
 
 
-extern "C" TIMESTAMP sync_capacitor(void *object, ...)
+static TIMESTAMP sync_capacitor_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+
+	try {
+		capacitor *pObj = /*OBJECTDATA(obj,<>)*/ object_data<capacitor>(obj);
+		TIMESTAMP t1 = TS_NEVER;
+		switch (pass) {
+		case PC_PRETOPDOWN:
+			return pObj->presync(t0);
+		case PC_BOTTOMUP:
+			return pObj->sync(t0);
+		case PC_POSTTOPDOWN:
+			t1 = pObj->postsync(t0);
+			obj->clock = t0;
+			return t1;
+		default:
+			throw "invalid pass request";
+		}
+	}
+	SYNC_CATCHALL(capacitor);
+}
+
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_capacitor(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_capacitor_impl(obj,t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_capacitor(void *object, ...)
 {
     va_list args;
     va_start(args, object);
@@ -2126,27 +2155,9 @@ extern "C" TIMESTAMP sync_capacitor(void *object, ...)
         gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
         return FAILED;
     }
-
-
-
-	try {
-		capacitor *pObj = /*OBJECTDATA(obj,<>)*/ object_data<capacitor>(obj);
-		TIMESTAMP t1 = TS_NEVER;
-		switch (pass) {
-		case PC_PRETOPDOWN:
-			return pObj->presync(t0);
-		case PC_BOTTOMUP:
-			return pObj->sync(t0);
-		case PC_POSTTOPDOWN:
-			t1 = pObj->postsync(t0);
-			obj->clock = t0;
-			return t1;
-		default:
-			throw "invalid pass request";
-		}
-	}
-	SYNC_CATCHALL(capacitor);
+    return sync_capacitor_impl(obj,t0, pass);
 }
+#endif
 
 /**
 * Allows the core to discover whether obj is a subtype of this class.

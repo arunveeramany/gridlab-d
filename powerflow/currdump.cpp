@@ -242,7 +242,24 @@ EXPORT int init_currdump(OBJECT *obj)
 
 // EXPORT TIMESTAMP sync_currdump(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 // {
-extern "C" TIMESTAMP sync_currdump(void *object, ...)
+
+
+static TIMESTAMP sync_currdump_impl(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+{
+	currdump *my = /*OBJECTDATA(obj,<>)*/ object_data<currdump>(obj);
+	TIMESTAMP rv;
+	obj->clock = t1;
+	rv = my->runtime > t1 ? my->runtime : TS_NEVER;
+	return rv;
+}
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_currdump(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+{
+     return sync_currdump_impl(obj, t1, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_currdump(void *object, ...)
 {
 
     // Add early validation of callback
@@ -263,15 +280,9 @@ extern "C" TIMESTAMP sync_currdump(void *object, ...)
     va_end(args);
 
     OBJECT *obj = (OBJECT*)object; 
-
-
-
-	currdump *my = /*OBJECTDATA(obj,<>)*/ object_data<currdump>(obj);
-	TIMESTAMP rv;
-	obj->clock = t1;
-	rv = my->runtime > t1 ? my->runtime : TS_NEVER;
-	return rv;
+    return sync_currdump_impl(obj, t1, pass);
 }
+#endif
 
 EXPORT TIMESTAMP commit_currdump(OBJECT *obj, TIMESTAMP t1, TIMESTAMP t2)
 {

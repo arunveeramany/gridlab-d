@@ -124,14 +124,17 @@ EXPORT int create_line_configuration(OBJECT **obj, OBJECT *parent)
 // EXPORT TIMESTAMP sync_line_configuration(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 // {
 
-extern "C" TIMESTAMP sync_line_configuration(void *object, ...)
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_line_configuration(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 {
-
-
-
-
-	return TS_NEVER;
+    return TS_NEVER;
 }
+#else
+extern "C" MODULE_API TIMESTAMP sync_line_configuration(void *object, ...)
+{
+    return TS_NEVER;
+}
+#endif
 
 EXPORT int isa_line_configuration(OBJECT *obj, char *classname)
 {
