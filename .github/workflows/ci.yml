@@ -203,7 +203,7 @@ jobs:
   # macOS: AppleClang + Homebrew
   # ------------------------------
   build-and-validate-macos:
-    runs-on: macos-latest
+    runs-on: macos-14  # ARM64
 
     steps:
       - name: Checkout
@@ -251,6 +251,10 @@ jobs:
           echo "CMAKE_PREFIX_PATH=${HOMEBREW_PREFIX}" >> "$GITHUB_ENV"
           echo "PKG_CONFIG_PATH=${PKG_CONFIG_PATH}"   >> "$GITHUB_ENV"
 
+      - name: Clean build
+        run: |
+          rm -rf build/ out/ CMakeCache.txt CMakeFiles 2>/dev/null || true
+
       - name: Configure CMake (AppleClang + Ninja)
         shell: bash
         env:
@@ -280,6 +284,29 @@ jobs:
         run: |
           /Users/runner/.temp/GridLAB-D/bin/gridlabd --modhelp
 
+      - name: Debug library loading
+        run: |
+          PREFIX="$HOME/.temp/GridLAB-D"
+          LIB_DIR="$PREFIX/lib"
+          export DYLD_LIBRARY_PATH="${LIB_DIR}:${DYLD_LIBRARY_PATH:-}"
+          otool -L "$LIB_DIR/powerflow.dylib"
+          echo "DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH"
+          nm -u "$LIB_DIR/powerflow.dylib" | head -50
+
+      - name: Check architecture
+        run: |
+          PREFIX="$HOME/.temp/GridLAB-D"
+          BIN_DIR="$PREFIX/bin"
+          LIB_DIR="$PREFIX/lib"
+          file "$BIN_DIR/gridlabd"
+          file "$LIB_DIR"/*.dylib
+          uname -m
+
+      - name: Check rpath configuration
+        run: |
+          PREFIX="$HOME/.temp/GridLAB-D"
+          otool -l "$PREFIX/bin/gridlabd" | grep -A 2 LC_RPATH
+          otool -l "$PREFIX/lib/powerflow.dylib" | grep -A 2 LC_RPATH
 
       - name: Run gridlabd --validate (installed)
         shell: bash
