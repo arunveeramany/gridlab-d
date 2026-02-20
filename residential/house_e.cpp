@@ -4843,7 +4843,7 @@ EXPORT int isa_house(OBJECT *obj, char *classname)
 // EXPORT TIMESTAMP sync_house(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 // {
 
-extern "C" MODULE_API TIMESTAMP sync_house(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+static TIMESTAMP sync_house_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
 	try
 	{
@@ -4874,7 +4874,12 @@ extern "C" MODULE_API TIMESTAMP sync_house(OBJECT *obj, TIMESTAMP t0, PASSCONFIG
 	SYNC_CATCHALL(house);
 }
 
-#ifdef __APPLE__
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_house(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_house_impl(obj, t0, pass);
+}
+#else
 extern "C" MODULE_API TIMESTAMP sync_house(void *object, ...)
 {
 	va_list args;
@@ -4897,7 +4902,7 @@ extern "C" MODULE_API TIMESTAMP sync_house(void *object, ...)
 		return FAILED;
 	}
 
-	return sync_house(obj, t0, pass);
+	return sync_house_impl(obj, t0, pass);
 }
 #endif
 
