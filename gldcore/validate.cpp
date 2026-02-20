@@ -1516,7 +1516,7 @@ int validate(int argc, char *argv[])
 	}
 	if (!redirect_found)
 	{
-		// strcat(validate_child_cmdargs, " --redirect all");
+		strcat(validate_child_cmdargs, " --redirect all");
 	}
 	strcat(validate_child_cmdargs, " --threadcount 1"); // Force single internal thread for each test run
 

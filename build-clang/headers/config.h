@@ -11,7 +11,7 @@
 #define PACKAGE_NAME "GridLAB-D"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "GridLAB-D 5.3.0 Redhawk (Branch:cpp23-arm64 - 145f883f)"
+#define PACKAGE_STRING "GridLAB-D 5.3.0 Redhawk (Branch:cpp23-arm64 - eea1a38b)"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "GridLAB-D"
