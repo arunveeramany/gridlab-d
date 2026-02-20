@@ -348,6 +348,16 @@ jobs:
           path: /Users/runner/work/gridlab-d/gridlab-d/validate_errors.txt
           if-no-files-found: ignore
 
+      - name: Upload logs for test_R5-25.00-1_fix.glm
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test_R5-25.00-1_fix-logs
+          path: |
+            /Users/runner/work/gridlab-d/gridlab-d/taxonomy_feeders/autotest/test_R5-25.00-1_fix/gridlabd.err
+            /Users/runner/work/gridlab-d/gridlab-d/taxonomy_feeders/autotest/test_R5-25.00-1_fix/gridlabd.out
+            /Users/runner/work/gridlab-d/gridlab-d/taxonomy_feeders/autotest/test_R5-25.00-1_fix/gridlabd.wrn
+            /Users/runner/work/gridlab-d/gridlab-d/taxonomy_feeders/autotest/test_R5-25.00-1_fix/gridlabd.dbg
 
       - name: (Optional) Run CTest
         shell: bash
