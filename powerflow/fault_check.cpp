@@ -14,7 +14,7 @@
 //////////////////////////////////////////////////////////////////////////
 CLASS *fault_check::oclass = nullptr;
 CLASS *fault_check::pclass = nullptr;
-//extern "C" CALLBACKS *callback;
+extern "C" CALLBACKS *callback;
 
 fault_check::fault_check(MODULE *mod) : powerflow_object(mod)
 {
@@ -109,22 +109,20 @@ int fault_check::init(OBJECT *parent)
 		// Default else - it's set and it is us, so just proceed.
 	}
 
-	// if (solver_method == SM_NR)
-	// {
-	// 	// Swing tracking variable - we have to be one below the SWING, so make sure it settled
-	// 	if (NR_swing_rank_set)
-	// 	{
-	// 		gl_set_rank(obj, (NR_expected_swing_rank - 1)); // swing-1
-	// 	}
-	// 	else
-	// 	{
-	// 		// Not set yet, deferred init
-	// 		return 2;
-	// 	}
-	// }
-	// else
-
-	if (solver_method != SM_NR)
+	if (solver_method == SM_NR)
+	{
+		// Swing tracking variable - we have to be one below the SWING, so make sure it settled
+		if (NR_swing_rank_set)
+		{
+			gl_set_rank(obj, (NR_expected_swing_rank - 1)); // swing-1
+		}
+		else
+		{
+			// Not set yet, deferred init
+			return 2;
+		}
+	}
+	else
 	{
 		GL_THROW("Fault checking object is only valid for the Newton-Raphson solver at this time.");
 		/*  TROUBLESHOOT
@@ -2156,7 +2154,7 @@ void fault_check::associate_grids(void)
 // This is recursively called
 void fault_check::search_associated_grids(unsigned int node_int, int grid_counter)
 {
-	// gl_warning("search_associated_grids: Entering for node '%s' (%d), assigning to grid %d", NR_busdata[node_int].name, node_int, grid_counter);
+	gl_warning("search_associated_grids: Entering for node '%s' (%d), assigning to grid %d", NR_busdata[node_int].name, node_int, grid_counter);
 
 	unsigned int index;
 	int node_ref;
@@ -2183,7 +2181,7 @@ void fault_check::search_associated_grids(unsigned int node_int, int grid_counte
 			// See if the other side has been handled
 			if (NR_busdata[node_ref].island_number == -1)
 			{
-				// gl_warning("search_associated_grids: ...recursing from '%s' to unassigned node '%s'", NR_busdata[node_int].name, NR_busdata[node_ref].name);
+				gl_warning("search_associated_grids: ...recursing from '%s' to unassigned node '%s'", NR_busdata[node_int].name, NR_busdata[node_ref].name);
 
 				// Set the appropriate side
 				NR_busdata[node_ref].island_number = grid_counter;
@@ -2411,10 +2409,8 @@ EXPORT int init_fault_check(OBJECT *obj, OBJECT *parent)
 // EXPORT TIMESTAMP sync_fault_check(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 // {
 
-
 static TIMESTAMP sync_fault_check_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
-
 	try
 	{
 		fault_check *pObj = /*OBJECTDATA(obj,<>)*/ object_data<fault_check>(obj);
@@ -2440,7 +2436,7 @@ static TIMESTAMP sync_fault_check_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pas
 #ifndef __APPLE__
 extern "C" MODULE_API TIMESTAMP sync_fault_check(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
-    return sync_fault_check_impl(obj,  t0, pass);
+    return sync_fault_check_impl(obj, t0,  pass);
 }
 #else
 extern "C" MODULE_API TIMESTAMP sync_fault_check(void *object, ...)
@@ -2470,7 +2466,8 @@ extern "C" MODULE_API TIMESTAMP sync_fault_check(void *object, ...)
 		gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
 		return FAILED;
 	}
-        return sync_fault_check_impl(obj,  t0, pass);
+
+	return sync_fault_check_impl(obj, t0,  pass);
 }
 #endif
 

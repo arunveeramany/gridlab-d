@@ -2,8 +2,8 @@
 
 # WARNING: This is a CMake generated file, modifications to this file will be overwritten.
 
-export CC="/usr/bin/cc"
-export CXX="/usr/bin/c++"
+export CC="/usr/bin/clang"
+export CXX="/usr/bin/clang++"
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 

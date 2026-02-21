@@ -6,7 +6,7 @@
 
 #include <stdarg.h>
 #include <mutex>
-#include <cstddef>
+// #include <shared_mutex>
 
 #include "gridlabd.h"
 #include "object.h"
@@ -16,18 +16,8 @@ using gld::complex;
 #define _isnan isnan
 #endif
 
-enum class EvalOutcome
-{
-    PASS,
-    FAIL_IMMEDIATE,
-    FAIL_DEFERRED
-};
-
 class complex_assert : public gld_object
 {
-private:
-    std::mutex m_part_mtx;
-
 public:
     enum
     {
@@ -58,31 +48,32 @@ public:
     // GL_STRUCT(complex,once_value);
     // GL_ATOMIC(double,within);
 
-    // complex_assert()
-    // {
-    //     // Initialize default values if needed
-    //     // Initialize default values here
-    //     status = ASSERT_TRUE;
-    //     within = 0.0;
-    //     value = 0.0;
-    //     once = ONCE_FALSE;
-    //     once_value = 0;
-    //     operation = FULL;
-    //     strcpy(target, "");
-    //     pTarget = nullptr;
-    //     pComplex = nullptr;
-    // }
+    complex_assert()
+    {
+        // Initialize default values if needed
+        // Initialize default values here
+        status = ASSERT_TRUE;
+        within = 0.0;
+        value = 0.0;
+        once = ONCE_FALSE;
+        once_value = 0;
+        operation = FULL;
+        strcpy(target, "");
+    }
     ~complex_assert()
     {
-        // delete defaults;
-        // defaults = nullptr;
+
+        defaults = nullptr;
     }
 
-    // static inline complex_assert *get_defaults()
-    // {
-
-    //     return defaults;
-    // }
+    static inline complex_assert *get_defaults()
+    {
+        // if (!defaults)
+        // {
+        //     defaults = new complex_assert(); // Initialize lazily
+        // }
+        return defaults;
+    }
 
 protected:
     enumeration status;    // Member variable of type `enumeration`.
@@ -92,27 +83,13 @@ protected:
     complex value;         // Member variable of type `complex`.
     complex once_value;    // Member variable of type `complex`.
     char1024 target;       // Protected member variable
-    char32 part;
-
-    PROPERTY *pTarget = nullptr;
-    gld::complex *pComplex = nullptr;
-
-    int resolve_target_property();
-
-    bool seen_finite = false;
-    TIMESTAMP pending_fail_ts = 0;
-
-private:
-    TIMESTAMP ts_in = 0;
-    TIMESTAMP ts_out = 0;
 
 public:
     // Static inline method to get the byte offset of the member `status`.
     static inline size_t get_status_offset(void)
     {
-        return offsetof(complex_assert, status);
-        // complex_assert *current_defaults = get_defaults();
-        // return reinterpret_cast<const char *>(&(current_defaults->status)) - reinterpret_cast<const char *>(current_defaults);
+        complex_assert *current_defaults = get_defaults();
+        return reinterpret_cast<const char *>(&(current_defaults->status)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Inline function to get the value of `status`.
@@ -159,9 +136,8 @@ public:
     // Static inline method to get the byte offset of the member `operation`.
     static inline size_t get_operation_offset(void)
     {
-        return offsetof(complex_assert, operation);
-        // complex_assert *current_defaults = get_defaults();
-        // return reinterpret_cast<const char *>(&(current_defaults->operation)) - reinterpret_cast<const char *>(current_defaults);
+        complex_assert *current_defaults = get_defaults();
+        return reinterpret_cast<const char *>(&(current_defaults->operation)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Inline function to get the value of `operation`.
@@ -208,9 +184,8 @@ public:
     // Static inline method to get the byte offset of the member `once`.
     static inline size_t get_once_offset(void)
     {
-        return offsetof(complex_assert, once);
-        // complex_assert *current_defaults = get_defaults();
-        // return reinterpret_cast<const char *>(&(current_defaults->once)) - reinterpret_cast<const char *>(current_defaults);
+        complex_assert *current_defaults = get_defaults();
+        return reinterpret_cast<const char *>(&(current_defaults->once)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Inline function to get the value of `once`.
@@ -257,9 +232,8 @@ public:
     // Static inline method to get the byte offset of the member `within`.
     static inline size_t get_within_offset(void)
     {
-        return offsetof(complex_assert, within);
-        // complex_assert *current_defaults = get_defaults();
-        // return reinterpret_cast<const char *>(&(current_defaults->within)) - reinterpret_cast<const char *>(current_defaults);
+        complex_assert *current_defaults = get_defaults();
+        return reinterpret_cast<const char *>(&(current_defaults->within)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Inline function to get the value of `within`.
@@ -306,9 +280,8 @@ public:
     // Static inline method to get the byte offset of the member ``
     static inline size_t get_value_offset(void)
     {
-        return offsetof(complex_assert, value);
-        // complex_assert *current_defaults = get_defaults();
-        // return reinterpret_cast<const char *>(&(current_defaults->value)) - reinterpret_cast<const char *>(current_defaults);
+        complex_assert *current_defaults = get_defaults();
+        return reinterpret_cast<const char *>(&(current_defaults->value)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Inline function to get the value of `value`.
@@ -355,9 +328,8 @@ public:
     // Static inline method to get the byte offset of the member
     static inline size_t get_once_value_offset(void)
     {
-        return offsetof(complex_assert, once_value);
-        // complex_assert *current_defaults = get_defaults();
-        // return reinterpret_cast<const char *>(&(current_defaults->once_value)) - reinterpret_cast<const char *>(current_defaults);
+        complex_assert *current_defaults = get_defaults();
+        return reinterpret_cast<const char *>(&(current_defaults->once_value)) - reinterpret_cast<const char *>(current_defaults);
     }
 
     // Inline function to get the value of `once_value`.
@@ -406,45 +378,28 @@ public:
         once_value = p;
     }
 
-private:
-private:
-    bool init_guard_done = false;
-    bool prestart_deferral_done = false; // only allow one pre-start deferral
-    inline TIMESTAMP resched_safe(const char *reason);
-    TIMESTAMP last_to = 0;
-    bool done = false;
-
-    static inline bool is_within(double err, double tol) { return std::fabs(err) <= tol; }
-
-    EvalOutcome evaluate_assert(const complex x, bool switched_now);
-
-public:
-    inline TIMESTAMP next_check(TIMESTAMP now) { return now + 1; } // 1 second later
-    // inline TIMESTAMP resched(TIMESTAMP t2, const char* reason, TIMESTAMP now, TIMESTAMP ts_in, TIMESTAMP ts_out, bool switched_now);
-
-    // Static inline method to get the byte offset of the member `status`.
-    static inline size_t get_ts_in_offset(void)
-    {
-        return offsetof(complex_assert, ts_in);
-        // double_assert *current_defaults = get_defaults();
-        // return reinterpret_cast<const char *>(&(current_defaults->status)) - reinterpret_cast<const char *>(current_defaults);
-    }
-
-    // Static inline method to get the byte offset of the member `status`.
-    static inline size_t get_ts_out_offset(void)
-    {
-        return offsetof(complex_assert, ts_out);
-        // double_assert *current_defaults = get_defaults();
-        // return reinterpret_cast<const char *>(&(current_defaults->status)) - reinterpret_cast<const char *>(current_defaults);
-    }
-
 public:
     // Static inline method to get the byte offset of the member `target`
     static inline size_t get_target_offset(void)
     {
-        return offsetof(complex_assert, target);
-        // complex_assert *current_defaults = get_defaults();
-        // return reinterpret_cast<const char *>(&(current_defaults->target)) - reinterpret_cast<const char *>(current_defaults);
+        complex_assert *current_defaults = get_defaults();
+        return reinterpret_cast<const char *>(&(current_defaults->target)) - reinterpret_cast<const char *>(current_defaults);
+    }
+
+    // Getter method to safely retrieve the string value of `target` as std::string
+    inline std::string get_target(void)
+    {
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::shared_lock<std::shared_mutex> lock(mtx);
+        return std::string(target);
+    }
+
+    inline void set_target(const char *str)
+    {
+        // auto &mtx = SharedMutexManager::get_mutex(my());
+        // std::unique_lock<std::shared_mutex> lock(mtx);
+        strncpy(target, str, sizeof(target) - 1);
+        target[sizeof(target) - 1] = '\0'; // Ensure null-termination
     }
 
     // Getter method to retrieve gld_property for `target`
@@ -457,106 +412,19 @@ public:
         return gld_property(my(), std::string("target").c_str()); // Duplicate string literal `target`
     }
 
-    // Getter method to safely retrieve the string value of `target` as std::string
-    inline std::string get_target(void)
-    {
-        // auto &mtx = SharedMutexManager::get_mutex(my());
-        // std::shared_lock<std::shared_mutex> lock(mtx);
-        // return std::string(target);
-        return std::string(get_target_property().get_string());
-    }
-
-    inline void set_target(const char *str)
-    {
-        // printf("DEBUG: Setting target to: '%s'\n", str ? str : "NULL");
-        // if (!str)
-        // {
-        //     gl_error("Attempt to set target to null string");
-        //     return;
-        // }
-        // auto &mtx = SharedMutexManager::get_mutex(my());
-        // std::unique_lock<std::shared_mutex> lock(mtx);
-
-        // size_t len = strlen(str);
-        // if (len >= sizeof(target))
-        // {
-        //     gl_error("Target string too long: %zu >= %zu", len, sizeof(target));
-        //     return;
-        // }
-
-        // strncpy(target, str, sizeof(target) - 1);
-        // target[sizeof(target) - 1] = '\0'; // Ensure null-termination
-
-        // printf("DEBUG: Target set successfully to: '%s'\n", target);
-
-        if (!str)
-        {
-            gl_error("Attempt to set target to null string");
-            return;
-        }
-        get_target_property().from_string(const_cast<char *>(str));
-    }
-
 public:
     /* required implementations */
     complex_assert(MODULE *module);
     int create(void);
     int init(OBJECT *parent);
     TIMESTAMP commit(TIMESTAMP t1, TIMESTAMP t2);
-    // int postnotify(PROPERTY *prop, char *value);
-    // inline int prenotify(PROPERTY *, char *) { return 1; };
+    int postnotify(PROPERTY *prop, char *value);
+    inline int prenotify(PROPERTY *, char *) { return 1; };
 
 public:
     static CLASS *oclass;
     // static std::shared_ptr<complex_assert> defaults;
-    // static complex_assert *defaults;
-
-public:
-    // Static inline method to get the byte offset of the member `part`
-    static inline size_t get_part_offset(void)
-    {
-        return offsetof(complex_assert, part);
-        // g_assert *current_defaults = get_defaults();
-        // return reinterpret_cast<const char *>(&(current_defaults->part)) - reinterpret_cast<const char *>(current_defaults);
-    }
-
-    // Getter method to safely retrieve the string value of `part` as std::string
-    // inline std::string get_part(void)
-    // {
-    //     auto &mtx = SharedMutexManager::get_mutex(my());
-    //     std::shared_lock<std::shared_mutex> lock(mtx);
-    //     return std::string(part);
-    // }
-
-    // inline void set_part(const char *str)
-    // {
-    //     auto &mtx = SharedMutexManager::get_mutex(my());
-    //     std::unique_lock<std::shared_mutex> lock(mtx);
-    //     strncpy(part, str, sizeof(part) - 1);
-    //     part[sizeof(part) - 1] = '\0'; // Ensure null-termination
-    // }
-
-    inline std::string get_part()
-    {
-        // std::lock_guard<std::mutex> g(m_part_mtx);
-        return std::string(part);
-    }
-    inline void set_part(const char *str)
-    {
-        // std::lock_guard<std::mutex> g(m_part_mtx);
-        std::strncpy(part, (str ? str : ""), sizeof(part) - 1);
-        part[sizeof(part) - 1] = '\0';
-    }
-
-    // Getter method to retrieve gld_property for `part`
-    inline gld_property get_part_property(void)
-    {
-        if (!my())
-        { // Check if `my()` returns a valid object
-            throw std::runtime_error("Invalid object context for retrieving gld_property.");
-        }
-        return gld_property(my(), "part");
-    }
+    static complex_assert *defaults;
 };
 
 #endif

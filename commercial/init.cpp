@@ -11,7 +11,7 @@
 #include "office.h"
 #include "multizone.h"
 
-//extern CALLBACKS *callback;
+// extern CALLBACKS *callback;
 
 EXPORT CLASS *init(CALLBACKS *fntable, MODULE *module, int argc, char *argv[])
 {

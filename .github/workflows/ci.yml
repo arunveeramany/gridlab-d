@@ -203,7 +203,7 @@ jobs:
   # macOS: AppleClang + Homebrew
   # ------------------------------
   build-and-validate-macos:
-    runs-on: macos-latest
+    runs-on: macos-14  # ARM64
 
     steps:
       - name: Checkout
@@ -251,6 +251,10 @@ jobs:
           echo "CMAKE_PREFIX_PATH=${HOMEBREW_PREFIX}" >> "$GITHUB_ENV"
           echo "PKG_CONFIG_PATH=${PKG_CONFIG_PATH}"   >> "$GITHUB_ENV"
 
+      - name: Clean build
+        run: |
+          rm -rf build/ out/ CMakeCache.txt CMakeFiles 2>/dev/null || true
+
       - name: Configure CMake (AppleClang + Ninja)
         shell: bash
         env:
@@ -274,6 +278,64 @@ jobs:
         shell: bash
         run: |
           cmake --install out/build/ci-macos --prefix "$HOME/.temp/GridLAB-D" --verbose
+      
+      - name: List loaded modules
+        shell: bash
+        run: |
+          /Users/runner/.temp/GridLAB-D/bin/gridlabd --modhelp
+
+      - name: Debug library loading
+        run: |
+          PREFIX="$HOME/.temp/GridLAB-D"
+          LIB_DIR="$PREFIX/lib"
+          export DYLD_LIBRARY_PATH="${LIB_DIR}:${DYLD_LIBRARY_PATH:-}"
+          otool -L "$LIB_DIR/powerflow.dylib"
+          echo "DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH"
+          nm -u "$LIB_DIR/powerflow.dylib" | head -50
+
+      - name: Check architecture
+        run: |
+          PREFIX="$HOME/.temp/GridLAB-D"
+          BIN_DIR="$PREFIX/bin"
+          LIB_DIR="$PREFIX/lib"
+          file "$BIN_DIR/gridlabd"
+          file "$LIB_DIR"/*.dylib
+          uname -m
+
+      - name: Check rpath configuration
+        run: |
+          PREFIX="$HOME/.temp/GridLAB-D"
+          otool -l "$PREFIX/bin/gridlabd" | grep -A 2 LC_RPATH
+          otool -l "$PREFIX/lib/powerflow.dylib" | grep -A 2 LC_RPATH
+
+      - name: Debug the empty property error
+        shell: bash
+        run: |
+          PREFIX="$HOME/.temp/GridLAB-D"
+          BIN_DIR="$PREFIX/bin"
+          LIB_DIR="$PREFIX/lib"
+          
+          export DYLD_LIBRARY_PATH="${LIB_DIR}"
+          export GLPATH="${LIB_DIR}:${PREFIX}/share/gridlabd"
+          
+          echo "=== Test powerflow:load class ==="
+          "${BIN_DIR}/gridlabd" --modhelp powerflow:load 2>&1 || true
+          
+          echo "=== Check GLM file for empty properties ==="
+          # Look for lines like "property ;" or "= ;" patterns
+          grep -n '^\s*;' taxonomy_feeders/autotest/test_R5-25.00-1_fix.glm | head -20 || true
+          grep -n '^\s*$' taxonomy_feeders/autotest/test_R5-25.00-1_fix.glm | head -20 || true
+          grep -n '"";' taxonomy_feeders/autotest/test_R5-25.00-1_fix.glm | head -20 || true
+          
+          echo "=== Show load_1 object definition ==="
+          grep -B 2 -A 30 "object load" taxonomy_feeders/autotest/test_R5-25.00-1_fix.glm | head -50 || true
+
+      - name: Check file encoding
+        run: |
+          file taxonomy_feeders/autotest/test_R5-25.00-1_fix.glm
+          head -1 taxonomy_feeders/autotest/test_R5-25.00-1_fix.glm | xxd | head -5
+          # Check for Windows line endings
+          grep -c $'\r' taxonomy_feeders/autotest/test_R5-25.00-1_fix.glm || echo "No CR found"
 
       - name: Run gridlabd --validate (installed)
         shell: bash
@@ -294,6 +356,7 @@ jobs:
 
           # macOS runtime loader path
           export DYLD_LIBRARY_PATH="${LIB_DIR}:${LIB_DIR}/gridlabd:${DYLD_LIBRARY_PATH:-}"
+          export DYLD_FALLBACK_LIBRARY_PATH="$LIB_DIR:$LIB_DIR/gridlabd"
 
           # GridLAB-D search path for modules/shares
           export GLPATH="$(pwd):${PREFIX}:${BIN_DIR}:${LIB_DIR}:${SHARE_DIR}:${GLDCORE_DIR}"
