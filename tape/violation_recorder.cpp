@@ -1655,7 +1655,7 @@ static TIMESTAMP sync_violation_recorder_impl(OBJECT *obj, TIMESTAMP t0, PASSCON
 
 
 #ifndef __APPLE__
-extern "C" MODULE_API TIMESTAMP sync_violation_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass){
+extern "C" MODULE_API TIMESTAMP sync_violation_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
      return sync_violation_recorder_impl(obj, t0, pass);
 }
