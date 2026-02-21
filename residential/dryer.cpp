@@ -874,28 +874,8 @@ case DRYER_MOTOR_COIL_ONLY:
 // // EXPORT TIMESTAMP sync_dryer(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 // {
 
-extern "C" TIMESTAMP sync_dryer(void *object, ...)
+static TIMESTAMP sync_dryer_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
-
-    // Add early validation of callback
-    if (!callback) {
-        gl_error("sync_dryer: callback is null");
-        return TS_INVALID;
-    }
-
-    if (!callback->time.local_datetime) {
-        gl_error("sync_dryer: local_datetime function is null");
-        return TS_INVALID;
-    }
-
-    va_list args;
-    va_start(args, object);
-    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
-
-    OBJECT *obj = (OBJECT*)object; 
-
 	TIMESTAMP tret;
 	dryer *my = object_data<dryer>(obj);
 	if (obj->clock <= ROUNDOFF)
@@ -923,6 +903,38 @@ extern "C" TIMESTAMP sync_dryer(void *object, ...)
 	}
 	return TS_INVALID;
 }
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_dryer(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_dryer_impl(obj,  t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_dryer(void *object, ...)
+{
+
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_dryer: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_dryer: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object; 
+    return sync_dryer_impl(obj,  t0, pass);
+}
+#endif
+
 
 EXPORT int create_dryer(OBJECT **obj, OBJECT *parent)
 {

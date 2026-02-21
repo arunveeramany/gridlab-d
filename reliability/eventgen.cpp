@@ -2480,8 +2480,41 @@ EXPORT int init_eventgen(OBJECT *obj, OBJECT *parent)
 // EXPORT TIMESTAMP sync_eventgen(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 // {
 
+static TIMESTAMP sync_eventgen_impl(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+{
 
-extern "C" TIMESTAMP sync_eventgen(void *object, ...)
+	try
+	{
+		TIMESTAMP t2 = TS_NEVER;
+		eventgen *my = object_data<eventgen>(obj);
+		switch (pass)
+		{
+		case PC_PRETOPDOWN:
+			return my->presync(obj->clock, t1);
+			break;
+		case PC_BOTTOMUP:
+			break;
+		case PC_POSTTOPDOWN:
+			t2 = my->postsync(obj->clock, t1);
+			obj->clock = t1;
+			break;
+		default:
+			GL_THROW("invalid pass request (%d)", pass);
+			break;
+		}
+		return t2;
+	}
+	SYNC_CATCHALL(eventgen);
+}
+
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_eventgen(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+{
+     return sync_eventgen_impl(obj, t1, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_eventgen(void *object, ...)
 {
     va_list args;
     va_start(args, object);
@@ -2508,30 +2541,11 @@ extern "C" TIMESTAMP sync_eventgen(void *object, ...)
         return FAILED;
     }
 
-
-	try
-	{
-		TIMESTAMP t2 = TS_NEVER;
-		eventgen *my = object_data<eventgen>(obj);
-		switch (pass)
-		{
-		case PC_PRETOPDOWN:
-			return my->presync(obj->clock, t1);
-			break;
-		case PC_BOTTOMUP:
-			break;
-		case PC_POSTTOPDOWN:
-			t2 = my->postsync(obj->clock, t1);
-			obj->clock = t1;
-			break;
-		default:
-			GL_THROW("invalid pass request (%d)", pass);
-			break;
-		}
-		return t2;
-	}
-	SYNC_CATCHALL(eventgen);
+    return sync_eventgen_impl(obj, t1, pass);
 }
+#endif
+
+
 
 // Exposed function to add items
 EXPORT int add_event(OBJECT *event_obj, OBJECT *obj_to_fault, char *event_type, TIMESTAMP fail_time, TIMESTAMP rest_length, int implemented_fault, bool fault_state)

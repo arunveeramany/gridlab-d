@@ -63,11 +63,11 @@ extern "C"
 {
 	int create_player(OBJECT **obj, OBJECT *parent);
 	// TIMESTAMP sync_player(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass);
-	TIMESTAMP sync_player(void *object, ...);
+	//TIMESTAMP sync_player(void *object, ...);
 	int create_recorder(OBJECT **obj, OBJECT *parent);
 	int init_recorder(OBJECT *obj);
 	// TIMESTAMP sync_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass);
-	TIMESTAMP sync_recorder(void *object, ...);
+	//TIMESTAMP sync_recorder(void *object, ...);
 }
 
 /* delta mode control */

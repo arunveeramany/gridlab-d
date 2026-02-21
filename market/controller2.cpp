@@ -451,35 +451,9 @@ EXPORT int isa_controller2(OBJECT *obj, char *classname)
 // EXPORT TIMESTAMP sync_controller2(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 // {
 
-extern "C" TIMESTAMP sync_controller2(void *object, ...)
+
+static TIMESTAMP sync_controller2_impl(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 {
-    va_list args;
-    va_start(args, object);
-    TIMESTAMP t1 = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
-
-    OBJECT *obj = (OBJECT*)object;  
-    
-	if (!callback) {
-        gl_error("callback is null in sync_controller2");
-        return 0;  // Fail module load
-    }
-
-	    // Add structure validation
-    // std::cerr << "Callback structure size check:" << std::endl;
-    // std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
-    // std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
-    // std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
-    
-
-	if (!callback->time.local_datetime) {
-        gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
-        return FAILED;
-    }
-
-
-
 	TIMESTAMP t2 = TS_NEVER;
 	controller2 *my = OBJECTDATA(obj,controller2);
 	try
@@ -507,6 +481,44 @@ extern "C" TIMESTAMP sync_controller2(void *object, ...)
 	}
 	return t2;
 }
+
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_controller2(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+{
+    return sync_controller2_impl(obj, t1, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_controller2(void *object, ...)
+{
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t1 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object;  
+    
+    if (!callback) {
+        gl_error("callback is null in sync_controller2");
+        return 0;  // Fail module load
+    }
+
+	    // Add structure validation
+    // std::cerr << "Callback structure size check:" << std::endl;
+    // std::cerr << "sizeof(CALLBACKS): " << sizeof(CALLBACKS) << std::endl;
+    // std::cerr << "time struct offset: " << offsetof(CALLBACKS, time) << std::endl;
+    // std::cerr << "local_datetime offset: " << offsetof(CALLBACKS, time) + offsetof(decltype(callback->time), local_datetime) << std::endl;
+    
+
+    if (!callback->time.local_datetime) {
+        gl_error("CRITICAL: local_datetime callback is null in pass %d", pass);
+        return FAILED;
+    }
+
+    return sync_controller2_impl(obj, t1, pass);
+}
+#endif
 
 // EOF
 

@@ -2673,16 +2673,9 @@ EXPORT int isa_controller(OBJECT *obj, char *classname)
 //EXPORT TIMESTAMP sync_controller(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 //{
 
-extern "C" TIMESTAMP sync_controller(void *object, ...)
+
+static TIMESTAMP sync_controller_impl(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 {
-    va_list args;
-    va_start(args, object);
-    TIMESTAMP t1 = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
-
-    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
-
 	TIMESTAMP t2 = TS_NEVER;
 	controller *my = /*OBJECTDATA(obj,<>)*/ object_data<controller>(obj);
 	try
@@ -2709,5 +2702,25 @@ extern "C" TIMESTAMP sync_controller(void *object, ...)
 	}
 	SYNC_CATCHALL(controller);
 }
+
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_controller(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+{
+    return  sync_controller_impl(obj,  t1, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_controller(void *object, ...)
+{
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t1 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
+    return  sync_controller_impl(obj,  t1, pass);
+}
+#endif
 
 // EOF

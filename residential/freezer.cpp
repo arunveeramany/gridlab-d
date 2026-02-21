@@ -317,7 +317,14 @@ EXPORT int create_freezer(OBJECT **obj, OBJECT *parent)
 
 // EXPORT TIMESTAMP sync_freezer(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 // {
-extern "C" TIMESTAMP sync_freezer(void *object, ...)
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_freezer(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+     return sync_freezer_impl(obj,  t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_freezer(void *object, ...)
 {
 
     // Add early validation of callback
@@ -338,8 +345,12 @@ extern "C" TIMESTAMP sync_freezer(void *object, ...)
     va_end(args);
 
     OBJECT *obj = (OBJECT*)object; 
+    return sync_freezer_impl(obj,  t0, pass);
+}
+#endif
 
-
+static TIMESTAMP sync_freezer_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
 
 	try {
 		freezer *my = object_data<freezer>(obj);

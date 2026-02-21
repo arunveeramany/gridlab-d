@@ -715,16 +715,8 @@ int read_multi_properties(struct recorder *my, OBJECT *obj, RECORDER_MAP *rmap, 
 // TIMESTAMP sync_multi_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass) 
 // {
 
-extern "C" TIMESTAMP sync_multi_recorder(void *object, ...)
+static TIMESTAMP sync_multi_recorder_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass) 
 {
-    va_list args;
-    va_start(args, object);
-    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
-
-    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
-
 	if (!callback) {
         gl_error("callback is null in sync_multi_recorder");
         return 0;  // Fail module load
@@ -859,6 +851,27 @@ extern "C" TIMESTAMP sync_multi_recorder(void *object, ...)
 	}
     return sync_multi_recorder_error(&obj, &my, buffer);
 }
+
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_multi_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass) 
+{
+    return sync_multi_recorder_impl(obj,  t0,  pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_multi_recorder(void *object, ...)
+{
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object;  // ← Move this outside try block
+    return sync_multi_recorder_impl(obj,  t0,  pass);
+}
+#endif
+
 
 TIMESTAMP sync_multi_recorder_error(OBJECT **obj, struct recorder **my, char2048 buffer) {
 	if ((*my)->status==TS_ERROR)

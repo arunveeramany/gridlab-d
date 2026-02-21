@@ -2356,15 +2356,9 @@ EXPORT int isa_auction(OBJECT *obj, char *classname)
 // EXPORT TIMESTAMP sync_auction(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 //{
 
-extern "C" TIMESTAMP sync_auction(void *object, ...)
-{
-	va_list args;
-	va_start(args, object);
-	TIMESTAMP t1 = va_arg(args, TIMESTAMP);
-	PASSCONFIG pass = va_arg(args, PASSCONFIG);
-	va_end(args);
 
-	OBJECT *obj = (OBJECT *)object; // ← Move this outside try block
+static TIMESTAMP sync_auction_impl(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+{
 
 	TIMESTAMP t2 = TS_NEVER;
 	auction *my = /*OBJECTDATA(obj, auction)*/ object_data<auction>(obj);
@@ -2389,3 +2383,22 @@ extern "C" TIMESTAMP sync_auction(void *object, ...)
 	SYNC_CATCHALL(auction);
 	return TS_INVALID; // resolves compiler warning, but can not be reached.
 }
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_auction(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
+{
+     return sync_auction_impl(obj, t1, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_auction(void *object, ...)
+{
+	va_list args;
+	va_start(args, object);
+	TIMESTAMP t1 = va_arg(args, TIMESTAMP);
+	PASSCONFIG pass = va_arg(args, PASSCONFIG);
+	va_end(args);
+
+	OBJECT *obj = (OBJECT *)object; // ← Move this outside try block
+        return sync_auction_impl(obj, t1, pass);
+}
+#endif

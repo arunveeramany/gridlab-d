@@ -597,28 +597,9 @@ EXPORT TIMESTAMP commit_schedule(OBJECT *obj, TIMESTAMP t1, TIMESTAMP t2)
 
 // EXPORT TIMESTAMP sync_schedule(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 // {
-extern "C" TIMESTAMP sync_schedule(void *object, ...)
+
+static TIMESTAMP sync_schedule_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
-
-    // Add early validation of callback
-    if (!callback) {
-        gl_error("sync_schedule: callback is null");
-        return TS_INVALID;
-    }
-
-    if (!callback->time.local_datetime) {
-        gl_error("sync_schedule: local_datetime function is null");
-        return TS_INVALID;
-    }
-
-    va_list args;
-    va_start(args, object);
-    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
-
-    OBJECT *obj = (OBJECT*)object; 
-
 
 	schedule *my = OBJECTDATA(obj, schedule);
 	TIMESTAMP t1 = my->sync(obj->clock, t0);
@@ -655,5 +636,37 @@ extern "C" TIMESTAMP sync_schedule(void *object, ...)
 	obj->clock = t0;
 	return t1;
 }
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_schedule(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return  sync_schedule_impl(obj,  t0,  pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_schedule(void *object, ...)
+{
+
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_schedule: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_schedule: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object; 
+    return  sync_schedule_impl(obj,  t0,  pass);
+}
+#endif
+
 
 /**@}**/

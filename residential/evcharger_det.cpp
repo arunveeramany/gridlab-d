@@ -2352,31 +2352,9 @@ EXPORT int isa_evcharger_det(OBJECT *obj, char *classname)
 
 // EXPORT TIMESTAMP sync_evcharger_det(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 // {
-extern "C" TIMESTAMP sync_evcharger_det(void *object, ...)
+
+static TIMESTAMP sync_evcharger_det_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
-
-    // Add early validation of callback
-    if (!callback) {
-        gl_error("sync_evcharger_det: callback is null");
-        return TS_INVALID;
-    }
-
-    if (!callback->time.local_datetime) {
-        gl_error("sync_evcharger_det: local_datetime function is null");
-        return TS_INVALID;
-    }
-
-    va_list args;
-    va_start(args, object);
-    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
-
-    OBJECT *obj = (OBJECT*)object; 
-
-
-
-
 	TIMESTAMP t1;
 
 	try {
@@ -2401,6 +2379,39 @@ extern "C" TIMESTAMP sync_evcharger_det(void *object, ...)
 	}
 	SYNC_CATCHALL(evcharger_det);
 }
+
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_evcharger_det(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_evcharger_det_impl(obj, t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_evcharger_det(void *object, ...)
+{
+
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_evcharger_det: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_evcharger_det: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object; 
+    return sync_evcharger_det_impl(obj, t0, pass);
+}
+#endif
+
 
 //Deltamode linkage function
 //Deltamode exposed functions

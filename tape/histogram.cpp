@@ -590,7 +590,33 @@ EXPORT int init_histogram(OBJECT *obj)
 
 // EXPORT TIMESTAMP sync_histogram(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 // {
-extern "C" TIMESTAMP sync_histogram(void *object, ...)
+
+static TIMESTAMP sync_histogram_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+
+
+	histogram *pObj = object_data<histogram>(obj);
+	try {
+		if (pass == PC_PRETOPDOWN)
+			return pObj->sync(obj->clock, t0);
+	} catch (const char *error) {
+		GL_THROW("%s (histogram:%d): %s", (obj->name ? obj->name : "(unnamed)"), obj->id, error);
+		return 0; 
+	} catch (...) {
+		GL_THROW("%s (histogram:%d): %s", (obj->name ? obj->name : "(unnamed)"), obj->id, "unknown exception");
+		return 0;
+	}
+	return TS_NEVER;
+}
+
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_histogram(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return  sync_histogram_impl(obj,  t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_histogram(void *object, ...)
 {
 
     // Add early validation of callback
@@ -611,21 +637,10 @@ extern "C" TIMESTAMP sync_histogram(void *object, ...)
     va_end(args);
 
     OBJECT *obj = (OBJECT*)object; 
-
-
-	histogram *pObj = object_data<histogram>(obj);
-	try {
-		if (pass == PC_PRETOPDOWN)
-			return pObj->sync(obj->clock, t0);
-	} catch (const char *error) {
-		GL_THROW("%s (histogram:%d): %s", (obj->name ? obj->name : "(unnamed)"), obj->id, error);
-		return 0; 
-	} catch (...) {
-		GL_THROW("%s (histogram:%d): %s", (obj->name ? obj->name : "(unnamed)"), obj->id, "unknown exception");
-		return 0;
-	}
-	return TS_NEVER;
+    return  sync_histogram_impl(obj,  t0, pass);
 }
+#endif
+
 
 /**
 * Allows the core to discover whether obj is a subtype of this class.

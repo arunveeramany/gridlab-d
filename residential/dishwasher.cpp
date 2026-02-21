@@ -1441,29 +1441,10 @@ case dishwasher_TRIPPED:
 
 // EXPORT TIMESTAMP sync_dishwasher(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 // {
-extern "C" TIMESTAMP sync_dishwasher(void *object, ...)
+
+
+static TIMESTAMP sync_dishwasher_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
-
-    // Add early validation of callback
-    if (!callback) {
-        gl_error("sync_dishwasher: callback is null");
-        return TS_INVALID;
-    }
-
-    if (!callback->time.local_datetime) {
-        gl_error("sync_dishwasher: local_datetime function is null");
-        return TS_INVALID;
-    }
-
-    va_list args;
-    va_start(args, object);
-    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
-
-    OBJECT *obj = (OBJECT*)object; 
-
-
 
 	TIMESTAMP tret;
 	dishwasher *my = object_data<dishwasher>(obj);
@@ -1492,6 +1473,38 @@ extern "C" TIMESTAMP sync_dishwasher(void *object, ...)
 	}
 	return TS_INVALID;
 }
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_dishwasher(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_dishwasher_impl(obj, t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_dishwasher(void *object, ...)
+{
+
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_dishwasher: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_dishwasher: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object; 
+    return sync_dishwasher_impl(obj, t0, pass);
+}
+#endif
+
 
 EXPORT int create_dishwasher(OBJECT **obj, OBJECT *parent)
 {

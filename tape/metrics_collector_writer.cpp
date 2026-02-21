@@ -1938,30 +1938,9 @@ EXPORT int init_metrics_collector_writer(OBJECT *obj)
 
 // EXPORT TIMESTAMP sync_metrics_collector_writer(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 // {
-extern "C" TIMESTAMP sync_metrics_collector_writer(void *object, ...)
+
+static TIMESTAMP sync_metrics_collector_writer_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
-
-    // Add early validation of callback
-    if (!callback) {
-        gl_error("sync_metrics_collector_writer: callback is null");
-        return TS_INVALID;
-    }
-
-    if (!callback->time.local_datetime) {
-        gl_error("sync_metrics_collector_writer: local_datetime function is null");
-        return TS_INVALID;
-    }
-
-    va_list args;
-    va_start(args, object);
-    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
-
-    OBJECT *obj = (OBJECT*)object; 
-
-
-
 	metrics_collector_writer *my = object_data<metrics_collector_writer>(obj);
 	TIMESTAMP rv = 0;
 	try
@@ -1992,6 +1971,39 @@ extern "C" TIMESTAMP sync_metrics_collector_writer(void *object, ...)
 	}
 	return rv;
 }
+
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_metrics_collector_writer(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+    return sync_metrics_collector_writer_impl(obj, t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_metrics_collector_writer(void *object, ...)
+{
+
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_metrics_collector_writer: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_metrics_collector_writer: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object; 
+    return sync_metrics_collector_writer_impl(obj, t0, pass);
+}
+#endif
+
 
 EXPORT int commit_metrics_collector_writer(OBJECT *obj)
 {

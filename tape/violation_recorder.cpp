@@ -1623,29 +1623,9 @@ EXPORT int init_violation_recorder(OBJECT *obj){
 }
 
 // EXPORT TIMESTAMP sync_violation_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass){
-extern "C" TIMESTAMP sync_violation_recorder(void *object, ...)
+
+static TIMESTAMP sync_violation_recorder_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
-
-    // Add early validation of callback
-    if (!callback) {
-        gl_error("sync_violation_recorder: callback is null");
-        return TS_INVALID;
-    }
-
-    if (!callback->time.local_datetime) {
-        gl_error("sync_violation_recorder: local_datetime function is null");
-        return TS_INVALID;
-    }
-
-    va_list args;
-    va_start(args, object);
-    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
-
-    OBJECT *obj = (OBJECT*)object; 
-
-
 	violation_recorder *my = object_data<violation_recorder>(obj);
 	TIMESTAMP rv = 0;
 	try {
@@ -1672,6 +1652,39 @@ extern "C" TIMESTAMP sync_violation_recorder(void *object, ...)
 	}
 	return rv;
 }
+
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_violation_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass){
+{
+     return sync_violation_recorder_impl(obj, t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_violation_recorder(void *object, ...)
+{
+
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_violation_recorder: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_violation_recorder: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object; 
+    return sync_violation_recorder_impl(obj, t0, pass);
+}
+#endif
+
 
 EXPORT int commit_violation_recorder(OBJECT *obj){
 	int rv = 0;
