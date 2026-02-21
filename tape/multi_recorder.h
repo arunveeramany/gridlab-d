@@ -9,7 +9,7 @@
 #include "tape.h"
 
 // EXPORT TIMESTAMP sync_multi_recorder(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass);
-extern "C" TIMESTAMP sync_multi_recorder(void *object, ...);
+//extern "C" TIMESTAMP sync_multi_recorder(void *object, ...);
 
 EXPORT TIMESTAMP sync_multi_recorder_error(OBJECT **obj, struct recorder **my, char2048 buffer);
 
