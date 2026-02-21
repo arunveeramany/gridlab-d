@@ -246,7 +246,7 @@ static TIMESTAMP sync_supervisory_control_impl(OBJECT *obj, TIMESTAMP t1, PASSCO
 }
 
 #ifndef __APPLE__
-extern "C" MODULE_API TIMESTAMP sync_supervisory_control(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass) {
+extern "C" MODULE_API TIMESTAMP sync_supervisory_control(OBJECT *obj, TIMESTAMP t1, PASSCONFIG pass)
 {
     return sync_supervisory_control_impl(obj, t1,  pass);
 }
