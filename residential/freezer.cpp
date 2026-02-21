@@ -318,36 +318,6 @@ EXPORT int create_freezer(OBJECT **obj, OBJECT *parent)
 // EXPORT TIMESTAMP sync_freezer(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 // {
 
-#ifndef __APPLE__
-extern "C" MODULE_API TIMESTAMP sync_freezer(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
-{
-     return sync_freezer_impl(obj,  t0, pass);
-}
-#else
-extern "C" MODULE_API TIMESTAMP sync_freezer(void *object, ...)
-{
-
-    // Add early validation of callback
-    if (!callback) {
-        gl_error("sync_freezer: callback is null");
-        return TS_INVALID;
-    }
-
-    if (!callback->time.local_datetime) {
-        gl_error("sync_freezer: local_datetime function is null");
-        return TS_INVALID;
-    }
-
-    va_list args;
-    va_start(args, object);
-    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
-    PASSCONFIG pass = va_arg(args, PASSCONFIG);
-    va_end(args);
-
-    OBJECT *obj = (OBJECT*)object; 
-    return sync_freezer_impl(obj,  t0, pass);
-}
-#endif
 
 static TIMESTAMP sync_freezer_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 {
@@ -378,6 +348,38 @@ static TIMESTAMP sync_freezer_impl(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
 	}
 	SYNC_CATCHALL(freezer);
 }
+
+
+#ifndef __APPLE__
+extern "C" MODULE_API TIMESTAMP sync_freezer(OBJECT *obj, TIMESTAMP t0, PASSCONFIG pass)
+{
+     return sync_freezer_impl(obj,  t0, pass);
+}
+#else
+extern "C" MODULE_API TIMESTAMP sync_freezer(void *object, ...)
+{
+
+    // Add early validation of callback
+    if (!callback) {
+        gl_error("sync_freezer: callback is null");
+        return TS_INVALID;
+    }
+
+    if (!callback->time.local_datetime) {
+        gl_error("sync_freezer: local_datetime function is null");
+        return TS_INVALID;
+    }
+
+    va_list args;
+    va_start(args, object);
+    TIMESTAMP t0 = va_arg(args, TIMESTAMP);
+    PASSCONFIG pass = va_arg(args, PASSCONFIG);
+    va_end(args);
+
+    OBJECT *obj = (OBJECT*)object; 
+    return sync_freezer_impl(obj,  t0, pass);
+}
+#endif
 
 EXPORT int init_freezer(OBJECT *obj)
 {
