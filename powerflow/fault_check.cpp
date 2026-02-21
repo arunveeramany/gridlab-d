@@ -14,7 +14,7 @@
 //////////////////////////////////////////////////////////////////////////
 CLASS *fault_check::oclass = nullptr;
 CLASS *fault_check::pclass = nullptr;
-extern "C" CALLBACKS *callback;
+//extern "C" CALLBACKS *callback;
 
 fault_check::fault_check(MODULE *mod) : powerflow_object(mod)
 {
