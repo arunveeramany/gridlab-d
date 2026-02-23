@@ -58,16 +58,6 @@
 
 using std::isnan;
 
-#if defined(_WIN32)
-#define MODULE_API __declspec(dllexport) // always exporting from this module
-#else
-#if defined(__GNUC__) && (__GNUC__ >= 4)
-#define MODULE_API __attribute__((visibility("default")))
-#else
-#define MODULE_API
-#endif
-#endif
-
 /* object list */
 static OBJECTNUM next_object_id = 0;
 static OBJECTNUM deleted_object_count = 0;
