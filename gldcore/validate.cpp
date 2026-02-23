@@ -27,8 +27,11 @@
 
 #include <chrono>
 #include <thread>
+
+#ifndef _WIN32
 #include <sys/wait.h>
 #include <signal.h>
+#endif
 
 #include <mutex>
 #include <atomic>
@@ -223,42 +226,6 @@ static char report_file[1024] = "validate_win32.txt";
 #else
 static char report_file[1024] = "validate.txt";
 #endif
-
-// Returns:
-//   > 0  : child exited normally (pid returned)
-//   -2   : timeout — child was killed
-//   < 0  : waitpid error
-static int waitpid_with_timeout(pid_t pid, int *status, int timeout_seconds)
-{
-	auto start = std::chrono::steady_clock::now();
-	while (true)
-	{
-		int ret = waitpid(pid, status, WNOHANG);
-		if (ret > 0)
-			return ret; // child exited
-		if (ret < 0 && errno != EINTR)
-			return ret; // real error
-
-		auto elapsed = std::chrono::steady_clock::now() - start;
-		int secs = (int)std::chrono::duration_cast<std::chrono::seconds>(elapsed).count();
-
-		if (secs >= timeout_seconds)
-		{
-			output_warning("Test process %d exceeded %d-second timeout — killing",
-						   (int)pid, timeout_seconds);
-			kill(pid, SIGTERM);
-			std::this_thread::sleep_for(std::chrono::milliseconds(500));
-			// If it didn't die from SIGTERM, force-kill
-			if (waitpid(pid, status, WNOHANG) == 0)
-			{
-				kill(pid, SIGKILL);
-				waitpid(pid, status, 0); // reap
-			}
-			return -2; // timeout sentinel
-		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(250));
-	}
-}
 
 static bool line_has_error_token(const char *buf)
 {
@@ -816,7 +783,6 @@ int vsystem_posix_exec_argv_capture(const std::vector<std::string> &argv,
 
 // replace vsystem_posix() with an argv-based exec
 #ifndef _WIN32
-#include <sys/wait.h>
 int vsystem_posix_exec_argv(const std::vector<std::string> &argv)
 {
 	pid_t pid = fork();
@@ -970,7 +936,6 @@ void sigchld_handler(int sig)
 }
 
 #ifndef _WIN32
-#include <sys/wait.h> // Required for waitpid
 
 // A robust vsystem implementation for POSIX systems (macOS, Linux)
 // that correctly returns the child process's wait status.

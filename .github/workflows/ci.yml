@@ -203,7 +203,7 @@ jobs:
   # macOS: AppleClang + Homebrew
   # ------------------------------
   build-and-validate-macos:
-    runs-on: macos-14  # ARM64
+    runs-on: macos-15  # ARM64
 
     steps:
       - name: Checkout
@@ -236,10 +236,11 @@ jobs:
 
           # Prefer reproducible installs from Brewfile if present
           if [[ -f ci/Brewfile ]]; then
-            brew bundle --no-lock --file=ci/Brewfile
+            brew bundle --file=ci/Brewfile
           else
             # Fallback inline install — minimal set mirroring Windows vcpkg.json
-            brew install cmake ninja pkg-config eigen
+            brew install cmake@4.2 ninja pkg-config eigen
+            brew link --overwrite cmake@4.2
           fi
 
           HOMEBREW_PREFIX="$(brew --prefix)"
@@ -250,6 +251,15 @@ jobs:
           echo "PKG_CONFIG_PATH=${PKG_CONFIG_PATH}"
           echo "CMAKE_PREFIX_PATH=${HOMEBREW_PREFIX}" >> "$GITHUB_ENV"
           echo "PKG_CONFIG_PATH=${PKG_CONFIG_PATH}"   >> "$GITHUB_ENV"
+
+
+      - name: Print toolchain info
+        run: |
+          sw_vers
+          clang --version
+          cmake --version
+          ninja --version
+          brew list --versions cmake ninja pkg-config eigen
 
       - name: Clean build
         run: |
@@ -266,8 +276,12 @@ jobs:
 
           cmake -S . -B "$BUILD_DIR" \
             -G Ninja \
+            -DCMAKE_OSX_ARCHITECTURES=arm64 \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 \
             -DCMAKE_BUILD_TYPE="Release" \
-            -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH}"
+            -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH}" \
+            -DCMAKE_MACOSX_RPATH=ON \
+            -DCMAKE_INSTALL_RPATH="$HOME/.temp/GridLAB-D/lib;$HOME/.temp/GridLAB-D/lib/gridlabd"
 
       - name: Build (Release)
         shell: bash
