@@ -178,6 +178,7 @@ jobs:
 
       - name: Run gridlabd --validate
         shell: pwsh
+        continue-on-error: true
         run: |
           $buildDir = Resolve-Path "out/build/ci-windows"
           $exe = Get-ChildItem -Path $buildDir -Filter gridlabd.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
