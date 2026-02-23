@@ -1809,7 +1809,7 @@ void object_profile(OBJECT *obj, OBJECTPROFILEITEM pass, clock_t t)
 // 					   PASSCONFIG pass) /**< the pass configuration */
 // {
 
-extern "C" TIMESTAMP _object_sync(void *object, ...)
+static TIMESTAMP _object_sync(void *object, ...)
 {
 	va_list args;
 	va_start(args, object);
@@ -1973,7 +1973,7 @@ static TIMESTAMP object_sync_impl(OBJECT *obj,	   /**< the object to synchronize
 	return t2;
 }
 
-#ifndef _APPLE__
+#ifndef __APPLE__
 extern "C" MODULE_API TIMESTAMP object_sync(OBJECT *obj,	 /**< the object to synchronize */
 											TIMESTAMP ts,	 /**< the desire clock to sync to */
 											PASSCONFIG pass) /**< the pass configuration */
