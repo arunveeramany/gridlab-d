@@ -25,6 +25,11 @@
 #include <sys/stat.h>
 #include <format>
 
+#include <chrono>
+#include <thread>
+#include <sys/wait.h>
+#include <signal.h>
+
 #include <mutex>
 #include <atomic>
 #include <vector>
@@ -218,6 +223,42 @@ static char report_file[1024] = "validate_win32.txt";
 #else
 static char report_file[1024] = "validate.txt";
 #endif
+
+// Returns:
+//   > 0  : child exited normally (pid returned)
+//   -2   : timeout — child was killed
+//   < 0  : waitpid error
+static int waitpid_with_timeout(pid_t pid, int *status, int timeout_seconds)
+{
+	auto start = std::chrono::steady_clock::now();
+	while (true)
+	{
+		int ret = waitpid(pid, status, WNOHANG);
+		if (ret > 0)
+			return ret; // child exited
+		if (ret < 0 && errno != EINTR)
+			return ret; // real error
+
+		auto elapsed = std::chrono::steady_clock::now() - start;
+		int secs = (int)std::chrono::duration_cast<std::chrono::seconds>(elapsed).count();
+
+		if (secs >= timeout_seconds)
+		{
+			output_warning("Test process %d exceeded %d-second timeout — killing",
+						   (int)pid, timeout_seconds);
+			kill(pid, SIGTERM);
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+			// If it didn't die from SIGTERM, force-kill
+			if (waitpid(pid, status, WNOHANG) == 0)
+			{
+				kill(pid, SIGKILL);
+				waitpid(pid, status, 0); // reap
+			}
+			return -2; // timeout sentinel
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(250));
+	}
+}
 
 static bool line_has_error_token(const char *buf)
 {
@@ -670,30 +711,106 @@ static int vsystem(const char *fmt, ...)
 	return rc;
 }
 
+static constexpr int DEFAULT_TEST_TIMEOUT_SECONDS = 300; // 5 minutes
+
 #ifdef _WIN32
+#include <windows.h>
+
 int vsystem_posix_exec_argv_capture(const std::vector<std::string> &argv,
 									const std::string &out_path,
-									const std::string &err_path)
+									const std::string &err_path,
+									int timeout_seconds = DEFAULT_TEST_TIMEOUT_SECONDS)
 {
-	// Build command line string for system()
+	// Build command line string
 	std::string cmd;
 	for (const auto &arg : argv)
 	{
 		if (!cmd.empty())
 			cmd += " ";
-		// Quote arguments containing spaces
 		if (arg.find(' ') != std::string::npos)
-		{
 			cmd += "\"" + arg + "\"";
-		}
 		else
-		{
 			cmd += arg;
-		}
 	}
-	// Redirect output
-	cmd += " > \"" + out_path + "\" 2> \"" + err_path + "\"";
-	return system(cmd.c_str());
+
+	// Create inheritable file handles for stdout/stderr redirection
+	SECURITY_ATTRIBUTES sa = {};
+	sa.nLength = sizeof(sa);
+	sa.bInheritHandle = TRUE;
+
+	HANDLE hOut = CreateFileA(out_path.c_str(), GENERIC_WRITE, FILE_SHARE_READ,
+							  &sa, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	HANDLE hErr = CreateFileA(err_path.c_str(), GENERIC_WRITE, FILE_SHARE_READ,
+							  &sa, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	if (hOut == INVALID_HANDLE_VALUE || hErr == INVALID_HANDLE_VALUE)
+	{
+		if (hOut != INVALID_HANDLE_VALUE)
+			CloseHandle(hOut);
+		if (hErr != INVALID_HANDLE_VALUE)
+			CloseHandle(hErr);
+		return -1;
+	}
+
+	STARTUPINFOA si = {};
+	si.cb = sizeof(si);
+	si.dwFlags = STARTF_USESTDHANDLES;
+	si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+	si.hStdOutput = hOut;
+	si.hStdError = hErr;
+
+	PROCESS_INFORMATION pi = {};
+
+	// CreateProcessA needs a mutable command line buffer
+	std::vector<char> cmd_buf(cmd.begin(), cmd.end());
+	cmd_buf.push_back('\0');
+
+	BOOL ok = CreateProcessA(
+		NULL,			// lpApplicationName
+		cmd_buf.data(), // lpCommandLine (mutable)
+		NULL, NULL,		// process/thread security
+		TRUE,			// bInheritHandles
+		0,				// dwCreationFlags
+		NULL, NULL,		// environment, current directory
+		&si, &pi);
+
+	if (!ok)
+	{
+		CloseHandle(hOut);
+		CloseHandle(hErr);
+		return -1;
+	}
+
+	// Wait with timeout
+	DWORD timeout_ms = (timeout_seconds > 0)
+						   ? static_cast<DWORD>(timeout_seconds) * 1000
+						   : INFINITE;
+	DWORD wait = WaitForSingleObject(pi.hProcess, timeout_ms);
+
+	int result;
+	if (wait == WAIT_TIMEOUT)
+	{
+		TerminateProcess(pi.hProcess, 1);
+		WaitForSingleObject(pi.hProcess, 5000); // let it clean up
+		result = -2;							// timeout sentinel — same as POSIX version
+	}
+	else if (wait == WAIT_OBJECT_0)
+	{
+		DWORD exit_code;
+		GetExitCodeProcess(pi.hProcess, &exit_code);
+		result = static_cast<int>(exit_code);
+	}
+	else
+	{
+		result = -1; // WaitForSingleObject error
+	}
+
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
+	CloseHandle(hOut);
+	CloseHandle(hErr);
+
+	return result;
 }
 #endif
 
@@ -750,14 +867,14 @@ static void forward_fd_to_file(int fd, const std::string &path)
 
 int vsystem_posix_exec_argv_capture(const std::vector<std::string> &argv,
 									const std::string &out_path,
-									const std::string &err_path)
+									const std::string &err_path,
+									int timeout_seconds = DEFAULT_TEST_TIMEOUT_SECONDS)
 {
 	int out_pipe[2], err_pipe[2];
 	if (pipe(out_pipe) == -1 || pipe(err_pipe) == -1)
 	{
 		return -1;
 	}
-
 	pid_t pid = fork();
 	if (pid == -1)
 	{
@@ -767,56 +884,78 @@ int vsystem_posix_exec_argv_capture(const std::vector<std::string> &argv,
 		close(err_pipe[1]);
 		return -1;
 	}
-
 	if (pid == 0)
 	{
-		// Child
+		// Child — unchanged
 		(void)dup2(out_pipe[1], STDOUT_FILENO);
 		(void)dup2(err_pipe[1], STDERR_FILENO);
 		close(out_pipe[0]);
 		close(out_pipe[1]);
 		close(err_pipe[0]);
 		close(err_pipe[1]);
-
 		std::vector<char *> cargs;
 		cargs.reserve(argv.size() + 1);
 		for (auto &s : argv)
 			cargs.push_back(const_cast<char *>(s.c_str()));
 		cargs.push_back(nullptr);
 		execvp(cargs[0], cargs.data());
-		_exit(127); // exec failed
+		_exit(127);
 	}
 
 	// Parent
 	close(out_pipe[1]);
 	close(err_pipe[1]);
-
 	std::thread t_out(forward_fd_to_file, out_pipe[0], out_path);
 	std::thread t_err(forward_fd_to_file, err_pipe[0], err_path);
 
+	// ──────────────────────────────────────────────
+	// THIS IS WHAT CHANGES: polling waitpid + timeout
+	// ──────────────────────────────────────────────
 	int status = 0;
-	if (waitpid(pid, &status, 0) == -1)
-	{
-		status = -1;
-	}
+	bool timed_out = false;
+	auto start = std::chrono::steady_clock::now();
 
+	while (true)
+	{
+		int ret = waitpid(pid, &status, WNOHANG); // non-blocking
+		if (ret > 0)
+			break; // child exited
+		if (ret == -1 && errno != EINTR)
+		{
+			status = -1;
+			break;
+		}
+
+		auto elapsed = std::chrono::steady_clock::now() - start;
+		if (timeout_seconds > 0 &&
+			std::chrono::duration_cast<std::chrono::seconds>(elapsed).count() >= timeout_seconds)
+		{
+			// Graceful kill first
+			kill(pid, SIGTERM);
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+			// Force-kill if still alive
+			if (waitpid(pid, &status, WNOHANG) == 0)
+			{
+				kill(pid, SIGKILL);
+				waitpid(pid, &status, 0); // reap
+			}
+			timed_out = true;
+			break;
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(250));
+	}
+	// ──────────────────────────────────────────────
+
+	// Once the child is dead its pipe fds are closed,
+	// so the forwarding threads will see EOF and finish.
 	t_out.join();
 	t_err.join();
 
-	struct stat st_out{}, st_err{};
-	stat(out_path.c_str(), &st_out);
-	stat(err_path.c_str(), &st_err);
+	if (timed_out)
+		return -2; // sentinel: caller can distinguish timeout from crash
 
-	// std::cerr << "captured sizes: out=" << static_cast<long long>(st_out.st_size)
-	// 		<< ", err=" << static_cast<long long>(st_err.st_size) << std::endl;
-
-	// Optional: decode and log (for debugging)
-	// if (status != -1) {
-	//     if (WIFEXITED(status)) output_debug("child exit code=%d", WEXITSTATUS(status));
-	//     else if (WIFSIGNALED(status)) output_debug("child term sig=%d", WTERMSIG(status));
-	// }
-
-	return status; // RAW status; caller must use WIFEXITED/WEXITSTATUS/WIFSIGNALED/WTERMSIG
+	return status;
 }
 
 #endif
@@ -1069,6 +1208,8 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 	output_debug("Thread %zu acquiring subprocess launch lock", std::hash<std::thread::id>{}(std::this_thread::get_id()));
 
 	unsigned int code;
+	int raw = 255;
+
 	{
 		std::lock_guard<std::mutex> lock(subprocess_launch_mutex);
 
@@ -1078,7 +1219,25 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 
 #ifdef _WIN32
 		// Windows uses the existing vsystem which wraps std::system
-		code = vsystem(command_line.c_str());
+		// code = vsystem(command_line.c_str());
+
+		std::vector<std::string> test_args;
+		test_args.push_back(executable_to_run_path.string());
+		test_args.push_back("-W");
+		test_args.push_back(dir);
+
+		std::string args_str = validate_child_cmdargs;
+		std::stringstream ss(args_str);
+		std::string token;
+		while (ss >> token)
+			test_args.push_back(token);
+
+		test_args.push_back(std::format("{}.glm", name));
+
+		std::string out_path = std::string(dir) + "/gridlabd.out.pipe";
+		std::string err_path = std::string(dir) + "/gridlabd.err.pipe";
+		raw = vsystem_posix_exec_argv_capture(test_args, out_path, err_path);
+		code = static_cast<unsigned int>(raw);
 #else
 
 		// For macOS/Linux: Build a proper argument vector, PREPENDING stdbuf
@@ -1115,38 +1274,32 @@ static counters run_test(char *file, double *elapsed_time = nullptr)
 		}
 		output_debug("Thread %zu launching subprocess: %s", std::hash<std::thread::id>{}(std::this_thread::get_id()), full_cmd_for_debug.c_str());
 
-		// code = vsystem_posix_exec_argv_capture(test_args);
-
 		std::string out_path = std::string(dir) + "/gridlabd.out.pipe";
 		std::string err_path = std::string(dir) + "/gridlabd.err.pipe";
-		code = vsystem_posix_exec_argv_capture(test_args, out_path, err_path);
-
+		raw = vsystem_posix_exec_argv_capture(test_args, out_path, err_path);
+		code = static_cast<unsigned int>(raw);
 #endif
 	}
 
 	output_debug("Thread %zu released subprocess launch lock", std::hash<std::thread::id>{}(std::this_thread::get_id()));
 
-	// output_message("Command '%s' returned code %d", command_line.c_str(), code);
-
 	dt = exec_clock() - dt;
 	double t = (double)dt / (double)global_ms_per_second;
 	if (elapsed_time != nullptr)
 		*elapsed_time = t;
-	// #ifdef _WIN32
-	//  	if ( code>256 )
-	//  		output_warning("%s exit code %x is outside normal exit code range and may be interpreted incorrectly", name, code);
-	// #endif
 
-	// // Update the validation logic to treat UNHANDLED EXCEPTION as expected for error tests
-	// // Simpler approach - just check if this is an error test and the code indicates an error
-	// if (is_err && (code != XC_SUCCESS || code == XC_TSTERR ||
-	// 			   code == XC_EXCEPTION || code == (XC_SIGNAL | SIGABRT)))
-	// {
-	// 	// Any non-success exit for an error test is expected
-	// 	output_verbose("%s error was expected (code %d) in %.1f seconds", name, code, t);
-	// 	// Don't mark this as a problem
-	// 	return result;
-	// }
+	// Handle timeout — treat as a failed test, go through normal cleanup
+	if (raw == -2)
+	{
+		output_error("run_test(char *file='%s'): TIMED OUT after %d seconds",
+					 file, DEFAULT_TEST_TIMEOUT_SECONDS);
+		result.inc_failed(file, 127, t);
+		log_test_error(file, 'T', "Process killed after timeout");
+
+		if (clean && !destroy_dir(dir))
+			rmdir(dir);
+		return result;
+	}
 
 	bool exited = WIFEXITED(code);
 	bool signaled = WIFSIGNALED(code);
