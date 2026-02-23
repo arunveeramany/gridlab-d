@@ -1,5 +1,5 @@
-export GRIDLABD=/Users/arun.veeramany/Arun/conda_projects/gridlabd-cpp23/
-export GLHOME=$GRIDLABD/build-clang
+export GRIDLABD=/home/veer632/gridlab-d/
+export GLHOME=$GRIDLABD/build
 export GLPATH=$GLHOME/lib:$GLHOME/share:$GLHOME/gldcore
 export PATH=$PATH:$GLHOME/bin
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$GLHOME/lib

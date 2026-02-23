@@ -454,9 +454,8 @@ extern "C"
 	int object_get_oflags(KEYWORD **extflags);
 
 	// TIMESTAMP object_sync(OBJECT *obj, TIMESTAMP to, PASSCONFIG pass);
-	TIMESTAMP object_sync(void *object, ...);
+	// TIMESTAMP object_sync(void *object, ...);
 
-	
 	OBJECT **object_get_object(OBJECT *obj, PROPERTY *prop);
 	OBJECT **object_get_object_by_name(OBJECT *obj, const char *name);
 	enumeration *object_get_enum(OBJECT *obj, PROPERTY *prop);
@@ -527,10 +526,8 @@ extern "C"
 
 	int object_loadmethod(OBJECT *obj, char *name, char *value);
 
-
 	// Resolve deferred parent links (declared in object.cpp)
 	void resolve_pending_parent_links();
-
 
 #ifdef __cplusplus
 }
