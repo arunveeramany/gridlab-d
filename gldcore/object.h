@@ -453,8 +453,11 @@ extern "C"
 
 	int object_get_oflags(KEYWORD **extflags);
 
-	// TIMESTAMP object_sync(OBJECT *obj, TIMESTAMP to, PASSCONFIG pass);
-	// TIMESTAMP object_sync(void *object, ...);
+#ifndef __APPLE__
+	TIMESTAMP object_sync(OBJECT *obj, TIMESTAMP to, PASSCONFIG pass);
+#else
+TIMESTAMP object_sync(void *object, ...);
+#endif
 
 	OBJECT **object_get_object(OBJECT *obj, PROPERTY *prop);
 	OBJECT **object_get_object_by_name(OBJECT *obj, const char *name);
