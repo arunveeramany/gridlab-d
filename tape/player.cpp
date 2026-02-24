@@ -365,7 +365,7 @@ static int player_open(OBJECT *obj)
     //	{
     //		/* filename is file by default */
     // strcpy(fname, my->file);
-    snprintf(fname, sizeof(fname), "%s", my->file);
+    snprintf(fname, sizeof(fname), "%s", my->file.get_string());
     //		strcpy(type,"file");
     //	}
 

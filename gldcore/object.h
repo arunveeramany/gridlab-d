@@ -48,6 +48,16 @@ typedef struct s_aggregate AGGREGATION;
 #define OF_INIT 0x0100		/**< Object flag; indicates that the object has been successfully initialized */
 #define OF_RERANK 0x4000	/**< Internal use only */
 
+#if defined(_WIN32)
+#define MODULE_API __declspec(dllexport) // always exporting from this module
+#else
+#if defined(__GNUC__) && (__GNUC__ >= 4)
+#define MODULE_API __attribute__((visibility("default")))
+#else
+#define MODULE_API
+#endif
+#endif
+
 // Header-only thread-safe implementation
 class SharedMutexManager
 {
@@ -453,10 +463,12 @@ extern "C"
 
 	int object_get_oflags(KEYWORD **extflags);
 
-	// TIMESTAMP object_sync(OBJECT *obj, TIMESTAMP to, PASSCONFIG pass);
-	TIMESTAMP object_sync(void *object, ...);
+#ifndef __APPLE__
+	MODULE_API TIMESTAMP object_sync(OBJECT *obj, TIMESTAMP to, PASSCONFIG pass);
+#else
+MODULE_API TIMESTAMP object_sync(void *object, ...);
+#endif
 
-	
 	OBJECT **object_get_object(OBJECT *obj, PROPERTY *prop);
 	OBJECT **object_get_object_by_name(OBJECT *obj, const char *name);
 	enumeration *object_get_enum(OBJECT *obj, PROPERTY *prop);
@@ -527,10 +539,8 @@ extern "C"
 
 	int object_loadmethod(OBJECT *obj, char *name, char *value);
 
-
 	// Resolve deferred parent links (declared in object.cpp)
 	void resolve_pending_parent_links();
-
 
 #ifdef __cplusplus
 }
