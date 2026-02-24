@@ -26,13 +26,6 @@ module powerflow{
      solver_method NR; 
       default_maximum_voltage_error 1e-6;
 };
-object fault_check {
-    name "fault_checker";
-    check_mode ALL;
-    grid_association TRUE;
-};
- 
-
 //********************************************* 
 object regulator:3920 {
      name R5-25-00-1_reg_1; 

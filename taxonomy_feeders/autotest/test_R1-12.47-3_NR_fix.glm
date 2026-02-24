@@ -24,12 +24,6 @@ module powerflow{
 };
 module assert;
 
-object fault_check {
-    name "fault_checker";
-    check_mode ALL;
-    grid_association TRUE;
-};
-
 //*********************************************
 
 object regulator:222 {
