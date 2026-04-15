@@ -74,9 +74,9 @@ extern "C"
 #include <string.h>
 #endif
 
-    int stricmp_portable(const char *str1, const char *str2);
+    int stricmp_portable(const char* str1, const char* str2);
 
-    int strnicmp_portable(const char *str1, const char *str2, size_t n);
+    int strnicmp_portable(const char* str1, const char* str2, size_t n);
 
     typedef enum
     {
@@ -86,10 +86,10 @@ extern "C"
 
     typedef struct s_globalvar
     {
-        PROPERTY *prop;
-        struct s_globalvar *next;
+        PROPERTY* prop;
+        struct s_globalvar* next;
         uint32 flags;
-        void (*callback)(const char *); // this function will be called whenever the
+        void (*callback)(const char*);  // this function will be called whenever the
                                         // globalvar is set
         unsigned int lock;
     } GLOBALVAR;
@@ -119,12 +119,12 @@ extern "C"
 #endif
 
     STATUS global_init(void);
-    GLOBALVAR *global_getnext(GLOBALVAR *previous);
-    GLOBALVAR *global_find(std::string_view name);
-    GLOBALVAR *global_create(const char *name, ...);
-    STATUS global_setvar(const char *def, ...);
-    char *global_getvar(const char *name, char *buffer, int size);
-    int global_isdefined(const char *name);
+    GLOBALVAR* global_getnext(GLOBALVAR* previous);
+    GLOBALVAR* global_find(std::string_view name);
+    GLOBALVAR* global_create(const char* name, ...);
+    STATUS global_setvar(const char* def, ...);
+    char* global_getvar(const char* name, char* buffer, int size);
+    int global_isdefined(const char* name);
     void global_dump(void);
     size_t global_getcount(void);
 
@@ -385,25 +385,16 @@ extern "C"
     /* checkpoint globals */
     typedef enum
     {
-        CPT_NONE = 0, /**< checkpoints is not enabled */
-        CPT_WALL = 1, /**< checkpoints run on wall clock interval */
-        CPT_SIM = 2,  /**< checkpoints run on sim clock interval */
-    } CHECKPOINTTYPE; /**< checkpoint type determines how checkpoint intervals are
-                         used */
-    GLOBAL int global_checkpoint_type
-        INIT(CPT_SIM); /**< checkpoint type determines whether and how checkpoints
-                          are used */
-    GLOBAL char global_checkpoint_file[1024] INIT(
-        ""); /**< checkpoint file name is base name used for checkpoint save files
-              */
-    GLOBAL int
-        global_checkpoint_seqnum INIT(0); /**< checkpoint sequence file number */
-    GLOBAL int
-        global_checkpoint_interval INIT(0); /** checkpoint interval (default is 3600
-                                               for CPT_WALL and 86400 for CPT_SIM */
-    GLOBAL int global_checkpoint_keepall
-        INIT(0); /** determines whether all checkpoint files are kept, non-zero
-                    keeps files, zero delete all but last */
+        CPT_NONE = 0,                                  /**< checkpoints is not enabled */
+        CPT_WALL = 1,                                  /**< checkpoints run on wall clock interval */
+        CPT_SIM = 2,                                   /**< checkpoints run on sim clock interval */
+    } CHECKPOINTTYPE;                                  /**< checkpoint type determines how checkpoint intervals are used */
+    GLOBAL int global_checkpoint_type INIT(CPT_SIM);   /**< checkpoint type determines whether and how checkpoints are used */
+    GLOBAL char global_checkpoint_file[1024] INIT(""); /**< checkpoint file name is base name used for checkpoint save files */
+    GLOBAL int global_checkpoint_seqnum INIT(0);       /**< checkpoint sequence file number */
+    GLOBAL int global_checkpoint_interval INIT(0);     /** checkpoint interval (default is 3600 for CPT_WALL and 86400 for CPT_SIM */
+    GLOBAL int global_checkpoint_keepall INIT(0);      /** determines whether all checkpoint files are kept, non-zero keeps files, zero delete all but last */
+    GLOBAL int global_checkpoint_loaded INIT(0);       /**< flag to indicate whether a checkpoint file has been loaded */
 
     /* version check */
     GLOBAL int global_check_version INIT(0); /**< check version flag */
@@ -530,10 +521,10 @@ extern "C"
                                            deferred for initialization */
 
     /* remote data access */
-    void *global_remote_read(void *local,
-                             GLOBALVAR *var); /** access remote global data */
-    void global_remote_write(void *local,
-                             GLOBALVAR *var); /** access remote global data */
+    void* global_remote_read(void* local,
+                             GLOBALVAR* var); /** access remote global data */
+    void global_remote_write(void* local,
+                             GLOBALVAR* var); /** access remote global data */
 
     /* module compile flags */
     typedef enum

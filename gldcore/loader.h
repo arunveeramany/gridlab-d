@@ -27,7 +27,8 @@ using ojson = nlohmann::ordered_json;
 
 #ifdef __cplusplus
 
-class loader {
+class loader
+{
 
 private:
   parser parse = parser();
@@ -45,6 +46,7 @@ private:
   int set_flags(OBJECT *obj, char *propval);
   void clearQuotesFromStr(string &str);
   STATUS loadJsonFile(filesystem::path filePath);
+    unsigned int64 polynomialHasher(string key);
 
 public:
   bool open_file(filesystem::path &file_name);
@@ -59,6 +61,7 @@ public:
   STATUS loadSchedules();
   STATUS loadDirectives();
   STATUS loadIncludes();
+    STATUS loadGlobals();
   STATUS loadall_json_roll(char *file_name);
 };
 

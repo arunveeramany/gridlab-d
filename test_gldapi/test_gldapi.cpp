@@ -22,9 +22,13 @@ int main() {
   assert(sim.get_glm_data("SELECT * FROM all", query_result) == GLD_SUCCESS);
   assert(query_result.count("status") > 0);
 
+<<<<<<< HEAD
   assert(sim.save_checkpoint("state.chk", GLD_CHECKPOINT_MODE_SAVE) ==
          GLD_SUCCESS);
   assert(sim.load_checkpoint("state.chk") == GLD_SUCCESS);
+=======
+    assert(sim.save_checkpoint("state.chk", GLD_CHECKPOINT_MODE_SAVE) == GLD_SUCCESS);
+>>>>>>> upstream/feature/1478
 
   assert(sim.set_prestep_callback(dummy_callback) == GLD_SUCCESS);
   assert(sim.set_poststep_callback(dummy_callback) == GLD_SUCCESS);
