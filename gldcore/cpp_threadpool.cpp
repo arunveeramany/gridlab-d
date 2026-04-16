@@ -9,6 +9,17 @@
 
 #include "cpp_threadpool.h"
 
+// At top of cpp_threadpool.cpp, after existing includes
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>  // brings in sysinfoapi.h (SYSTEM_INFO, GetSystemInfo)
+#endif
+
 cpp_threadpool::cpp_threadpool(int num_threads)
 {
     if (num_threads == 0)
