@@ -46,6 +46,22 @@ extern size_t output_get_message_capture_limit();
 #include "save.h"
 
 #ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+// If you later choose a spawn-based implementation:
+// #include <process.h>
+#else
+#include <sys/types.h>
+#include <sys/wait.h>  // waitpid + WIFEXITED/WEXITSTATUS/WIFSIGNALED/WTERMSIG
+#include <unistd.h>    // fork
+#endif
+
+#ifdef _WIN32
 #include <direct.h>
 #define getcwd _getcwd
 #else
@@ -1756,7 +1772,195 @@ void print_test_summary(const TestSummary& summary)
 }
 }  // namespace
 
-GLDErrorCode GridLabD::validate(const std::string& repo_root, const std::vector<std::string>& modules)
+// GLDErrorCode GridLabD::validate(const std::string& repo_root, const std::vector<std::string>& modules)
+// {
+//     namespace fs = std::filesystem;
+//     TestSummary summary;
+
+//     std::vector<std::string> all_modules = {
+//         "assert", "climate", "commercial", "connection", "generators",
+//         "market", "mysql", "network", "plc", "powerflow",
+//         "reliability", "residential", "rest", "tape", "taxonomy_feeders"};
+
+//     std::vector<std::string> modules_to_test = modules.empty() ? all_modules : modules;
+
+//     // Determine the search path for autotests
+//     // Autotests are located in the source tree at MODULE/autotest/ (e.g., residential/autotest/)
+//     fs::path search_root;
+//     if (!repo_root.empty() && fs::exists(repo_root))
+//     {
+//         search_root = repo_root;
+//     }
+//     else
+//     {
+//         // Default to current working directory (typically the source tree root)
+//         search_root = fs::current_path();
+//     }
+
+//     std::cout << "=============================================================\n";
+//     std::cout << "         GridLAB-D Autotest Suite Runner\n";
+//     std::cout << "=============================================================\n";
+//     std::cout << "Search path: " << search_root << "\n\n";
+
+//     int modules_found = 0;
+//     for (const auto& module : modules_to_test)
+//     {
+//         fs::path autotest_dir = search_root / module / "autotest";
+
+//         if (!fs::exists(autotest_dir) || !fs::is_directory(autotest_dir))
+//         {
+//             continue;
+//         }
+
+//         modules_found++;
+//         std::cout << "Module: " << module << "\n";
+//         std::cout << std::string(60, '-') << "\n";
+
+//         std::vector<fs::path> test_dirs;
+//         for (const auto& entry : fs::directory_iterator(autotest_dir))
+//         {
+//             if (entry.is_directory())
+//             {
+//                 std::string dirname = entry.path().filename().string();
+//                 if (dirname.rfind("test_", 0) == 0)
+//                 {
+//                     fs::path glm_file = entry.path() / (dirname + ".glm");
+//                     if (fs::exists(glm_file))
+//                     {
+//                         test_dirs.push_back(entry.path());
+//                     }
+//                 }
+//             }
+//         }
+
+//         std::sort(test_dirs.begin(), test_dirs.end());
+
+//         for (const auto& test_dir : test_dirs)
+//         {
+//             std::string test_name = test_dir.filename().string();
+
+//             TestResult result;
+//             result.test_path = test_dir.string();
+//             result.test_name = test_name;
+//             result.module = module;
+//             result.success = false;
+
+//             std::cout << "  Running: " << test_name << " ... " << std::flush;
+
+//             fs::path original_cwd = fs::current_path();
+
+//             auto start_time = std::chrono::high_resolution_clock::now();
+
+//             pid_t pid = fork();
+
+//             if (pid == -1)
+//             {
+//                 result.error_message = "Failed to fork process";
+//                 result.success = false;
+//                 summary.failed_tests++;
+//             }
+//             else if (pid == 0)
+//             {
+//                 freopen("/dev/null", "w", stdout);
+//                 freopen("/dev/null", "w", stderr);
+
+//                 int test_result = run_single_test(test_dir, test_name);
+//                 exit(test_result);
+//             }
+//             else
+//             {
+//                 int status;
+//                 waitpid(pid, &status, 0);
+
+//                 bool is_error_test = test_name.find("_err") != std::string::npos;
+
+//                 if (WIFEXITED(status))
+//                 {
+//                     int exit_code = WEXITSTATUS(status);
+//                     bool test_passed = is_error_test ? (exit_code != 0) : (exit_code == 0);
+
+//                     if (test_passed)
+//                     {
+//                         result.success = true;
+//                         summary.passed_tests++;
+//                     }
+//                     else
+//                     {
+//                         if (is_error_test)
+//                         {
+//                             result.error_message = "Error test unexpectedly succeeded (exit code 0)";
+//                         }
+//                         else
+//                         {
+//                             result.error_message = "Test returned exit code " + std::to_string(exit_code);
+//                         }
+//                         summary.failed_tests++;
+//                     }
+//                 }
+//                 else if (WIFSIGNALED(status))
+//                 {
+//                     if (is_error_test)
+//                     {
+//                         result.success = true;
+//                         summary.passed_tests++;
+//                     }
+//                     else
+//                     {
+//                         result.error_message = "Test terminated by signal " + std::to_string(WTERMSIG(status));
+//                         summary.failed_tests++;
+//                     }
+//                 }
+//                 else
+//                 {
+//                     result.error_message = "Test terminated abnormally";
+//                     summary.failed_tests++;
+//                 }
+//             }
+
+//             auto end_time = std::chrono::high_resolution_clock::now();
+//             std::chrono::duration<double> duration = end_time - start_time;
+//             result.duration_seconds = duration.count();
+
+//             fs::current_path(original_cwd);
+
+//             if (result.success)
+//             {
+//                 std::cout << "✓ PASS (" << std::fixed << std::setprecision(2)
+//                           << result.duration_seconds << "s)\n";
+//             }
+//             else
+//             {
+//                 std::cout << "✗ FAIL (" << std::fixed << std::setprecision(2)
+//                           << result.duration_seconds << "s)\n";
+//                 std::cout << "    Error: " << result.error_message << "\n";
+//             }
+
+//             summary.results.push_back(result);
+//             summary.total_tests++;
+//         }
+
+//         std::cout << "\n";
+//     }
+
+//     if (modules_found == 0)
+//     {
+//         std::cout << "\n*** WARNING: No autotest directories found ***\n";
+//         std::cout << "Searched in: " << search_root << "\n";
+//         std::cout << "\nAutotests are located in the source tree at MODULE/autotest/ directories.\n";
+//         std::cout << "To fix this issue:\n";
+//         std::cout << "  - Specify the repo_root parameter pointing to the GridLAB-D source tree\n";
+//         std::cout << "    Example: gld.validate('/path/to/gridlab-d')\n";
+//         std::cout << "  - Or run from the GridLAB-D source tree root directory\n\n";
+//         return GLD_FILE_NOT_FOUND;
+//     }
+
+//     print_test_summary(summary);
+
+//     return (summary.failed_tests > 0) ? GLD_OPERATION_FAILED : GLD_SUCCESS;
+// }
+
+GLDErrorCode GridLabD::validate(const std::string& repo_root,
+                                const std::vector<std::string>& modules)
 {
     namespace fs = std::filesystem;
     TestSummary summary;
@@ -1769,7 +1973,7 @@ GLDErrorCode GridLabD::validate(const std::string& repo_root, const std::vector<
     std::vector<std::string> modules_to_test = modules.empty() ? all_modules : modules;
 
     // Determine the search path for autotests
-    // Autotests are located in the source tree at MODULE/autotest/ (e.g., residential/autotest/)
+    // Autotests live at MODULE/autotest/ (e.g., residential/autotest/)
     fs::path search_root;
     if (!repo_root.empty() && fs::exists(repo_root))
     {
@@ -1787,10 +1991,10 @@ GLDErrorCode GridLabD::validate(const std::string& repo_root, const std::vector<
     std::cout << "Search path: " << search_root << "\n\n";
 
     int modules_found = 0;
+
     for (const auto& module : modules_to_test)
     {
         fs::path autotest_dir = search_root / module / "autotest";
-
         if (!fs::exists(autotest_dir) || !fs::is_directory(autotest_dir))
         {
             continue;
@@ -1801,18 +2005,19 @@ GLDErrorCode GridLabD::validate(const std::string& repo_root, const std::vector<
         std::cout << std::string(60, '-') << "\n";
 
         std::vector<fs::path> test_dirs;
+
+        // Discover test_* folders that contain a matching .glm
         for (const auto& entry : fs::directory_iterator(autotest_dir))
         {
-            if (entry.is_directory())
+            if (!entry.is_directory()) continue;
+
+            std::string dirname = entry.path().filename().string();
+            if (dirname.rfind("test_", 0) == 0)
             {
-                std::string dirname = entry.path().filename().string();
-                if (dirname.rfind("test_", 0) == 0)
+                fs::path glm_file = entry.path() / (dirname + ".glm");
+                if (fs::exists(glm_file))
                 {
-                    fs::path glm_file = entry.path() / (dirname + ".glm");
-                    if (fs::exists(glm_file))
-                    {
-                        test_dirs.push_back(entry.path());
-                    }
+                    test_dirs.push_back(entry.path());
                 }
             }
         }
@@ -1832,9 +2037,10 @@ GLDErrorCode GridLabD::validate(const std::string& repo_root, const std::vector<
             std::cout << "  Running: " << test_name << " ... " << std::flush;
 
             fs::path original_cwd = fs::current_path();
-
             auto start_time = std::chrono::high_resolution_clock::now();
 
+#ifndef _WIN32
+            // ---------- POSIX path (Linux/macOS) ----------
             pid_t pid = fork();
 
             if (pid == -1)
@@ -1845,44 +2051,44 @@ GLDErrorCode GridLabD::validate(const std::string& repo_root, const std::vector<
             }
             else if (pid == 0)
             {
+                // Child: silence stdout/stderr so logs don't flood the runner
                 freopen("/dev/null", "w", stdout);
                 freopen("/dev/null", "w", stderr);
 
                 int test_result = run_single_test(test_dir, test_name);
-                exit(test_result);
+                _Exit(test_result);  // safer than exit() in child
             }
             else
             {
-                int status;
+                // Parent: wait and evaluate result
+                int status = 0;
                 waitpid(pid, &status, 0);
 
-                bool is_error_test = test_name.find("_err") != std::string::npos;
+                bool is_error_test = (test_name.find("_err") != std::string::npos);
 
                 if (WIFEXITED(status))
                 {
                     int exit_code = WEXITSTATUS(status);
-                    bool test_passed = is_error_test ? (exit_code != 0) : (exit_code == 0);
+                    bool passed = is_error_test ? (exit_code != 0) : (exit_code == 0);
 
-                    if (test_passed)
+                    if (passed)
                     {
                         result.success = true;
                         summary.passed_tests++;
                     }
                     else
                     {
-                        if (is_error_test)
-                        {
-                            result.error_message = "Error test unexpectedly succeeded (exit code 0)";
-                        }
-                        else
-                        {
-                            result.error_message = "Test returned exit code " + std::to_string(exit_code);
-                        }
+                        result.error_message = is_error_test
+                                                   ? "Error test unexpectedly succeeded (exit code 0)"
+                                                   : ("Test returned exit code " + std::to_string(exit_code));
                         summary.failed_tests++;
                     }
                 }
                 else if (WIFSIGNALED(status))
                 {
+                    int sig = static_cast<int>(WTERMSIG(status));
+                    bool is_error_test = (test_name.find("_err") != std::string::npos);
+
                     if (is_error_test)
                     {
                         result.success = true;
@@ -1890,7 +2096,9 @@ GLDErrorCode GridLabD::validate(const std::string& repo_root, const std::vector<
                     }
                     else
                     {
-                        result.error_message = "Test terminated by signal " + std::to_string(WTERMSIG(status));
+                        result.error_message =
+                            std::string("Test terminated by signal ") +
+                            std::to_string(sig);
                         summary.failed_tests++;
                     }
                 }
@@ -1900,11 +2108,34 @@ GLDErrorCode GridLabD::validate(const std::string& repo_root, const std::vector<
                     summary.failed_tests++;
                 }
             }
+#else
+            // ---------- Windows path (no fork/waitpid) ----------
+            bool is_error_test = (test_name.find("_err") != std::string::npos);
+
+            // Run the test "in-process" to keep behavior consistent.
+            // If you need a true child process, switch to _spawn/CreateProcess.
+            int exit_code = run_single_test(test_dir, test_name);
+            bool passed = is_error_test ? (exit_code != 0) : (exit_code == 0);
+
+            if (passed)
+            {
+                result.success = true;
+                summary.passed_tests++;
+            }
+            else
+            {
+                result.error_message = is_error_test
+                                           ? "Error test unexpectedly succeeded (exit code 0)"
+                                           : ("Test returned exit code " + std::to_string(exit_code));
+                summary.failed_tests++;
+            }
+#endif
 
             auto end_time = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> duration = end_time - start_time;
             result.duration_seconds = duration.count();
 
+            // Restore original working directory
             fs::current_path(original_cwd);
 
             if (result.success)
@@ -1939,7 +2170,6 @@ GLDErrorCode GridLabD::validate(const std::string& repo_root, const std::vector<
     }
 
     print_test_summary(summary);
-
     return (summary.failed_tests > 0) ? GLD_OPERATION_FAILED : GLD_SUCCESS;
 }
 
