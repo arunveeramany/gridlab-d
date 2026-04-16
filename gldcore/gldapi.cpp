@@ -34,7 +34,13 @@ extern size_t output_get_message_capture_limit();
 
 #include "cpp_threadpool.h"
 #include "globals.h"
-#include "kill.h"
+
+#ifdef _WIN32
+#include "kill.h"  // Windows-only handlers/shims
+#else
+#include <signal.h>  // POSIX kill() declaration
+#endif
+
 #include "load.h"
 #include "object.h"
 #include "save.h"
